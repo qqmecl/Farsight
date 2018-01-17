@@ -1,0 +1,13 @@
+[INFO/MainProcess] pre-init
+[INFO/MainProcess] 摄像头已启动
+[INFO/MainProcess] standby
+[INFO/SpawnPoolWorker-1] child process calling self.run()
+[INFO/SpawnPoolWorker-2] child process calling self.run()
+[INFO/Process-5] child process calling self.run()
+[INFO/SpawnPoolWorker-4] child process calling self.run()
+[INFO/SpawnPoolWorker-3] child process calling self.run()
+[INFO/MainProcess] 用户已经打开锁
+[INFO/MainProcess] 用户已经打开锁
+[INFO/MainProcess] 用户已经打开门
+[INFO/MainProcess] processing-order
+[INFO/MainProcess] 用户已经关上门

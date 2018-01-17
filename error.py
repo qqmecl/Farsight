@@ -1,0 +1,2 @@
+class FarSightError(Exception):
+    pass
