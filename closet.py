@@ -253,7 +253,7 @@ class Closet:
                 # print("lastScaleVal is: ",self.lastScaleVal)
                 # print("curScaleVal is: ",curScaleVal)
                 print("                         ")
-                 self.logger.info("------------------------------------------------")
+                self.logger.info("------------------------------------------------")
                 self.logger.info("Detection envoked ({},{})!!!! ".format(self.lastScaleVal,curScaleVal))
                 self.logger.info("-------------------------------------------------")
 
