@@ -189,7 +189,7 @@ class Closet:
 
         # self.logger.info(self.state)
 
-        self.IO.say_welcome()#发声
+        # self.IO.say_welcome()#发声
 
         self.IO.change_to_inventory_page()#进入购物车界面
 
@@ -232,7 +232,7 @@ class Closet:
 
                 self.open_door_time_out = 300#which means 120*12ms = 8s
 
-                self.io_controller.change_to_welcome_page()
+                self.IO.change_to_welcome_page()
                 return
 
             
@@ -302,7 +302,7 @@ class Closet:
                             self.detectResult.put(item)#每次都拿
                         except queue.Empty:
                             break
-                    self.detectResult.debugTest()
+                    self.detectResult.debugTest(forcePrint=True)
 
                     print("理论上在此之前应该识别出识别结果")
                     
@@ -362,15 +362,15 @@ class Closet:
 
             labelId = self.detectResult.getLabel()
             if self.detectResult.getDirection() == "OUT":
-                print("out")
-                # self.cart.add_item(labelId)
+                # print("out")
+                self.cart.add_item(labelId)
             else:
-                pass
-                # self.cart.remove_item(labelId)
+                # pass
+                self.cart.remove_item(labelId)
             
 
     def _delay_print(self):
-        print("scaleValue is: ",self.scale_statis)
+        # print("scaleValue is: ",self.scale_statis)
         self.scale_statis=[]
 
     def _check_door_close(self):
@@ -402,7 +402,7 @@ class Closet:
             else:
                 self.order_process_success()
 
-            self.IO.say_goodbye()
+            # self.IO.say_goodbye()
             self.IO.change_to_processing_page()
 
     def _start_imageprocessing(self):

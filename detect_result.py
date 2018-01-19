@@ -86,8 +86,17 @@ class DetectResult:
     def setDirection(self,direction):
         self.direction = direction
 
-    def debugTest(self):
-        
+    def debugTest(self,forcePrint=False):
+        if forcePrint:
+            for k,val in self.upDetect.items():
+                print(k,val)
+            
+            print("--------------------------------------")
+
+            for k,val in self.downDetect.items():
+                print(k,val)
+
+
         for k,val in self.upDetect.items():
             if val["num"] >0:
                 print("                           ")
