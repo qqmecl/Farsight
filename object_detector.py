@@ -44,15 +44,15 @@ class ObjectDetector:
             try:
                 frame,index = input_q.get(timeout=1)
 
-                itemId,XAxis,YAxis = self.detect_objects(frame)
+                results = self.detect_objects(frame,index)
                
                 #一般情况下，如果主进程没来得及取队列中的数据，则自行清除，确保队列中始终是最新滑动识别窗口
                 if detection_queue.full():
                     # print("object delte detect")
                     waste = detection_queue.get_nowait()
 
-                if (itemId,XAxis,YAxis) != ("0",0,0):
-                    detection_queue.put_nowait(dict(itemId=itemId,XAxis=XAxis,YAxis=YAxis,index=index,time=time.time()))
+                if len(results) > 0:
+                    detection_queue.put_nowait(results)
 
                 # output_q.put_nowait()
             except queue.Empty:#不进行识别判断的时候帧会变空
@@ -63,7 +63,7 @@ class ObjectDetector:
 
     ##当前只考虑单帧的判断
     #TODO:点检测，使用深度学习实现轨迹检测
-    def detect_objects(self,frame):
+    def detect_objects(self,frame,index):
         inWidth,inHeight = 300,300
         inScaleFactor,meanVal = 0.007843,127.5
         blob = cv.dnn.blobFromImage(frame, inScaleFactor, (inWidth, inHeight), (meanVal, meanVal, meanVal),
@@ -74,6 +74,9 @@ class ObjectDetector:
         rows = frame.shape[0]
         cols = frame.shape[1]
         
+        results=[]
+        cur_time = time.time()
+
         for i in range(detections.shape[2]):
             confidence = detections[0, 0, i, 2]
 
@@ -90,18 +93,20 @@ class ObjectDetector:
             try:
                 itemId = self.classNames[class_id]
 
-                if confidence > 0.85:
+                if confidence > 0.8:
                     # print("confidence is: ",confidence)
                     # print(itemId,XAxis)
                     # print("----------------")
                     # print("                ")
+                    results.append((index,confidence,itemId,XAxis,YAxis,cur_time))
+
                     return (itemId,XAxis,YAxis)
             except KeyError:
                 print("class_id is: ",class_id)
                 pass
             # print(confidence,itemId,XAxis,YAxis)
 
-        return ('0',0,0)#默认返回空值
+        return results#默认返回空值
 
 if __name__ == '__main__':
     input_q = Queue(maxsize=5)

@@ -1,4 +1,3 @@
-
 import settings
 import time
 import multiprocessing
@@ -6,79 +5,97 @@ import multiprocessing
 class UpDownNotMatchError(Exception):
     pass
 
+FILTER_BASE_LINE = [[(260.0,481.0),(366.0,-1.0)],[(250.0,481.0),(320.0,-1.0)],
+[(344.0,481.0),(298.0,-1.0)],[(384.0,481.0),(352.0,-1.0)]]
+for item in FILTER_BASE_LINE:
+    item[1] = 480-item[1]
+
+
+
+LINE_EQUATION = []
+for points in FILTER_BASE_LINE:
+    k = (points[1][1]-points[0][1])/(points[1][0]-points[0][0])#下斜率
+    b = points[1][1]-k*points[1][0]
+    LINE_EQUATION.append([k,b])
+
+#detect 
+#[(index,confidence,itemId,XAxis,YAxis,cur_time)] one
 
 #根据识别结果结合重力传感器方向判断识别结果
 class DetectResult:
     def __init__(self,action,doorSide):
     	self.reset(action,doorSide)
 
+
+    def getDetectPos(self,detect):
+        x,y,pos=detect[3],detect[4],detect[0]
+        if pos <= 1:#left side
+            return y- LINE_EQUATION[pos][0]*x
+        else:#right side
+            return y- LINE_EQUATION[pos][0]*x 
+
+    def passBaseLine(self,slot):
+        pos=slot[0]
+        if pos <= 1:#left side
+            if self.getDetectPos(slot) > LINE_EQUATION[pos][1] :#若下斜率小于上斜率,说明过线
+                return True
+        else:#right side
+            if self.getDetectPos(slot) < LINE_EQUATION[pos][1] :#若下斜率小于上斜率,说明过线
+                return True
+        return False
+
     def put(self,detect):#在放置每一帧的时候顺便进行判断
-        XThreshold = [340,340,230,230]
-        index = detect["index"]
+        for val in detect:
+            if self.passBaseLine(val):
+                self.checkDetect(val)
+                #[(index,confidence,itemId,XAxis,YAxis,cur_time)] one
+                (index,_id,time,XAxis)=(val[0],val[2],val[5],self.getDetectPos(val))
+                # if index < 2:#left side
+                #     if XAxis - self.upDetect[_id]["X"] < 0:
+                #             self.upDetect[_id]["In"] += 1
+                #         else:
+                #             self.upDetect[_id]["Out"] += 1
+                # print("index ,XAxis is :",index,XAxis)
 
-        # print("why not here")
+                if index % 2 == 0:#up position
+                    self.upDetect[_id]["num"] += 1
+                    
+                    if self.upDetect[_id]["time"] < time:
+                        self.upDetect[_id]["time"] = time#upate time
 
-        if index < 2 and detect["XAxis"] < XThreshold[index]:
-            # print("returnreutenrlej")
-
-            return
-
-        if index >= 2 and detect["XAxis"] > XThreshold[index]:
-            # print("returnreutenrlej")
-
-            return
-
-        (_id,time,XAxis)=(detect["itemId"],detect["time"],detect["XAxis"])
-
-
-
-        # if index < 2:#left side
-        #     if XAxis - self.upDetect[_id]["X"] < 0:
-        #             self.upDetect[_id]["In"] += 1
-        #         else:
-        #             self.upDetect[_id]["Out"] += 1
-
-        # print("index ,XAxis is :",index,XAxis)
-
-        if index % 2 == 0:#up position
-            self.upDetect[_id]["num"] += 1
-            
-            if self.upDetect[_id]["time"] < time:
-                self.upDetect[_id]["time"] = time#upate time
-
-            if XAxis - self.upDetect[_id]["X"] < 0:
-                if index == 0:
-                    self.upDetect[_id]["In"] += 1
-                else:
-                    self.upDetect[_id]["Out"] += 1
+                    if XAxis - self.upDetect[_id]["X"] < 0:
+                        if index == 0:
+                            self.upDetect[_id]["In"] += 1
+                        else:
+                            self.upDetect[_id]["Out"] += 1
 
 
-            if XAxis - self.upDetect[_id]["X"] > 0:
-                if index == 0:
-                    self.upDetect[_id]["Out"] += 1
-                else:
-                    self.upDetect[_id]["In"] += 1
+                    if XAxis - self.upDetect[_id]["X"] > 0:
+                        if index == 0:
+                            self.upDetect[_id]["Out"] += 1
+                        else:
+                            self.upDetect[_id]["In"] += 1
 
-            self.upDetect[_id]["X"] = XAxis
-        else:#down position
-            self.downDetect[_id]["num"] += 1
-            if self.downDetect[_id]["time"] < time:
-                self.downDetect[_id]["time"] = time#upate time
+                    self.upDetect[_id]["X"] = XAxis
+                else:#down position
+                    self.downDetect[_id]["num"] += 1
+                    if self.downDetect[_id]["time"] < time:
+                        self.downDetect[_id]["time"] = time#upate time
 
-            if self.downDetect[_id]["X"] - XAxis > 0:
-                if index == 1:
-                    self.downDetect[_id]["In"] += 1
-                else:
-                    self.downDetect[_id]["Out"] += 1
+                    if self.downDetect[_id]["X"] - XAxis > 0:
+                        if index == 1:
+                            self.downDetect[_id]["In"] += 1
+                        else:
+                            self.downDetect[_id]["Out"] += 1
 
 
-            if self.downDetect[_id]["X"] - XAxis < 0:
-                if index == 1:
-                    self.downDetect[_id]["Out"] += 1
-                else:
-                    self.downDetect[_id]["In"] += 1
+                    if self.downDetect[_id]["X"] - XAxis < 0:
+                        if index == 1:
+                            self.downDetect[_id]["Out"] += 1
+                        else:
+                            self.downDetect[_id]["In"] += 1
 
-            self.downDetect[_id]["X"] = XAxis
+                    self.downDetect[_id]["X"] = XAxis
 
     def getDirection(self):
         return self.direction
