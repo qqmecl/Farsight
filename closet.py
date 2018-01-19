@@ -303,6 +303,9 @@ class Closet:
                         except queue.Empty:
                             break
                     self.detectResult.debugTest()
+
+                    print("理论上在此之前应该识别出识别结果")
+                    
                     self.logger.info("locate before frame len is: "+str(COUNT))
             else:
                 self.lastScaleVal = curScaleVal
@@ -340,10 +343,12 @@ class Closet:
         #
         if self.detectResult.isComplete():
             #矫正识别错误的out方向
-            if self.detectResult.getDirection() == "IN":
-                if self.IO.get_scale_val() - self.lastScaleVal < 0.1:
-                    print("Modify direction In --> Out!!!!")
-                    self.detectResult.setDirection("OUT")
+
+            # if self.detectResult.getDirection() == "IN":
+                # if self.IO.get_scale_val() - self.lastScaleVal < 0.1:
+                #     print("Modify direction In --> Out!!!!")
+                #     self.detectResult.setDirection("OUT")
+
 
             if self.curSide == self.IO.doorLock.LEFT_DOOR:
                 self.left_door_detect_complete()

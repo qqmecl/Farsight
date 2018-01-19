@@ -39,7 +39,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
     def post(self):
         # print(self.request.body)
         data = tornado.escape.json_decode(self.request.body)
-        print(data)
+        # print(data)
         # print(data.get('itemId','000'))
 
         self._handle_door(data['secret'], data.get('side', 'left'), 
