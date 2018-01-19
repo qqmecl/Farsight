@@ -47,16 +47,10 @@ class DetectResult:
     def put(self,detect):#在放置每一帧的时候顺便进行判断
         for val in detect:
             if self.passBaseLine(val):
+                print("pass base line x,y",val[3],val[4])
                 self.checkDetect(val)
                 #[(index,confidence,itemId,XAxis,YAxis,cur_time)] one
                 (index,_id,time,XAxis)=(val[0],val[2],val[5],self.getDetectPos(val))
-                # if index < 2:#left side
-                #     if XAxis - self.upDetect[_id]["X"] < 0:
-                #             self.upDetect[_id]["In"] += 1
-                #         else:
-                #             self.upDetect[_id]["Out"] += 1
-                # print("index ,XAxis is :",index,XAxis)
-
                 if index % 2 == 0:#up position
                     self.upDetect[_id]["num"] += 1
                     
