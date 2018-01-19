@@ -40,7 +40,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
 
 
     def start(self):
-        scaleUpdate = tornado.ioloop.PeriodicCallback(self._check_weight_scale,100)
+        scaleUpdate = tornado.ioloop.PeriodicCallback(self._check_weight_scale,50)
         scaleUpdate.start()
 
     def _check_weight_scale(self):

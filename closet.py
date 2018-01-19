@@ -32,7 +32,6 @@ class Closet:
     '''
         代表整个柜子
     '''
-
     ORDER_URL = 'https://www.hihigo.shop/api/v1/order'
 
     states = [
@@ -107,6 +106,11 @@ class Closet:
 
         self.http_port = config['http_port']
 
+        self.scale_statis = []
+
+        self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
+
+        
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
@@ -147,7 +151,6 @@ class Closet:
 
 
         #连接串口管理器
-        self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
         self.IO.start()
 
         self.detectResult = DetectResult(-1,0)
@@ -200,8 +203,19 @@ class Closet:
 
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update, 12)#50 fps
         self.updateScheduler.start()
+        #self._start_imageprocessing()
 
-        # self._start_imageprocessing()
+
+    def adjust_items(self,tup):
+        print("tup is: ",tup)
+
+        if self.cart:
+            if tup[1] == '1':
+                print("adjust add in ",tup[0])
+                self.cart.add_item(tup[0])#放入物品
+            else:
+                print("adjust take out ",tup[0])
+                self.cart.remove_item(tup[0])#取出物品
 
 
     def update(self):
@@ -218,6 +232,7 @@ class Closet:
 
                 self.open_door_time_out = 300#which means 120*12ms = 8s
 
+                self.io_controller.change_to_welcome_page()
                 return
 
             
@@ -237,6 +252,8 @@ class Closet:
 
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
             #此处只能通过本主进程管理控制所有的状态变化，开启摄像头发送帧进程的发送
+            self.scale_statis.append(self.IO.get_scale_val())
+
             if self.lastScaleVal is None:
                 self.lastScaleVal = self.IO.get_scale_val()#初始静止状态时的量称值
 
@@ -286,7 +303,7 @@ class Closet:
                         except queue.Empty:
                             break
                     self.detectResult.debugTest()
-                    self.logger.info("locate before frame len is: ",COUNT)
+                    self.logger.info("locate before frame len is: "+str(COUNT))
             else:
                 self.lastScaleVal = curScaleVal
 
@@ -340,10 +357,16 @@ class Closet:
 
             labelId = self.detectResult.getLabel()
             if self.detectResult.getDirection() == "OUT":
-                self.cart.add_item(labelId)
+                print("out")
+                # self.cart.add_item(labelId)
             else:
-                self.cart.remove_item(labelId)
+                pass
+                # self.cart.remove_item(labelId)
             
+
+    def _delay_print(self):
+        print("scaleValue is: ",self.scale_statis)
+        self.scale_statis=[]
 
     def _check_door_close(self):
         '''
@@ -351,6 +374,9 @@ class Closet:
         '''
         if not self.IO.is_door_open(self.curSide):
             self.close_door_success()
+
+            reset = functools.partial(self._delay_print)
+            tornado.ioloop.IOLoop.current().call_later(delay=8, callback=reset)
 
             self.updateScheduler.stop()
 

@@ -103,6 +103,7 @@ class DetectResult:
 
     def getLabel(self):
         self.logger.info("-----------------------------")
+        # print("-----------------------------")
         for k,val in self.upDetect.items():
             if val["num"] >0:
                 print("Final upDetect is : ",k,val["num"],val["time"],val["Out"],val["In"])
@@ -112,7 +113,11 @@ class DetectResult:
             if val["num"] >0:
                 print("Final downDetect is : ",k,val["num"],val["time"],val["Out"],val["In"])
         
-        self.logger.info("["+self.direction,settings.items[self.labelId]["name"]+"]")
+        # print("["+self.direction,settings.items[self.labelId]["name"]+"]")
+        # print("-----------------------------")
+        
+        info = "["+self.direction,settings.items[self.labelId]["name"]+"]"
+        self.logger.info(info)
         self.logger.info("-----------------------------")
         
         return self.labelId
