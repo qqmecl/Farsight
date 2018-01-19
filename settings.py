@@ -7,8 +7,8 @@ num_cameras = 4
 http_port = 5000
 
 WELCOME_PAGE = 0x0E
-usb_cameras=["/dev/v4l/by-path/pci-0000:00:14.0-usb-0:9:1.0-video-index0",
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
+usb_cameras=["/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
+"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:9:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
 ]

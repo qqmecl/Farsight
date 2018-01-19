@@ -189,7 +189,7 @@ class Closet:
 
         # self.logger.info(self.state)
 
-        # self.IO.say_welcome()#发声
+        self.IO.say_welcome()#发声
 
         self.IO.change_to_inventory_page()#进入购物车界面
 
@@ -269,6 +269,8 @@ class Closet:
             if abs(self.lastScaleVal - curScaleVal) > 0.1:#单位为kg,捕捉到初始量称发生的变化，开启摄像头捕捉
                 # print("lastScaleVal is: ",self.lastScaleVal)
                 # print("curScaleVal is: ",curScaleVal)
+                self.detectResult.setEnvokeTime()
+                
                 print("                         ")
                 self.logger.info("------------------------------------------------")
                 self.logger.info("Detection envoked ({},{})!!!! ".format(self.lastScaleVal,curScaleVal))
@@ -278,7 +280,6 @@ class Closet:
 
                 #给摄像头进程发送 start 控制指令
                 self.scale_value_changed()
-
 
                 action = 1 
                 if self.lastScaleVal - curScaleVal > 0.1:#
@@ -302,6 +303,7 @@ class Closet:
                             self.detectResult.put(item)#每次都拿
                         except queue.Empty:
                             break
+
                     self.detectResult.debugTest(forcePrint=True)
 
                     print("理论上在此之前应该识别出识别结果")
@@ -402,7 +404,7 @@ class Closet:
             else:
                 self.order_process_success()
 
-            # self.IO.say_goodbye()
+            self.IO.say_goodbye()
             self.IO.change_to_processing_page()
 
     def _start_imageprocessing(self):

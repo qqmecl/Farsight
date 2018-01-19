@@ -5,7 +5,7 @@ from multiprocessing import Queue, Pool
 import queue
 from setproctitle import setproctitle
 import time
-
+import settings
 # from object_detection.utils import label_map_util
 # from object_detection.utils import visualization_utils as vis_util
 # from detection_helper import draw_boxes_and_labels
@@ -18,6 +18,14 @@ MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph.pb')
 # List of the strings that is used to add correct label for each box.
 DESCRIPTION_PATH = os.path.join(CWD_PATH, 'data', 'ssd_mobilenet_v1_coco.pbtxt')
 
+FILTER_BASE_LINE = [[(260.0,-1.0),(366.0,481.0)],[(250.0,-1.0),(320.0,481.0)],
+[(344.0,-1.0),(298.0,481.0)],[(384.0,-1.0),(352.0,481.0)]]
+
+LINE_EQUATION = []
+for points in FILTER_BASE_LINE:
+    k = (points[1][1]-points[0][1])/(points[1][0]-points[0][0])#下斜率
+    b = points[1][1]-k*points[1][0]
+    LINE_EQUATION.append([k,b])
 
 '''
     #为简化程序结构，只在此ObjectDetector中执行识别单帧的任务
@@ -48,7 +56,7 @@ class ObjectDetector:
                
                 #一般情况下，如果主进程没来得及取队列中的数据，则自行清除，确保队列中始终是最新滑动识别窗口
                 if detection_queue.full():
-                    # print("object delte detect")
+                    print("object delte detect")
                     waste = detection_queue.get_nowait()
 
                 if len(results) > 0:
@@ -84,29 +92,42 @@ class ObjectDetector:
 
             xLeftBottom = int(detections[0, 0, i, 3] * cols)
             yLeftBottom = int(detections[0, 0, i, 4] * rows)
+            
             xRightTop = int(detections[0, 0, i, 5] * cols)
             yRightTop = int(detections[0, 0, i, 6] * rows)
 
             XAxis = (xLeftBottom + xRightTop) / 2
             YAxis = (yLeftBottom + yRightTop) / 2
-            
+
+            # XAxis =  xRightTop
+            # YAxis = yRightTop
             try:
                 itemId = self.classNames[class_id]
-
                 if confidence > 0.8:
-                    # print("confidence is: ",confidence)
-                    # print(itemId,XAxis)
-                    # print("----------------")
-                    # print("                ")
-                    results.append((index,confidence,itemId,XAxis,YAxis,cur_time))
+                    location = self.getDetectPos(XAxis,YAxis,index)
+                    if self.passBaseLine(index,location):
+                        print("confidence is: ",confidence)
+                        if index %2 == 0:
+                            print("上摄像头: ",settings.items[itemId]["name"],XAxis,cur_time)
+                        else:
+                            print("下摄像头: ",settings.items[itemId]["name"],XAxis,cur_time)
+                        print("----------------")
+                        print("                ")
+                        results.append((index,confidence,itemId,location,cur_time))
 
-                    return (itemId,XAxis,YAxis)
             except KeyError:
                 print("class_id is: ",class_id)
                 pass
             # print(confidence,itemId,XAxis,YAxis)
 
         return results#默认返回空值
+
+
+    def getDetectPos(self,x,y,pos):
+        return y- LINE_EQUATION[pos][0]*x
+
+    def passBaseLine(self,pos,location):
+        return location < LINE_EQUATION[pos][1]
 
 if __name__ == '__main__':
     input_q = Queue(maxsize=5)
