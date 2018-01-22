@@ -55,7 +55,7 @@ if __name__ == '__main__':
     speaker.say_welcome()
     # speaker.do_goodbye()
 
-    ioloop.start()##this should be like server .start will forever monitor io input.
+    tornado.ioloop.IOLoop.current().start()##this should be like server .start will forever monitor io input.
     # speaker.rest_welcome()
     # speaker.rest_goodbye()
     # say_goodbye()
