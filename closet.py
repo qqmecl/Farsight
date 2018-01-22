@@ -254,7 +254,7 @@ class Closet:
 
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
             #此处只能通过本主进程管理控制所有的状态变化，开启摄像头发送帧进程的发送
-            self.scale_statis.append(self.IO.get_scale_val())
+            # self.scale_statis.append(self.IO.get_scale_val())
 
             if self.lastScaleVal is None:
                 self.lastScaleVal = self.IO.get_scale_val()#初始静止状态时的量称值
@@ -373,9 +373,24 @@ class Closet:
                 self.cart.remove_item(labelId)
             
 
-    def _delay_print(self):
+    def _delay_do_order(self):
         # print("scaleValue is: ",self.scale_statis)
         self.scale_statis=[]
+
+        now_scale = self.IO.get_scale_val()
+
+        if abs(now_scale - self.beforeScaleVal) < 0.15:
+            self.order_process_success()
+        else:
+            if self.cart.as_order()["data"] != {}:
+                self.logger.info(self.cart.as_order())
+                
+                # 发送订单到中央服务
+                requests.post(Closet.ORDER_URL, data=json.dumps(self.cart.as_order()))
+                self.order_process_success()
+            else:
+                self.order_process_success()
+
 
     def _check_door_close(self):
         '''
@@ -385,7 +400,7 @@ class Closet:
             self.close_door_success()
 
             reset = functools.partial(self._delay_print)
-            tornado.ioloop.IOLoop.current().call_later(delay=8, callback=reset)
+            tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
 
             self.updateScheduler.stop()
 
@@ -397,14 +412,14 @@ class Closet:
             self.check_door_close_callback.stop()
 
             #eliminate empty order
-            if self.cart.as_order()["data"] != {}:
-                self.logger.info(self.cart.as_order())
+            # if self.cart.as_order()["data"] != {}:
+            #     self.logger.info(self.cart.as_order())
                 
-                # 发送订单到中央服务
-                requests.post(Closet.ORDER_URL, data=json.dumps(self.cart.as_order()))
-                self.order_process_success()
-            else:
-                self.order_process_success()
+            #     # 发送订单到中央服务
+            #     requests.post(Closet.ORDER_URL, data=json.dumps(self.cart.as_order()))
+            #     self.order_process_success()
+            # else:
+            #     self.order_process_success()
 
             self.IO.say_goodbye()
             self.IO.change_to_processing_page()
