@@ -28,3 +28,11 @@ class WeightScale:
 
         # 按照 IEEE 754 Float 格式 unpack
         return struct.unpack('>f', raw)
+
+
+
+if __name__ == '__main__':
+    scale = WeightScale()
+
+    print(scale.read()[0])
+
