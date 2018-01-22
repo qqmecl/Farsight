@@ -189,6 +189,8 @@ class Closet:
 
         # self.logger.info(self.state)
 
+        self.beforeScaleVal = self.IO.get_scale_val()
+
         self.IO.say_welcome()#发声
 
         self.IO.change_to_inventory_page()#进入购物车界面

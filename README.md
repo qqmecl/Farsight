@@ -188,10 +188,6 @@ TensorFlow 进程也因为饥饿进入等待状态。
 
     git clone git@github.com:mutanio/farsight.git
 
-### 导入 submodule
-
-    git submodule update --init
-
 ### 拷贝模型至 data 目录下
 
 `pascal_label_map.pbtxt` 和 `frozen_inference_graph.pb`
@@ -203,10 +199,6 @@ TensorFlow 进程也因为饥饿进入等待状态。
 ### 进入 conda env
 
     source activate farsight
-
-### 安装更高性能的 TensorFlow Build
-
-参照 https://github.com/lakshayg/tensorflow-build
 
 ## 部署设置
 
