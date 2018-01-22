@@ -39,6 +39,7 @@ class Screen:
         # rate = 115200  # 当前串口通信设备波特率
         rate = 9600  # 当前串口通信设备波特率
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
+        # print(self.com)
         self.resetData()
 
     def resetData(self):
@@ -122,8 +123,6 @@ class Screen:
             for i in range(7):
                 self.clear_line_content(i)
 
-
-
         self.do_protocol_6(Screen.CHANGE_PAGE_ADDRESS, page)  # 0地址码
 
     # 按ModBus功能码为6的协议写数据
@@ -132,6 +131,7 @@ class Screen:
         conf = [0x01, 0x06, *divmod(address, 256), *divmod(content, 256)]
         array = crc16().createarray(conf)
         data = struct.pack(str(Screen.PROTOCOL_6_LEN) + "B", *array)
+        # print(data)
         self.com.write(data)
         self.com.read(Screen.PROTOCOL_6_LEN)
 
@@ -215,25 +215,32 @@ if __name__ == '__main__':
     # screen.do_protocol_6(Screen.CART_TOTAL_ADDRESS,0)
 
     
+    screen.change_to_page(Screen.WELCOME_PAGE)
+    # screen.change_to_page()
+    
+
+    # for i in range(7):
+    #     screen.clear_line_content(i)
+
+    # screen.update_static_info()
 
     
 
-    for i in range(7):
-        screen.clear_line_content(i)
-
-    screen.update_static_info()
-
-    screen.change_to_page(Screen.WELCOME_PAGE)
-    # screen.change_to_page()
-
     # screen.update_item(True,"007001")
+    # screen.update_item(True,"007001")
+    # screen.update_item(True,"007001")
+
     # screen.update_item(True,"001001")
     # screen.update_item(True,"001001")
+
+    # screen.update_item(True,"006001")
     # screen.update_item(True,"006001")
 
-    # screen.do_protocol_16(550, "fae rtewrw3er 3wrr34wrt ")  # 写商品名称
 
-    # screen.update_item(True,"007001")
+
+    # # screen.do_protocol_16(550, "fae rtewrw3er 3wrr34wrt ")  # 写商品名称
+
+    # scre***********en.update_item(True,"001002")
 
     # screen.update_item(True,"维他柠檬茶")
     # # screen.update_item(False,"维他柠檬茶")

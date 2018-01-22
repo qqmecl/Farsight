@@ -8,7 +8,7 @@ usb_cameras=["/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
 ]
 
-index = 3
+index = 0
 
 cap = cv2.VideoCapture(usb_cameras[index])
 
