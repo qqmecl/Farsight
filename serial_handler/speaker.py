@@ -8,7 +8,7 @@ class Speaker:#简单触发器
     '''
         控制扬声器发声
     '''
-    def __init__(self,port="/dev/tty.usbserial-FT1NMLUY"):
+    def __init__(self,port="/dev/ttyS0"):
         rate = 115200
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
 
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     speaker.say_welcome()
     # speaker.do_goodbye()
 
-    ioloop.start()##this should be like server .start will forever monitor io input.
+    tornado.ioloop.IOLoop.current().start()##this should be like server .start will forever monitor io input.
     # speaker.rest_welcome()
     # speaker.rest_goodbye()
     # say_goodbye()
