@@ -14,9 +14,13 @@ import settings
 
 CWD_PATH = os.getcwd()
 #Path to frozen detection graph. This is the actual model that is used for the object detection.
-MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph.pb')
-# List of the strings that is used to add correct label for each box.
-DESCRIPTION_PATH = os.path.join(CWD_PATH, 'data', 'ssd_mobilenet_v1_coco.pbtxt')
+
+# MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph.pb')
+# DESCRIPTION_PATH = os.path.join(CWD_PATH, 'data', 'ssd_mobilenet_v1_coco.pbtxt')
+
+
+MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph_1.pb')
+DESCRIPTION_PATH = os.path.join(CWD_PATH, 'data', 'ssd_mobilenet_v1_coco_1.config')
 
 FILTER_BASE_LINE = [[(260.0,-1.0),(366.0,481.0)],[(250.0,-1.0),(320.0,481.0)],
 [(344.0,-1.0),(298.0,481.0)],[(384.0,-1.0),(352.0,481.0)]]
