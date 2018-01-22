@@ -11,7 +11,7 @@ class WeightScale:
     '''
         从重量计中读取数据
     '''
-    def __init__(self, port='/dev/tty.usbserial-FT1NMU31'):
+    def __init__(self, port='/dev/ttyS4'):
         rate = 9600
 
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
