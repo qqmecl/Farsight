@@ -1,1 +1,1 @@
-pip install pyserial
+pip install pyserial setproctitle transitions opencv-python
