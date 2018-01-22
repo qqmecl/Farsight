@@ -114,7 +114,7 @@ class Screen:
 
             self.resetData()
             reset = functools.partial(self.change_to_page, Screen.WELCOME_PAGE)
-            tornado.ioloop.IOLoop.current().call_later(delay=4, callback=reset)
+            tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
         elif page == Screen.WELCOME_PAGE:
             self.do_protocol_6(Screen.ALL_COUNT_ADDRESS,0)
             # 设置process order info

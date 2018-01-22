@@ -22,8 +22,13 @@ CWD_PATH = os.getcwd()
 MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph_1.pb')
 DESCRIPTION_PATH = os.path.join(CWD_PATH, 'data', 'ssd_mobilenet_v1_coco.pbtxt')
 
-FILTER_BASE_LINE = [[(260.0,-1.0),(366.0,481.0)],[(250.0,-1.0),(320.0,481.0)],
-[(344.0,-1.0),(298.0,481.0)],[(384.0,-1.0),(352.0,481.0)]]
+# FILTER_BASE_LINE = [[(260.0,-1.0),(366.0,481.0)],[(250.0,-1.0),(320.0,481.0)],
+# [(344.0,-1.0),(298.0,481.0)],[(384.0,-1.0),(352.0,481.0)]]
+
+
+FILTER_BASE_LINE = [[(255.0,-1.0),(300.0,481.0)],[(258.0,-1.0),(287.0,481.0)],
++[(380.0,-1.0),(340.0,481.0)],[(389.0,-1.0),(338.0,481.0)]]
+
 
 LINE_EQUATION = []
 for points in FILTER_BASE_LINE:
