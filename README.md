@@ -214,11 +214,12 @@ TensorFlow 进程也因为饥饿进入等待状态。
 
     3.使用pip install pyserial transitions setproctitle tornado opencv-python
 
-    4.进入serial/handler中，测试每一个串口设备的连通性，累计执行 python screen.py; python scale.py; python speaker.py; python door_lock.py;确认完毕之后，执行步骤5
+    4.串口问题 Ubuntu 串口权限默认 owner 是 root， group 是 dialout，所以一个访问串口的方式是，把当前用户加入 dialout 组: sudo usermod votance -G dialout
 
-    5.执行python main.py 测试主进程是否正常运行.
+    5.进入serial/handler中，测试每一个串口设备的连通性，累计执行 python screen.py; python scale.py; python speaker.py; python door_lock.py;确认完毕之后，执行步骤5
 
-    
+    6.执行python main.py 测试主进程是否正常运行.
+
 
 运行自动配置脚本 setup/install.sh
 
