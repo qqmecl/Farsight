@@ -204,7 +204,21 @@ TensorFlow 进程也因为饥饿进入等待状态。
 
 安装 Anaconda3-5.0.0.1-Linux-x86_64.sh (网络下载或移动硬盘拷贝),配置好 opencv 和 python 3.6 开发环境
 
-单独测试各个串口设备连接性问题
+### 单独测试各个串口设备连接性问题
+
+    部署软件到工控机一般过程:
+
+    1.确保网管配置好工控机的ssh服务器及花生壳域名
+
+    2.安装 环境配置/Anaconda3-5.0.0-Linux-x86_64.sh
+
+    3.使用pip install pyserial transitions setproctitle tornado opencv-python
+
+    4.进入serial/handler中，测试每一个串口设备的连通性，累计执行 python screen.py; python scale.py; python speaker.py; python door_lock.py;确认完毕之后，执行步骤5
+
+    5.执行python main.py 测试主进程是否正常运行.
+
+    
 
 运行自动配置脚本 setup/install.sh
 
