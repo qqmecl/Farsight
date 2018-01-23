@@ -215,7 +215,7 @@ if __name__ == '__main__':
     # screen.do_protocol_6(Screen.CART_TOTAL_ADDRESS,0)
 
     
-    screen.change_to_page(Screen.WELCOME_PAGE)
+    screen.change_to_page(Screen.INVENTORY_PAGE)
     # screen.change_to_page()
     
 
