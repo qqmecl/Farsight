@@ -22,7 +22,7 @@ import json
 
 from setproctitle import setproctitle
 
-# import settings
+import settings
 from serial_handler.io_controller import IO_Controller
  
 from detect_result import DetectResult 
@@ -116,7 +116,7 @@ class Closet:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
 
-    def initItemData():
+    def initItemData(self):
         id = {'store_sn': 11120011171226001}
         response = requests.get("https://www.hihigo.shop/api/v1/updateGoodsInfo",params=id)
         data = response.json()
@@ -127,8 +127,8 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        # print(items)
-        
+        # print(settings.items)
+
 
     def start(self):
         # 启动后台物体识别进程
