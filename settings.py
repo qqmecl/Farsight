@@ -6,7 +6,8 @@ scale_port = 'COM1'
 num_cameras = 4
 http_port = 5000
 
-WELCOME_PAGE = 0x0E
+# WELCOME_PAGE = 0x0E
+WELCOME_PAGE = 0x0D
 # WELCOME_PAGE = 0x33
 usb_cameras=["/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:9:1.0-video-index0",
@@ -30,6 +31,8 @@ items = {
     '003003': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
 }
 
+
+    
 # TODO: 改成从服务器获取，或者从本地文件读取
 #新方式下，统一使用条形码对应的id
 # items = {

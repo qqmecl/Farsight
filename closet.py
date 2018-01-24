@@ -111,10 +111,25 @@ class Closet:
 
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
-        
+        self.initItemData()
+
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
+
+    def initItemData():
+        id = {'store_sn': 11120011171226001}
+        response = requests.get("https://www.hihigo.shop/api/v1/updateGoodsInfo",params=id)
+        data = response.json()
+        result = {}
+        for res in data:
+            a = float(res['price'])
+            b = float(res['weight'])
+            c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
+            result[res['goods_code']] = c
+        settings.items = result
+        # print(items)
+        
 
     def start(self):
         # 启动后台物体识别进程

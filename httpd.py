@@ -65,9 +65,22 @@ class AuthorizationHandler(tornado.web.RequestHandler):
         else:
             self.write(json.dumps(dict(message='bad secret', data=dict(status=-1))))
 
+class DataHandler(tornado.web.RequestHandler):
+    def post(self):
+        data = json.loads(tornado.escape.json_decode(self.request.body))
+        result = {}
+        for res in data:
+            a = float(res['price'])
+            b = float(res['weight'])
+            c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
+            result[res['goods_code']] = c
+        settings.items = result
+        print(settings.items)
+        self.write('friendly user!')
 
 def make_http_app(closet):
     return tornado.web.Application([
         (r"/", MainHandler),
         (r"/door", AuthorizationHandler, dict(closet=closet)),
+        (r"/data", DataHandler),
     ])
