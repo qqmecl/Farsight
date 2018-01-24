@@ -74,9 +74,10 @@ class Closet:
         dict(trigger='close_door_success', source=['left-door-detecting', 'right-door-detecting'], dest='processing-order'),
         
         dict(trigger='order_process_success', source='processing-order', dest='standby'),
+
         dict(trigger='restock_authorize_success', source='standby', dest='authorized-restock'),
-        dict(trigger='restock_open_door_success', source='authorized-restock', dest='restocking'),
-        dict(trigger='restock_success', source='restocking', dest='standby')
+        dict(trigger='restock_close_door_success', source='authorized-restock', dest='standby')
+        #dict(trigger='restock_success', source='restocking', dest='standby')
     ]
 
     def __init__(self, **config):
@@ -221,6 +222,34 @@ class Closet:
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update, 12)#50 fps
         self.updateScheduler.start()
         #self._start_imageprocessing()
+
+    def authorize_operator(self, token, side):
+        '''
+            用户授权开启一边的门，会解锁对应的门，并且让各个子进程进入工作状态
+        '''
+        try:
+            self.restock_authorize_success()
+            # if side == self.IO.doorLock.LEFT_DOOR:
+            #     self.authorization_left_success()
+            # else:
+            #     self.authorization_right_success()
+        except transitions.core.MachineError:
+            self.logger.warn('状态转换错误!!')
+            return
+
+        self.mode = "operator"
+
+        self.IO.unlock(side)#开对应门锁
+
+        self.logger.info('用户已经打开锁')
+
+        self.curSide = side
+
+        print("curside is: ",self.curSide)#default is left side
+
+        door_check = functools.partial(self._check_door_close)
+        self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
+        self.check_door_close_callback.start()
 
 
     def adjust_items(self,tup):
@@ -412,7 +441,19 @@ class Closet:
             检查门是否关闭，此时只是关上了门，并没有真正锁上门
         '''
         if not self.IO.is_door_open(self.curSide):
+
+
             self.close_door_success()
+
+            self.check_door_close_callback.stop()
+
+            self.logger.info(self.state)
+
+            self.logger.info('用户已经关上门')
+
+            if self.mode == "operator":
+                self.restock_close_door_success()
+                return
 
             reset = functools.partial(self._delay_print)
             tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
@@ -420,12 +461,7 @@ class Closet:
             self.updateScheduler.stop()
 
             self._stop_imageprocessing()
-
-            self.logger.info(self.state)
-
-            self.logger.info('用户已经关上门')
-            self.check_door_close_callback.stop()
-
+            
             #eliminate empty order
             # if self.cart.as_order()["data"] != {}:
             #     self.logger.info(self.cart.as_order())
