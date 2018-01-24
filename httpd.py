@@ -57,7 +57,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
                         self.closet.authorize(token=token, side=DoorLockHandler.LEFT_DOOR)
                     else:
                         self.closet.authorize(token=token, side=DoorLockHandler.RIGHT_DOOR)
-                elif role == 'operator':
+                elif role == 'worker':
                     # 配货员逻辑，同时解锁两边门
                     self.closet.authorize_operator()
 
