@@ -120,7 +120,7 @@ class Closet:
 
     def initItemData():
         import utils
-        id = {'store_sn': utils.get_mac_address()}
+        id = {'uuid': utils.get_mac_address()}
         response = requests.get("https://www.hihigo.shop/api/v1/updateGoodsInfo",params=id)
         data = response.json()
         result = {}
