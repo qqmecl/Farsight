@@ -58,8 +58,13 @@ class AuthorizationHandler(tornado.web.RequestHandler):
                     else:
                         self.closet.authorize(token=token, side=DoorLockHandler.RIGHT_DOOR)
                 elif role == 'worker':
+                    #self.write(role)
                     # 配货员逻辑，同时解锁两边门
-                    self.closet.authorize_operator()
+                    #self.closet.authorize_operator()
+                    if side == 'left':
+                        self.closet.authorize_operator(token=token, side=DoorLockHandler.LEFT_DOOR)
+                    else:
+                        self.closet.authorize_operator(token=token, side=DoorLockHandler.RIGHT_DOOR)
 
                 self.write(json.dumps(dict(message='open sesame', data=dict(status=1))))
         else:
