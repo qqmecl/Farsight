@@ -111,14 +111,16 @@ class Closet:
 
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
-        # self.initItemData()
 
+        self.initItemData()
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
 
-    def initItemData(self):
-        id = {'store_sn': 11120011171226001}
+
+    def initItemData():
+        import utils
+        id = {'store_sn': utils.get_mac_address()}
         response = requests.get("https://www.hihigo.shop/api/v1/updateGoodsInfo",params=id)
         data = response.json()
         result = {}
