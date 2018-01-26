@@ -31,7 +31,7 @@ items = {
     '003003': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
 }
 
-
+init_url = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
     
 # TODO: 改成从服务器获取，或者从本地文件读取
 #新方式下，统一使用条形码对应的id

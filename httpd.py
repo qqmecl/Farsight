@@ -19,12 +19,11 @@ class AuthorizationHandler(tornado.web.RequestHandler):
         - 在生产环境中不相应 GET 请求
         - 修改鉴权算法，不使用写死的 SECRET_KEY（可以先使用 SECRET_KEY + Nonce + Timestamp 签名验证）
     '''
-    def initialize(self, closet, secretData):
+    def initialize(self, closet):
         self.closet = closet
-        self.secretData = secretData
+        self.secretData = secretPassword()
     
-    @staticmethod
-    def parseData(psData):
+    def parseData(self, psData):
         x = self.secretData.aes_cbc_decrypt(psData)
         params = x.split('&')
         paramsDict = {}
@@ -34,14 +33,15 @@ class AuthorizationHandler(tornado.web.RequestHandler):
         return paramsDict
 
     def get(self):
-        secretCode = self.get_query_argument('rps')
-        paramsDict = parseData(secretCode)
+        secretCode = (self.request.body).decode()
+        paramsDict = self.parseData(secretCode)
         secret = paramsDict.get('secret')
-        side = paramsDict.get('side', left)
+        side = paramsDict.get('side', 'left')
         token = paramsDict.get('token')
-        role = paramsDict.get('role', user)
+        role = paramsDict.get('role', 'user')
         itemId = paramsDict.get('itemId', '0000')
         num = int(paramsDict.get('num', 1))
+        print(secret, side, token, role, itemId, num)
         #1代表加
         #0代表减
         # "product"
@@ -51,13 +51,15 @@ class AuthorizationHandler(tornado.web.RequestHandler):
     def post(self):
         # print(self.request.body)
         data = (self.request.body).decode()
-        paramsDict = parseData(data)
+        paramsDict = self.parseData(data)
+        print(paramsDict)
         secret = paramsDict.get('secret')
         side = paramsDict.get('side', 'left')
         token = paramsDict.get('token')
         role = paramsDict.get('role', 'user')
         itemId = paramsDict.get('itemId', '000')
         num = int(paramsDict.get('num', 0))
+        print(secret, side, token, role, itemId, num)
         # print(data)
         # print(data.get('itemId','000'))
         self._handle_door(secret, side, token,itemId,num, role)
@@ -103,6 +105,6 @@ class DataHandler(tornado.web.RequestHandler):
 def make_http_app(closet):
     return tornado.web.Application([
         (r"/", MainHandler),
-        (r"/door", AuthorizationHandler, dict(closet=closet, secret = secretPassword())),
-        (r"/data", DataHandler),
+        (r"/door", AuthorizationHandler, dict(closet=closet)),
+        (r"/data", DataHandler)
     ])

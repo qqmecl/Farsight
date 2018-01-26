@@ -5,6 +5,11 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 import base64
+import uuid
+
+def get_mac_address(): 
+	mac=uuid.UUID(int = uuid.getnode()).hex[-12:].upper()
+	return ":".join([mac[e:e+2] for e in range(0,11,2)])
 
 # 128bits block size
 class secretPassword():
@@ -59,12 +64,10 @@ class secretPassword():
         real_content = unpadder.update(dec_content) + unpadder.finalize()
         return real_content.decode()
 
-    def get_mac_address(): 
-    	mac=uuid.UUID(int = uuid.getnode()).hex[-12:].upper()
-    	return ":".join([mac[e:e+2] for e in range(0,11,2)])
+    
 
 if __name__ == '__main__':
     b = secretPassword()
-    x = b.aes_cbc_encrypt('did=12345dg&time=1516871772588&version=1')
+    x = b.aes_cbc_encrypt('secret=dfss&side=fgd&num=1&token=fgdf&itemId=yrthyt')
     print(x)
     print(b.aes_cbc_decrypt(x))

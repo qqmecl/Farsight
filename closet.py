@@ -120,11 +120,13 @@ class Closet:
 
 
 
-    def initItemData():
+    def initItemData(self):
         import utils
         id = {'uuid': utils.get_mac_address()}
-        response = requests.get("https://www.hihigo.shop/api/v1/updateGoodsInfo",params=id)
+        response = requests.get(settings.init_url,params=id)
+        print(response)
         data = response.json()
+        print(data)
         result = {}
         for res in data:
             a = float(res['price'])
