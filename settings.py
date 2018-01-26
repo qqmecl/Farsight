@@ -17,7 +17,7 @@ usb_cameras=["/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
 
 #旧方式下的随机id体系
 items = {
-    '001001': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
+    '001001': dict(name='农夫山泉矿泉水', price=1.0, weight=575.0),
     '002004': dict(name='美汁源果粒橙', price=5.0, weight=487.0),
     '006001': dict(name='红牛', price=8.0, weight=298.0),
     '007001': dict(name='脉动', price=6.5, weight=546.0),

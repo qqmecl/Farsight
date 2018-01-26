@@ -210,7 +210,7 @@ TensorFlow 进程也因为饥饿进入等待状态。
 
     1.确保网管配置好工控机的ssh服务器及花生壳域名
 
-    2.安装 环境配置/Anaconda3-5.0.0-Linux-x86_64.sh
+    2.安装 环境配置/Miniconda3-latest-Linux-x86_64.sh
 
     3.使用pip install pyserial transitions setproctitle tornado opencv-python
 
