@@ -271,7 +271,6 @@ class Closet:
             if self.open_door_time_out <= 0:
                 #已经检查足够多次，重置状态机，并且直接返回
                 print('超时未开门')
-
                 self.door_open_timed_out()
 
                 print(self.state)
@@ -279,6 +278,8 @@ class Closet:
                 self.open_door_time_out = 300#which means 120*12ms = 8s
 
                 self.IO.change_to_welcome_page()
+
+                self.updateScheduler.stop()
                 return
 
             
