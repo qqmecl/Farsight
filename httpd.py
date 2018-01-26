@@ -1,10 +1,10 @@
 import tornado.web
 from serial_handler.door_lock import DoorLockHandler
 import json
+import settings
 
 HTTP_PORT = 8888
 SECRET_KEY = "grtrgewfgvs"  # 和原来代码一样，写死了先
-
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -58,8 +58,13 @@ class AuthorizationHandler(tornado.web.RequestHandler):
                     else:
                         self.closet.authorize(token=token, side=DoorLockHandler.RIGHT_DOOR)
                 elif role == 'worker':
+                    #self.write(role)
                     # 配货员逻辑，同时解锁两边门
-                    self.closet.authorize_operator()
+                    #self.closet.authorize_operator()
+                    if side == 'left':
+                        self.closet.authorize_operator(token=token, side=DoorLockHandler.LEFT_DOOR)
+                    else:
+                        self.closet.authorize_operator(token=token, side=DoorLockHandler.RIGHT_DOOR)
 
                 self.write(json.dumps(dict(message='open sesame', data=dict(status=1))))
         else:
@@ -76,6 +81,7 @@ class DataHandler(tornado.web.RequestHandler):
             result[res['goods_code']] = c
         settings.items = result
         print(settings.items)
+        # print("get result")
         self.write('friendly user!')
 
 def make_http_app(closet):

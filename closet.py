@@ -22,7 +22,7 @@ import json
 
 from setproctitle import setproctitle
 
-# import settings
+import settings
 from serial_handler.io_controller import IO_Controller
  
 from detect_result import DetectResult 
@@ -111,14 +111,16 @@ class Closet:
 
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
+
         self.initItemData()
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
 
+
     def initItemData():
         import utils
-        id = {'store_sn': utils.get_mac_address()}
+        id = {'uuid': utils.get_mac_address()}
         response = requests.get("https://www.hihigo.shop/api/v1/updateGoodsInfo",params=id)
         data = response.json()
         result = {}
@@ -128,8 +130,8 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        # print(items)
-        
+        # print(settings.items)
+
 
     def start(self):
         # 启动后台物体识别进程
@@ -205,6 +207,8 @@ class Closet:
 
         # self.logger.info(self.state)
 
+        self.mode ="normal_mode"
+        
         self.beforeScaleVal = self.IO.get_scale_val()
 
         self.IO.say_welcome()#发声
@@ -237,7 +241,7 @@ class Closet:
             self.logger.warn('状态转换错误!!')
             return
 
-        self.mode = "operator"
+        self.mode = "operator_mode"
 
         self.IO.unlock(side)#开对应门锁
 
@@ -443,35 +447,25 @@ class Closet:
         '''
         if not self.IO.is_door_open(self.curSide):
 
-
-            self.close_door_success()
-
             self.check_door_close_callback.stop()
 
             self.logger.info(self.state)
 
             self.logger.info('用户已经关上门')
 
-            if self.mode == "operator":
+            if self.mode == "operator_mode":
+
                 self.restock_close_door_success()
                 return
+            
+            self.close_door_success()
 
-            reset = functools.partial(self._delay_print)
+            reset = functools.partial(self._delay_do_order)
             tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
 
             self.updateScheduler.stop()
 
             self._stop_imageprocessing()
-            
-            #eliminate empty order
-            # if self.cart.as_order()["data"] != {}:
-            #     self.logger.info(self.cart.as_order())
-                
-            #     # 发送订单到中央服务
-            #     requests.post(Closet.ORDER_URL, data=json.dumps(self.cart.as_order()))
-            #     self.order_process_success()
-            # else:
-            #     self.order_process_success()
 
             self.IO.say_goodbye()
             self.IO.change_to_processing_page()
