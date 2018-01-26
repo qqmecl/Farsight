@@ -2,6 +2,7 @@ import tornado.web
 from serial_handler.door_lock import DoorLockHandler
 import json
 import settings
+from utils import secretPassword
 
 HTTP_PORT = 8888
 SECRET_KEY = "grtrgewfgvs"  # 和原来代码一样，写死了先
@@ -18,18 +19,29 @@ class AuthorizationHandler(tornado.web.RequestHandler):
         - 在生产环境中不相应 GET 请求
         - 修改鉴权算法，不使用写死的 SECRET_KEY（可以先使用 SECRET_KEY + Nonce + Timestamp 签名验证）
     '''
-    def initialize(self, closet):
+    def initialize(self, closet, secretData):
         self.closet = closet
+        self.secretData = secretData
+    
+    @staticmethod
+    def parseData(psData):
+        x = self.secretData.aes_cbc_decrypt(psData)
+        params = x.split('&')
+        paramsDict = {}
+        for i in params:
+            j = i.split('=')
+            paramsDict[j[0]] = j[1]
+        return paramsDict
 
     def get(self):
-        secret = self.get_query_argument('secret')
-        side = self.get_query_argument('side', 'left')
-        role = self.get_query_argument('role', 'user')
-        token = self.get_query_argument('token')
-        
-        itemId = self.get_query_argument('itemId', '0000')
-        num = self.get_query_argument('num',1)
-
+        secretCode = self.get_query_argument('rps')
+        paramsDict = parseData(secretCode)
+        secret = paramsDict.get('secret')
+        side = paramsDict.get('side', left)
+        token = paramsDict.get('token')
+        role = paramsDict.get('role', user)
+        itemId = paramsDict.get('itemId', '0000')
+        num = int(paramsDict.get('num', 1))
         #1代表加
         #0代表减
         # "product"
@@ -38,15 +50,19 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 
     def post(self):
         # print(self.request.body)
-        data = tornado.escape.json_decode(self.request.body)
+        data = (self.request.body).decode()
+        paramsDict = parseData(data)
+        secret = paramsDict.get('secret')
+        side = paramsDict.get('side', 'left')
+        token = paramsDict.get('token')
+        role = paramsDict.get('role', 'user')
+        itemId = paramsDict.get('itemId', '000')
+        num = int(paramsDict.get('num', 0))
         # print(data)
         # print(data.get('itemId','000'))
+        self._handle_door(secret, side, token,itemId,num, role)
 
-        self._handle_door(data['secret'], data.get('side', 'left'), 
-            data['token'], data.get('itemId','000'),
-            data.get('num',0),data.get('role', 'user'))
-
-    def _handle_door(self, secret, side, token,itemId,num,role='user'):
+    def _handle_door(self, secret, side, token, itemId, num, role='user'):
         if secret == SECRET_KEY:
             if token == "product":
                 # print("adjust: ",itemId,num)
@@ -87,6 +103,6 @@ class DataHandler(tornado.web.RequestHandler):
 def make_http_app(closet):
     return tornado.web.Application([
         (r"/", MainHandler),
-        (r"/door", AuthorizationHandler, dict(closet=closet)),
+        (r"/door", AuthorizationHandler, dict(closet=closet, secret = secretPassword())),
         (r"/data", DataHandler),
     ])

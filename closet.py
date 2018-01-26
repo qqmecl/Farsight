@@ -27,6 +27,7 @@ from serial_handler.io_controller import IO_Controller
  
 from detect_result import DetectResult 
 import time
+from utils import secretPassword
 
 class Closet:
     '''
@@ -83,6 +84,7 @@ class Closet:
     def __init__(self, **config):
         self.logger = multiprocessing.get_logger()
         self.logger.setLevel(logging.INFO)
+        self.secretPassword = secretPassword()
 
         self.input_queues = [ Queue(maxsize=config['queue_size'])]*4
 
@@ -433,8 +435,13 @@ class Closet:
             if self.cart.as_order()["data"] != {}:
                 self.logger.info(self.cart.as_order())
                 
+                str1 = self.cart.as_order()
+                strData = 'data=' + str1['data'] + '&token=' + str1['token'] + '&code=' + str1['code'] + 
+                          '&start=' + str1['weight']['start'] + '&final=' + str1['weight']['final']
+                
+                x = self.secretPassword.aes_cbc_encrypt(strData)
                 # 发送订单到中央服务
-                requests.post(Closet.ORDER_URL, data=json.dumps(self.cart.as_order()))
+                requests.post(Closet.ORDER_URL, data=x)
                 self.order_process_success()
             else:
                 self.order_process_success()
