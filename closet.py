@@ -437,8 +437,8 @@ class Closet:
                 self.logger.info(self.cart.as_order())
                 
                 str1 = self.cart.as_order()
-                strData = 'data=' + str1['data'] + '&token=' + str1['token'] + '&code=' + str1['code'] + 
-                          '&start=' + str1['weight']['start'] + '&final=' + str1['weight']['final']
+                strData = 'data=' + str1['data'] + '&token=' + str1['token'] + '&code=' + str1['code'] + '&start=' \
+                          + str1['weight']['start'] + '&final=' + str1['weight']['final']
                 
                 x = self.secretPassword.aes_cbc_encrypt(strData)
                 # 发送订单到中央服务
