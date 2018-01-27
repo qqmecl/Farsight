@@ -16,17 +16,19 @@ import functools
 import transitions
 from transitions import Machine
 import queue
+import os  # 为视频输出文件创造新的Output文件夹
 
 import requests
 import json
 
 from setproctitle import setproctitle
 
-# import settings
+import settings
 from serial_handler.io_controller import IO_Controller
  
 from detect_result import DetectResult 
 import time
+from utils import secretPassword
 
 class Closet:
     '''
@@ -74,14 +76,16 @@ class Closet:
         dict(trigger='close_door_success', source=['left-door-detecting', 'right-door-detecting'], dest='processing-order'),
         
         dict(trigger='order_process_success', source='processing-order', dest='standby'),
+
         dict(trigger='restock_authorize_success', source='standby', dest='authorized-restock'),
-        dict(trigger='restock_open_door_success', source='authorized-restock', dest='restocking'),
-        dict(trigger='restock_success', source='restocking', dest='standby')
+        dict(trigger='restock_close_door_success', source='authorized-restock', dest='standby')
+        #dict(trigger='restock_success', source='restocking', dest='standby')
     ]
 
     def __init__(self, **config):
         self.logger = multiprocessing.get_logger()
         self.logger.setLevel(logging.INFO)
+        self.secretPassword = secretPassword()
 
         self.input_queues = [ Queue(maxsize=config['queue_size'])]*4
 
@@ -110,9 +114,28 @@ class Closet:
 
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
-        
+
+        self.initItemData()
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
+
+
+
+    def initItemData(self):
+        import utils
+        id = {'uuid': utils.get_mac_address()}
+        response = requests.get(settings.init_url,params=id)
+        print(response)
+        data = response.json()
+        print(data)
+        result = {}
+        for res in data:
+            a = float(res['price'])
+            b = float(res['weight'])
+            c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
+            result[res['goods_code']] = c
+        settings.items = result
+        # print(settings.items)
 
 
     def start(self):
@@ -135,10 +158,12 @@ class Closet:
         # 自检
         # selfcheck()
 
-        # 启动摄像头
+        # 启动摄像头，创造Output文件夹
         self.camera_ctrl_queue = Queue(1)
         cam_handler = CameraHandler(self.camera_ctrl_queue, self.input_queues)
 
+        if not os.path.exists('./Output'):
+            os.makedirs('./Output')
 
         # TODO:
         # 使用 Process 需要处理可能存在的进程崩溃问题
@@ -189,6 +214,8 @@ class Closet:
 
         # self.logger.info(self.state)
 
+        self.mode ="normal_mode"
+        
         self.beforeScaleVal = self.IO.get_scale_val()
 
         self.IO.say_welcome()#发声
@@ -206,6 +233,34 @@ class Closet:
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update, 12)#50 fps
         self.updateScheduler.start()
         #self._start_imageprocessing()
+
+    def authorize_operator(self, token, side):
+        '''
+            用户授权开启一边的门，会解锁对应的门，并且让各个子进程进入工作状态
+        '''
+        try:
+            self.restock_authorize_success()
+            # if side == self.IO.doorLock.LEFT_DOOR:
+            #     self.authorization_left_success()
+            # else:
+            #     self.authorization_right_success()
+        except transitions.core.MachineError:
+            self.logger.warn('状态转换错误!!')
+            return
+
+        self.mode = "operator_mode"
+
+        self.IO.unlock(side)#开对应门锁
+
+        self.logger.info('用户已经打开锁')
+
+        self.curSide = side
+
+        print("curside is: ",self.curSide)#default is left side
+
+        door_check = functools.partial(self._check_door_close)
+        self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
+        self.check_door_close_callback.start()
 
 
     def adjust_items(self,tup):
@@ -227,7 +282,6 @@ class Closet:
             if self.open_door_time_out <= 0:
                 #已经检查足够多次，重置状态机，并且直接返回
                 print('超时未开门')
-
                 self.door_open_timed_out()
 
                 print(self.state)
@@ -235,6 +289,8 @@ class Closet:
                 self.open_door_time_out = 300#which means 120*12ms = 8s
 
                 self.IO.change_to_welcome_page()
+
+                self.updateScheduler.stop()
                 return
 
             
@@ -385,8 +441,13 @@ class Closet:
             if self.cart.as_order()["data"] != {}:
                 self.logger.info(self.cart.as_order())
                 
+                str1 = self.cart.as_order()
+                strData = 'data=' + str1['data'] + '&token=' + str1['token'] + '&code=' + str1['code'] + '&start=' \
+                          + str1['weight']['start'] + '&final=' + str1['weight']['final']
+                
+                x = self.secretPassword.aes_cbc_encrypt(strData)
                 # 发送订单到中央服务
-                requests.post(Closet.ORDER_URL, data=json.dumps(self.cart.as_order()))
+                requests.post(Closet.ORDER_URL, data=x)
                 self.order_process_success()
             else:
                 self.order_process_success()
@@ -397,29 +458,26 @@ class Closet:
             检查门是否关闭，此时只是关上了门，并没有真正锁上门
         '''
         if not self.IO.is_door_open(self.curSide):
+
+            self.check_door_close_callback.stop()
+
+            self.logger.info(self.state)
+
+            self.logger.info('用户已经关上门')
+
+            if self.mode == "operator_mode":
+
+                self.restock_close_door_success()
+                return
+            
             self.close_door_success()
 
-            reset = functools.partial(self._delay_print)
+            reset = functools.partial(self._delay_do_order)
             tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
 
             self.updateScheduler.stop()
 
             self._stop_imageprocessing()
-
-            self.logger.info(self.state)
-
-            self.logger.info('用户已经关上门')
-            self.check_door_close_callback.stop()
-
-            #eliminate empty order
-            # if self.cart.as_order()["data"] != {}:
-            #     self.logger.info(self.cart.as_order())
-                
-            #     # 发送订单到中央服务
-            #     requests.post(Closet.ORDER_URL, data=json.dumps(self.cart.as_order()))
-            #     self.order_process_success()
-            # else:
-            #     self.order_process_success()
 
             self.IO.say_goodbye()
             self.IO.change_to_processing_page()

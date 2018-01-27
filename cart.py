@@ -53,10 +53,12 @@ class Cart:
             转换成下单所需的格式
             TODO: 机器对应的 code 应该从配置中读取
         '''
+        import utils
+        
         return dict(
             data=self.items,
             token=self.token,
-            code='11120011171226001',
+            code=utils.get_mac_address(),
             weight=dict(start=self.start_weight, final=self.IO.get_scale_val())
         )
 

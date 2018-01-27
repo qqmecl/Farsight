@@ -1,10 +1,11 @@
 import tornado.web
 from serial_handler.door_lock import DoorLockHandler
 import json
+import settings
+from utils import secretPassword
 
 HTTP_PORT = 8888
 SECRET_KEY = "grtrgewfgvs"  # 和原来代码一样，写死了先
-
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -20,16 +21,27 @@ class AuthorizationHandler(tornado.web.RequestHandler):
     '''
     def initialize(self, closet):
         self.closet = closet
+        self.secretData = secretPassword()
+    
+    def parseData(self, psData):
+        x = self.secretData.aes_cbc_decrypt(psData)
+        params = x.split('&')
+        paramsDict = {}
+        for i in params:
+            j = i.split('=')
+            paramsDict[j[0]] = j[1]
+        return paramsDict
 
     def get(self):
-        secret = self.get_query_argument('secret')
-        side = self.get_query_argument('side', 'left')
-        role = self.get_query_argument('role', 'user')
-        token = self.get_query_argument('token')
-        
-        itemId = self.get_query_argument('itemId', '0000')
-        num = self.get_query_argument('num',1)
-
+        secretCode = (self.request.body).decode()
+        paramsDict = self.parseData(secretCode)
+        secret = paramsDict.get('secret')
+        side = paramsDict.get('side', 'left')
+        token = paramsDict.get('token')
+        role = paramsDict.get('role', 'user')
+        itemId = paramsDict.get('itemId', '0000')
+        num = int(paramsDict.get('num', 1))
+        print(secret, side, token, role, itemId, num)
         #1代表加
         #0代表减
         # "product"
@@ -38,15 +50,21 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 
     def post(self):
         # print(self.request.body)
-        data = tornado.escape.json_decode(self.request.body)
+        data = (self.request.body).decode()
+        paramsDict = self.parseData(data)
+        print(paramsDict)
+        secret = paramsDict.get('secret')
+        side = paramsDict.get('side', 'left')
+        token = paramsDict.get('token')
+        role = paramsDict.get('role', 'user')
+        itemId = paramsDict.get('itemId', '000')
+        num = int(paramsDict.get('num', 0))
+        print(secret, side, token, role, itemId, num)
         # print(data)
         # print(data.get('itemId','000'))
+        self._handle_door(secret, side, token,itemId,num, role)
 
-        self._handle_door(data['secret'], data.get('side', 'left'), 
-            data['token'], data.get('itemId','000'),
-            data.get('num',0),data.get('role', 'user'))
-
-    def _handle_door(self, secret, side, token,itemId,num,role='user'):
+    def _handle_door(self, secret, side, token, itemId, num, role='user'):
         if secret == SECRET_KEY:
             if token == "product":
                 # print("adjust: ",itemId,num)
@@ -57,17 +75,36 @@ class AuthorizationHandler(tornado.web.RequestHandler):
                         self.closet.authorize(token=token, side=DoorLockHandler.LEFT_DOOR)
                     else:
                         self.closet.authorize(token=token, side=DoorLockHandler.RIGHT_DOOR)
-                elif role == 'operator':
+                elif role == 'worker':
+                    #self.write(role)
                     # 配货员逻辑，同时解锁两边门
-                    self.closet.authorize_operator()
+                    #self.closet.authorize_operator()
+                    if side == 'left':
+                        self.closet.authorize_operator(token=token, side=DoorLockHandler.LEFT_DOOR)
+                    else:
+                        self.closet.authorize_operator(token=token, side=DoorLockHandler.RIGHT_DOOR)
 
                 self.write(json.dumps(dict(message='open sesame', data=dict(status=1))))
         else:
             self.write(json.dumps(dict(message='bad secret', data=dict(status=-1))))
 
+class DataHandler(tornado.web.RequestHandler):
+    def post(self):
+        data = json.loads(tornado.escape.json_decode(self.request.body))
+        result = {}
+        for res in data:
+            a = float(res['price'])
+            b = float(res['weight'])
+            c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
+            result[res['goods_code']] = c
+        settings.items = result
+        print(settings.items)
+        # print("get result")
+        self.write('friendly user!')
 
 def make_http_app(closet):
     return tornado.web.Application([
         (r"/", MainHandler),
         (r"/door", AuthorizationHandler, dict(closet=closet)),
+        (r"/data", DataHandler)
     ])
