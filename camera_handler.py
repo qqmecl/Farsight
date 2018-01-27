@@ -14,6 +14,8 @@ from error import FarSightError
 DEFAULT_WIDTH = 640
 DEFAULT_HEIGHT = 480
 
+DEFAULT_FPS = 25 # 视频文件的保存帧率，还需要和图像处理帧率进行比对
+
 
 class CameraError(FarSightError):
     pass
@@ -72,6 +74,7 @@ class CameraHandler:
         self.frames_queues = frames_queues
         self.timeout = CameraHandler.BUSY_TIMEOUT
         self.cameras = {}
+        self.videoWriter = {}
 
     def start(self):
         # 忽略 SIGINT，由父进程处理
@@ -108,9 +111,17 @@ class CameraHandler:
             # print("Cameras are:   ",cameras)
             for src in cameras:
                 self.cameras[src].resume_sending()
+                video_FileName =  './Output/Video__'\
+                                + str(src)\
+                                + '__'\
+                                + time.strftime("%Y-%m-%d %H-%M-%S", time.localtime( time.time() ) )\
+                                + '.avi'             
+                self.videoWriter[src] = cv2.VideoWriter(video_FileName, cv2.VideoWriter_fourcc(*'XVID')
+                                    , DEFAULT_FPS, (DEFAULT_WIDTH,DEFAULT_HEIGHT))#每个启动的摄像头有一个保存类
         elif cmd == 'stop':
             for src in cameras:
                 self.cameras[src].pause_sending()
+                del self.videoWriter[src]  # 摄像头停止活动后销毁视频保存类
 
     def _sendframe(self, src):
         '''
@@ -125,6 +136,7 @@ class CameraHandler:
             data = self.cameras[src].read()
             # print("send frame src is: ",src)
             self.frames_queues[src].put((data,src), timeout=1)
+            self.videoWriter[src].write(data)  # 将每一帧写入视频文件中
         except queue.Full:
             print('[FULL] input_q')
             pass

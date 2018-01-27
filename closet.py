@@ -16,6 +16,7 @@ import functools
 import transitions
 from transitions import Machine
 import queue
+import os  # 为视频输出文件创造新的Output文件夹
 
 import requests
 import json
@@ -160,10 +161,12 @@ class Closet:
         # 自检
         # selfcheck()
 
-        # 启动摄像头
+        # 启动摄像头，创造Output文件夹
         self.camera_ctrl_queue = Queue(1)
         cam_handler = CameraHandler(self.camera_ctrl_queue, self.input_queues)
 
+        if not os.path.exists('./Output'):
+            os.makedirs('./Output')
 
         # TODO:
         # 使用 Process 需要处理可能存在的进程崩溃问题

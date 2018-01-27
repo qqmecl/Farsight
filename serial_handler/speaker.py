@@ -9,7 +9,7 @@ class Speaker:#简单触发器
         控制扬声器发声
     '''
     def __init__(self,port="/dev/ttyS0"):
-        rate = 115200
+        rate = 9600
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
 
     def do_protocol_5_byMode(self,addr,isOpen):#设置有宽度脉冲进行触发
