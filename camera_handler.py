@@ -74,6 +74,7 @@ class CameraHandler:
         self.frames_queues = frames_queues
         self.timeout = CameraHandler.BUSY_TIMEOUT
         self.cameras = {}
+        self.videoWriter = {}
 
     def start(self):
         # 忽略 SIGINT，由父进程处理
