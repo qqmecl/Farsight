@@ -215,8 +215,8 @@ if __name__ == '__main__':
     # screen.do_protocol_6(Screen.CART_TOTAL_ADDRESS,0)
 
     
-    screen.change_to_page(Screen.INVENTORY_PAGE)
-    # screen.change_to_page()
+    # screen.change_to_page(Screen.INVENTORY_PAGE)
+    # screen.change_to_page(Screen.WELCOME_PAGE)
     
 
     # for i in range(7):
@@ -225,8 +225,9 @@ if __name__ == '__main__':
     # screen.update_static_info()
 
     
+    # screen.do_protocol_6(Screen.CART_COUNT_ADDRESS, 12)
 
-    # screen.update_item(True,"007001")
+    # screen.update_item(True,"6921168509256")
     # screen.update_item(True,"007001")
     # screen.update_item(True,"007001")
 

@@ -5,7 +5,7 @@ from multiprocessing import Queue, Pool
 import queue
 from setproctitle import setproctitle
 import time
-import settings
+# import settings
 # from object_detection.utils import label_map_util
 # from object_detection.utils import visualization_utils as vis_util
 # from detection_helper import draw_boxes_and_labels
@@ -36,19 +36,41 @@ for points in FILTER_BASE_LINE:
     b = points[1][1]-k*points[1][0]
     LINE_EQUATION.append([k,b])
 
+
+init_url = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
+    
+
+transfer_table={
+    '001001':'6921168509256',
+    '002004':'6956416200067',
+    '006001':'6920202888883',
+    '007001':'6902538006100',
+    '008001':'6921581596048',
+    '009001':'6920459989463',
+    '010001':'4891028705949',
+    '002001':'6901939621271',
+    '002002':'6901939621608',
+    '003001':'6925303730574',
+    '003002':'6925303754952',
+    '003003':'6925303714857',
+}
+
+
 '''
     #为简化程序结构，只在此ObjectDetector中执行识别单帧的任务
     #此处使用queue实现进程间通信
     实际检测物品的代码，跑在子进程中
 '''
 class ObjectDetector:
-    def __init__(self, input_q, output_q,detection_queue):
+    def __init__(self, input_q, initItems,detection_queue):
         setproctitle('[farsight] TensorFlow 图像处理进程')
         #忽略 SIGINT，由父进程处理
         signal.signal(signal.SIGINT, signal.SIG_IGN)
         
         self.detectionNet = cv.dnn.readNetFromTensorflow(MODEL_PATH,DESCRIPTION_PATH)
 
+        self.initItems = initItems
+        
         #Temporary
         self.classNames = {0: 'background',
                   1: '010001', 2: '002004', 3: '006001', 4: '007001', 5: '008001', 6: '009001',
@@ -112,14 +134,24 @@ class ObjectDetector:
             # YAxis = yRightTop
             try:
                 itemId = self.classNames[class_id]
+                #print(itemId)
+
+                if transfer_table[itemId]:
+                    itemId = transfer_table[itemId]
+
+                # print("itemId is: ",itemId)
+
                 if confidence > 0.8:
                     location = self.getDetectPos(XAxis,YAxis,index)
                     if self.passBaseLine(index,location):
-                        print("confidence is: ",confidence)
+                        # print("confidence is: ",confidence)
+                        print("itemId is: ",itemId)
+                        # print(settings.items)
+
                         if index %2 == 0:
-                            print("上摄像头: ",settings.items[itemId]["name"],XAxis,cur_time)
+                            print("上摄像头: ",self.initItems[itemId]["name"],XAxis,cur_time)
                         else:
-                            print("下摄像头: ",settings.items[itemId]["name"],XAxis,cur_time)
+                            print("下摄像头: ",self.initItems[itemId]["name"],XAxis,cur_time)
                         print("----------------")
                         print("                ")
                         results.append((index,confidence,itemId,location,cur_time))
@@ -152,5 +184,3 @@ if __name__ == '__main__':
     pool = Pool(1, ObjectDetector, (input_q, detection_q, 1))
 
     detect = object_detector(input_q, detection_q)
-
-    

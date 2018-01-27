@@ -115,6 +115,7 @@ class Closet:
 
 
         self.initItemData()
+
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
@@ -124,9 +125,9 @@ class Closet:
         import utils
         id = {'uuid': utils.get_mac_address()}
         response = requests.get(settings.init_url,params=id)
-        print(response)
+        # print(response)
         data = response.json()
-        print(data)
+        # print(data)
         result = {}
         for res in data:
             a = float(res['price'])
@@ -138,6 +139,8 @@ class Closet:
 
 
     def start(self):
+        # print("initiate start by settings.items",settings.items)
+
         # 启动后台物体识别进程
         object_detection_pools = []
 
@@ -146,9 +149,9 @@ class Closet:
         indexs = self.left_cameras + self.right_cameras
 
         # 每个摄像头启动一个进程池
-        for input_q, output_q, index in zip(self.input_queues, self.output_queues, indexs):
+        for input_q, index in zip(self.input_queues, indexs):
             # print(input_q,output_q,index)
-            pool = Pool(self.num_workers, ObjectDetector, (input_q, output_q, self._detection_queue))
+            pool = Pool(self.num_workers, ObjectDetector, (input_q, settings.items, self._detection_queue))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
 
@@ -437,12 +440,28 @@ class Closet:
         else:
             if self.cart.as_order()["data"] != {}:
                 self.logger.info(self.cart.as_order())
+
+
+                
                 
                 str1 = self.cart.as_order()
-                strData = 'data=' + str1['data'] + '&token=' + str1['token'] + '&code=' + str1['code'] + '&start=' \
-                          + str1['weight']['start'] + '&final=' + str1['weight']['final']
-                
+                strData = json.dumps(str1)
+                print(str1)
+                #str2 = list(str1['data'].items())
+                #print('yyyyyyyyyyyy')
+                #print(str2)
+                #print(str(str1['weight']['start']))
+                #strData = 'data=' + str2[0][0] + '&num=' + str(str2[0][1]) + '&token=' + str1['token'] + '&code=' + str1['code'] + '&start=' + str(str1['weight']['start']) + '&final=' + str(str1['weight']['final'])
+                #print('tttttttttttttttttttttttt')
+                #print(strData)
+
+
                 x = self.secretPassword.aes_cbc_encrypt(strData)
+
+                print(x)
+
+
+
                 # 发送订单到中央服务
                 requests.post(Closet.ORDER_URL, data=x)
                 self.order_process_success()

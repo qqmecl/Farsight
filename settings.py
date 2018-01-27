@@ -1,3 +1,6 @@
+import requests
+from utils import get_mac_address
+
 mock_door = False
 mock_speaker = False
 mock_scale = False
@@ -5,9 +8,15 @@ mock_screen = False
 scale_port = 'COM1'
 num_cameras = 4
 http_port = 5000
-
-# WELCOME_PAGE = 0x0E
 WELCOME_PAGE = 0x0D
+
+# with open("../screen_config","r") as file:
+#     print(file.read().strip())
+#     print("next")
+#     WELCOME_PAGE = int(float(file.read().strip()))
+#     print(WELCOME_PAGE)
+    # break
+
 # WELCOME_PAGE = 0x33
 usb_cameras=["/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:9:1.0-video-index0",

@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # TODO: 使用 fork 方式似乎会导致信号捕获错乱的问题，待验证
     multiprocessing.set_start_method('spawn')#windows only spawn
     multiprocessing.log_to_stderr()
-
+    
     settings.mock_door = args.mock_door
     settings.mock_speaker = args.mock_speaker
     settings.mock_scale = args.mock_scale
