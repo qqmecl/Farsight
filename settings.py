@@ -10,11 +10,11 @@ num_cameras = 4
 http_port = 5000
 WELCOME_PAGE = 0x0D
 
-mac = {'D8:9E:F3:1D:E6:9E': 0x0C
-       'D8:9E:F3:1D:EE:7C': 0x0D
-       'D8:9E:F3:1E:13:8A': 0x33}
+mac_welcome_page = {'D8:9E:F3:1D:E6:9E': 0x0C,
+                    'D8:9E:F3:1D:EE:7C': 0x0D,
+                    'D8:9E:F3:1E:13:8A': 0x33}
 
-WELCOME_PAGE = mac.get(get_mac_address(), 'error')
+WELCOME_PAGE = mac_welcome_page.get(get_mac_address(), 'error')
 
 if WELCOME_PAGE == 'error':
     print('mac address is wrong')
