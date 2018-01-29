@@ -8,7 +8,7 @@ import base64
 import uuid
 import json
 
-def get_mac_address(): 
+def get_mac_address():
 	mac=uuid.UUID(int = uuid.getnode()).hex[-12:].upper()
 	return ":".join([mac[e:e+2] for e in range(0,11,2)])
 
@@ -38,7 +38,7 @@ class secretPassword():
         enc_content = encryptor.update(padded_data) + encryptor.finalize()
         b64 = base64.b64encode(enc_content)
         return b64.decode()
-    
+
     def aes_cbc_decrypt(self, content, key = '20607etgrttplant'):
         '''
         use AES CBC to decrypt message, using key
@@ -65,11 +65,11 @@ class secretPassword():
         real_content = unpadder.update(dec_content) + unpadder.finalize()
         return real_content.decode()
 
-    
+
 
 if __name__ == '__main__':
     b = secretPassword()
-    y = json.dumps('data=6920459989463&num=0&token=fye&code=D8:9E:F3:1D:EE:7C&start=39.46580123901367&final=39.299278259277344')
+    y = json.dumps({'secret': 'grtrgewfgvs', 'token': 'fye'})
     print(y)
     x = b.aes_cbc_encrypt('data=6902538006100&num=1&token=cb6aa5b6fbbd9acb155121c269c9f594&code=D8:9E:F3:1D:EE:7C&start=39.2799186706543&final=38.822940826416016')
     print(x)

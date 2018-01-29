@@ -10,9 +10,9 @@ num_cameras = 4
 http_port = 5000
 WELCOME_PAGE = 0x0D
 
-mac_welcome_page = {'D8:9E:F3:1D:E6:9E': 0x0C,
+mac_welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,
                     'D8:9E:F3:1D:EE:7C': 0x0D,
-                    'D8:9E:F3:1E:13:8A': 0x33}
+                    'D8:9E:F3:1E:13:8A': 0x0E}
 
 WELCOME_PAGE = mac_welcome_page.get(get_mac_address(), 'error')
 
@@ -50,7 +50,7 @@ items = {
 }
 
 init_url = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
-    
+
 # TODO: 改成从服务器获取，或者从本地文件读取
 #新方式下，统一使用条形码对应的id
 # items = {
