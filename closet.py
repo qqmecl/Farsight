@@ -25,8 +25,8 @@ from setproctitle import setproctitle
 
 import settings
 from serial_handler.io_controller import IO_Controller
- 
-from detect_result import DetectResult 
+
+from detect_result import DetectResult
 import time
 from utils import secretPassword
 
@@ -58,7 +58,7 @@ class Closet:
         dict(trigger='authorization_left_success', source='standby', dest='authorized-left'),
         dict(trigger='authorization_right_success', source='standby', dest='authorized-right'),
         dict(trigger='door_open_timed_out', source=['authorized-left', 'authorized-right', 'authorized-restock'], dest='standby'),
-        
+
         dict(trigger='open_leftdoor_success', source='authorized-left', dest='left-door-open'),
         dict(trigger='open_rightdoor_success', source='authorized-right', dest='right-door-open'),
 
@@ -74,7 +74,7 @@ class Closet:
         # - 关门之后延时锁门。似乎是硬件层面实现，无法在软件中控制。需要确认
         dict(trigger='close_door_success', source=['left-door-open', 'right-door-open'], dest='processing-order'),
         dict(trigger='close_door_success', source=['left-door-detecting', 'right-door-detecting'], dest='processing-order'),
-        
+
         dict(trigger='order_process_success', source='processing-order', dest='standby'),
 
         dict(trigger='restock_authorize_success', source='standby', dest='authorized-restock'),
@@ -218,7 +218,7 @@ class Closet:
         # self.logger.info(self.state)
 
         self.mode ="normal_mode"
-        
+
         self.beforeScaleVal = self.IO.get_scale_val()
 
         self.IO.say_welcome()#发声
@@ -296,7 +296,7 @@ class Closet:
                 self.updateScheduler.stop()
                 return
 
-            
+
             if self.IO.is_door_open(self.curSide):
                 if self.curSide == self.IO.doorLock.LEFT_DOOR:
                     self.open_leftdoor_success()
@@ -309,7 +309,7 @@ class Closet:
                 door_check = functools.partial(self._check_door_close)
                 self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
                 self.check_door_close_callback.start()
-        
+
 
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
             #此处只能通过本主进程管理控制所有的状态变化，开启摄像头发送帧进程的发送
@@ -331,7 +331,7 @@ class Closet:
                 # print("lastScaleVal is: ",self.lastScaleVal)
                 # print("curScaleVal is: ",curScaleVal)
                 self.detectResult.setEnvokeTime()
-                
+
                 print("                         ")
                 self.logger.info("------------------------------------------------")
                 self.logger.info("Detection envoked ({},{})!!!! ".format(self.lastScaleVal,curScaleVal))
@@ -342,7 +342,7 @@ class Closet:
                 #给摄像头进程发送 start 控制指令
                 self.scale_value_changed()
 
-                action = 1 
+                action = 1
                 if self.lastScaleVal - curScaleVal > 0.1:#
                     while(1):#clear all old data here.
                         try:
@@ -352,7 +352,7 @@ class Closet:
                             break
                     # print("locate before frame len is: ",COUNT)
                     action = -1 #被拿走了物品
-               
+
                 self.detectResult.reset(action,self.curSide)
                 # self.detectResult.reset(action,self.curSide,self.lastScaleVal)
                 if action == 1:#默认被放置了物品,则取走队列中的所有识别结果
@@ -368,12 +368,12 @@ class Closet:
                     self.detectResult.debugTest(forcePrint=True)
 
                     print("理论上在此之前应该识别出识别结果")
-                    
+
                     self.logger.info("locate before frame len is: "+str(COUNT))
             else:
                 self.lastScaleVal = curScaleVal
 
-        
+
         if self.state == "left-door-detecting" or self.state ==  "right-door-detecting":
             #捕捉到重量变化则开始检查是否开启算法结果验证
             self._analyse_result()
@@ -430,9 +430,9 @@ class Closet:
             else:
                 # pass
                 self.cart.remove_item(labelId)
-            
 
-    def _delay_do_order(self):
+
+    async def _delay_do_order(self):
         # print("scaleValue is: ",self.scale_statis)
         self.scale_statis=[]
 
@@ -445,8 +445,8 @@ class Closet:
                 self.logger.info(self.cart.as_order())
 
 
-                
-                
+
+
                 str1 = self.cart.as_order()
                 strData = json.dumps(str1)
                 print(str1)
@@ -466,11 +466,26 @@ class Closet:
 
 
                 # 发送订单到中央服务
-                requests.post(Closet.ORDER_URL, data=x)
+
+                poll = polling(x)
+                print(poll)
+            if poll == 'success message!':
                 self.order_process_success()
             else:
                 self.order_process_success()
 
+    #chen chen chen
+    def polling(x, timeout=5, interval=0.4):
+        starttime = datetime.datetime.now()
+        req = requests.post(Closet.ORDER_URL, data=x)
+        if req.status_code == '200':
+            return 'success message!'
+        else:
+            runtime = datetime.datetime.now() - starttime
+            if runtime.seconds >= timeout:
+                return 'failure message!'
+            time.sleep(interval)
+            polling()
 
     def _check_door_close(self):
         '''
@@ -488,7 +503,7 @@ class Closet:
 
                 self.restock_close_door_success()
                 return
-            
+
             self.close_door_success()
 
             reset = functools.partial(self._delay_do_order)
