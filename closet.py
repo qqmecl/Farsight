@@ -432,7 +432,7 @@ class Closet:
                 self.cart.remove_item(labelId)
 
 
-    async def _delay_do_order(self):
+    def _delay_do_order(self):
         # print("scaleValue is: ",self.scale_statis)
         self.scale_statis=[]
 
@@ -459,33 +459,32 @@ class Closet:
                 #print(strData)
 
 
-                x = self.secretPassword.aes_cbc_encrypt(strData)
+                self.pollData = self.secretPassword.aes_cbc_encrypt(strData)
 
-                print(x)
+                print(self.pollData)
 
 
 
                 # 发送订单到中央服务
 
-                poll = polling(x)
-                print(poll)
-            if poll == 'success message!':
+                poll = tornado.ioloop.PeriodicCallback(self.polling, 50)
+                poll.start()
+                while True:
+                    if poll == 'successMessage':
+                        poll.stop()
+                        break
+                print('response 200')
+
+            if poll == 'successMessage':
                 self.order_process_success()
             else:
                 self.order_process_success()
 
     #chen chen chen
-    def polling(x, timeout=5, interval=0.4):
-        starttime = datetime.datetime.now()
+    def polling():
         req = requests.post(Closet.ORDER_URL, data=x)
         if req.status_code == '200':
-            return 'success message!'
-        else:
-            runtime = datetime.datetime.now() - starttime
-            if runtime.seconds >= timeout:
-                return 'failure message!'
-            time.sleep(interval)
-            polling()
+            return 'successMessage'
 
     def _check_door_close(self):
         '''
