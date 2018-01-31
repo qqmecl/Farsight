@@ -112,9 +112,9 @@ class CameraHandler:
             for src in cameras:
                 self.cameras[src].resume_sending()
                 video_FileName =  './Output/Video__'\
-                                + str(src)\
-                                + '__'\
                                 + time.strftime("%Y-%m-%d %H-%M-%S", time.localtime( time.time() ) )\
+                                + '__'\
+                                + str(src)\
                                 + '.avi'             
                 self.videoWriter[src] = cv2.VideoWriter(video_FileName, cv2.VideoWriter_fourcc(*'XVID')
                                     , DEFAULT_FPS, (DEFAULT_WIDTH,DEFAULT_HEIGHT))#每个启动的摄像头有一个保存类
