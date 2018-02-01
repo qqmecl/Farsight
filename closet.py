@@ -90,11 +90,11 @@ class Closet:
         self.secretPassword = secretPassword()
 
         self.input_queues = [ Queue(maxsize=config['queue_size'])]*4
+        # self.output_queues = [ Queue(maxsize=config['queue_size'])]*4
 
-
-        self.output_queues = [ Queue(maxsize=config['queue_size'])]*4
-
-        self._detection_queue = Queue(maxsize=30*2)
+        for i in range(2):
+            queue = Queue(maxsize=20)
+            self._detection_queue.append(queue)
 
         self.open_door_time_out = settings.door_time_out#which means 80*20ms = 8s
 
@@ -109,19 +109,12 @@ class Closet:
         self.speaker_port = config['speaker_port']
         self.scale_port = config['scale_port']
         self.screen_port = config['screen_port']
-
         self.http_port = config['http_port']
-
-        self.scale_statis = []
-
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
-
-        # self.initItemData()
-
+        #self.initItemData()
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
-
 
 
     def initItemData(self):
@@ -152,8 +145,12 @@ class Closet:
         indexs = self.left_cameras + self.right_cameras
 
         # 每个摄像头启动一个进程池
+        motions = []
+        for i in range(2):
+            motions.append(MotionDetect())
+
         for input_q, index in zip(self.input_queues, indexs):
-            pool = Pool(self.num_workers, ObjectDetector, (input_q, settings.items, self._detection_queue))
+            pool = Pool(self.num_workers, ObjectDetector, (input_q, settings.items,motions,self._detection_queue[index%2]))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
 
@@ -182,7 +179,10 @@ class Closet:
         #连接串口管理器
         self.IO.start()
 
-        self.detectResult = DetectResult()
+        self.detectResults = [] 
+        for i in range(2):
+            self.detectResults.append(DetectResult())
+        
 
         # 捕获 CTRL-C
         handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
@@ -305,31 +305,42 @@ class Closet:
                 self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
                 self.check_door_close_callback.start()
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
-            #此处只能通过本主进程管理控制所有的状态变化，开启摄像头发送帧进程的发送
-            try:
-                result = self._detection_queue.get_nowait()
-                self.detectResult.checkData(result)
-                # self.frameCount += 1
-            except queue.Empty:
-                # print("empty")
-                pass
+            for i in range(2):
+                try:
+                    result = self._detection_queue[i].get_nowait()
+                    self.detectResults[i].checkData(result)
+                except queue.Empty:
+                    pass
+                detect = self.detectResults[i].getDetect()
 
-            detect = self.detectResult.getDetect()
-            #fetch detection result.
-            if len(detect) > 0:
-                direction = detect[0]["direction"]
-                id = detect[0]["id"]
-                if direction == "IN":
-                    print("Take out",settings.items[id]["name"])
-                    self.cart.remove_item(id)
-                else:
-                    print("Put back",settings.items[id]["name"])
-                    self.cart.add_item(id)
+
+                # if downNum == None:
+                #     if upNum == None:
+                #         return False
+                #     else:
+                #         return chooseDetect(isLast,upNum,upId)
+                # else:
+                #     if upNum == None:
+                #          return chooseDetect(isLast,downNum,downId)
+                #     else:
+                #         if downNum > upNum:
+                #             return chooseDetect(isLast,downNum,downId)
+                #         else:
+                #             return chooseDetect(isLast,upNum,upId)
+
+
+                if len(detect) > 0:
+                    direction = detect[0]["direction"]
+                    id = detect[0]["id"]
+                    if direction == "IN":
+                        print(i,"Take out",settings.items[id]["name"])
+                        self.cart.remove_item(id)
+                    else:
+                        print(i,"Put back",settings.items[id]["name"])
+                        self.cart.add_item(id)
 
 
     def _delay_do_order(self):
-        # print("scaleValue is: ",self.scale_statis)
-        self.scale_statis=[]
 
         now_scale = self.IO.get_scale_val()
 

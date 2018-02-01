@@ -28,6 +28,7 @@ class Queue:
 class UpDownNotMatchError(Exception):
     pass
 
+#single pipeline check about detecting.
 class DetectResult:
     def __init__(self):
         self.window = Queue(20)
@@ -72,82 +73,53 @@ class DetectResult:
             self.detect.append({"direction":"OUT","id":detectId})
             self.reset()
 
-
     def getCurrentDetection(self,isLast):
-        upId,upNum,upTime = self.getMax(True)
-        downId,downNum,downTime = self.getMax(False)
-
-        if downNum == None:
-            if upNum == None:
-                return False
-            else:
-                return chooseDetect(isLast,upNum,upId)
-        else:
-            if upNum == None:
-                 return chooseDetect(isLast,downNum,downId)
-            else:
-                if downNum > upNum:
-                    return chooseDetect(isLast,downNum,downId)
-                else:
-                    return chooseDetect(isLast,upNum,upId)
-                    
-
-    def chooseDetect(self,isLast,num,id):
-        if isLast:
-            if num > 1: # 原来是3
-                return id
-            else:
-                self.reset()
-        else:
-            now_time = time.time()
-            if now_time-self.actionTime < 0.2:
-                if num >= 2: # 原来是4
-                    return id
-            else:
+        id,num,time = self.getMaxNum()
+        if id is not None:
+            if isLast:
                 if num > 1: # 原来是3
                     return id
                 else:
                     self.reset()
+            else:
+                now_time = time.time()
+                if now_time-self.actionTime < 0.2:
+                    if num >= 2: # 原来是4
+                        return id
+                else:
+                    if num > 1: # 原来是3
+                        return id
+                    else:
+                        self.reset()
         return None
-
 
     def loadData(self,detects):
         for val in detects:
-            #(index,confidence,itemId,cur_time) one
-            (index,_id,time)=(val[0],val[2],val[3])
+            #(confidence,itemId,cur_time) one
+            (_id,time)=(val[0],val[2],val[3])
+            new_num = self.processing[_id]["num"] + 1
+            self.processing[_id]["time"] = ((self.processing[_id]["time"]*self.processing[_id]["num"])+time)/new_num
+            self.processing[_id]["num"] = new_num
             
-            if index % 2 == 0:#up position
-                new_num = self.upDetect[_id]["num"] + 1
-                self.upDetect[_id]["time"] = ((self.upDetect[_id]["time"]*self.upDetect[_id]["num"])+time)/new_num
-                self.upDetect[_id]["num"] = new_num
-
-            else:#down position
-                new_num = self.downDetect[_id]["num"] + 1
-                self.downDetect[_id]["time"] = ((self.downDetect[_id]["time"]*self.downDetect[_id]["num"])+time)/new_num
-                self.downDetect[_id]["num"] = new_num
-
     def reset(self):
         self.logger = multiprocessing.get_logger()
         self.detectState = "NORMAL"
-
-        self.upDetect = {}
-        self.downDetect = {}
+        self.processing = {}
 
         self.detect = []
         for k,item in settings.items.items():
             self.upDetect[k]=dict(num=0,time=0)
             self.downDetect[k]=dict(num=0,time=0)
 
-    def getMax(self,isUp):
-        val=self.upDetect if isUp else self.downDetect
+    def getMaxNum(self):
         maxId,count ="",0
-        for k,v in val.items():
+        for k,v in self.processing.items():
             if v["num"] > count:
                 count=v["num"]
                 maxId=k
+
         if count >0:
-            result = (maxId,count,val[maxId]["time"])
-            return result
+            return (maxId,count,self.processing[maxId]["time"])
         else:
             return (None,None,None)
 

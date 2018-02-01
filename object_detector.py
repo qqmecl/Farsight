@@ -36,7 +36,7 @@ transfer_table={
 '''
 #全速无停顿处理每一帧数据
 class ObjectDetector:
-    def __init__(self,input_q,items,motion,detection_queue):
+    def __init__(self,input_q,items,motions,detection_queue):
         setproctitle('[farsight-offline] Detect图像处理进程')
         #忽略 SIGINT，由父进程处理
         signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -49,7 +49,7 @@ class ObjectDetector:
 
         self.timeStamp = time.strftime('%Y_%m_%d_%H_%M_%S_',time.localtime(time.time()))
 
-        self.motion = motion
+        self.motions = motions
 
         #Temporary
         self.classNames = {0: 'background',
@@ -62,8 +62,8 @@ class ObjectDetector:
                 frame,index = input_q.get(timeout=1)
                 #self.detect_objects(frame)
                 results = self.detect_objects(frame,index)
-
-                motionType = self.motion.checkInput(frame)
+                index = index%2
+                motionType = self.motions[index].checkInput(frame)
 
                 #一般情况下，如果主进程没来得及取队列中的数据，则自行清除，确保队列中始终是最新滑动识别窗口
                 if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
@@ -118,7 +118,7 @@ class ObjectDetector:
 
                 if confidence > 0.8:
                     if AreaCheck(XAxis,YAxis,index).passBaseLine():
-                        results.append((index,confidence,itemId,cur_time))
+                        results.append((confidence,itemId,cur_time))
                         
                         if settings.SAVE_OUTPUT:
                             import os
