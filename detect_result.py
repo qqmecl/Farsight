@@ -31,7 +31,7 @@ class UpDownNotMatchError(Exception):
 #single pipeline check about detecting.
 class DetectResult:
     def __init__(self):
-        self.window = Queue(20)
+        self.window = Queue(30)
         self.reset()
         self.resetDetect()
 
@@ -80,8 +80,8 @@ class DetectResult:
     def getCurrentDetection(self,isLast):
         id,num,_time = self.getMaxNum()
         # print(id,num,_time)
-        threshold1,threshold2,threshold3 = 3,4,3
-        # threshold1,threshold2,threshold3 = 1,2,1
+        # threshold1,threshold2,threshold3 = 3,4,3
+        threshold1,threshold2,threshold3 = 1,2,1
         if id is not None:
             if isLast:
                 if num > threshold1: # 原来是3
