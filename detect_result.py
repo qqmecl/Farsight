@@ -33,6 +33,7 @@ class DetectResult:
     def __init__(self):
         self.window = Queue(20)
         self.reset()
+        self.resetDetect()
 
     def checkData(self,data):
         for motion,detects in data.items():
@@ -59,6 +60,7 @@ class DetectResult:
                 self.detectState = "PULL_CHECKING"
                 self.actionTime = time.time()
             elif motion == "None":
+                # print("self.detectState is ",self.detectState)
                 if self.detectState == "PULL_CHECKING":
                     self.takeOutCheck()
                     #TODO
@@ -69,11 +71,15 @@ class DetectResult:
             self.loadData(self.window.dequeue())
         detectId = self.getCurrentDetection(False)
         if detectId is not None:
-            self.detect.append({"direction":"OUT","id":detectId})
+            # print("TAKE OUT: ",settings.items[detectId])
+            result = {"direction":"OUT","id":detectId}
+            # self.callback(self.closet,result)
+            self.detect.append(result)
             self.reset()
 
     def getCurrentDetection(self,isLast):
-        id,num,time = self.getMaxNum()
+        id,num,_time = self.getMaxNum()
+        # print(id,num,_time)
         if id is not None:
             if isLast:
                 if num > 1: # 原来是3
@@ -95,7 +101,7 @@ class DetectResult:
     def loadData(self,detects):
         for val in detects:
             #(confidence,itemId,cur_time) one
-            (_id,time)=(val[0],val[2],val[3])
+            (_id,time)=(val[1],val[2])
             new_num = self.processing[_id]["num"] + 1
             self.processing[_id]["time"] = ((self.processing[_id]["time"]*self.processing[_id]["num"])+time)/new_num
             self.processing[_id]["num"] = new_num
@@ -105,10 +111,9 @@ class DetectResult:
         self.detectState = "NORMAL"
         self.processing = {}
 
-        self.detect = []
+        
         for k,item in settings.items.items():
-            self.upDetect[k]=dict(num=0,time=0)
-            self.downDetect[k]=dict(num=0,time=0)
+            self.processing[k]=dict(num=0,time=0)
 
     def getMaxNum(self):
         maxId,count ="",0
@@ -127,5 +132,7 @@ class DetectResult:
 
     def resetDetect(self):
         self.detect=[]
+
+
 
 

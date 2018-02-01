@@ -36,7 +36,7 @@ class MotionDetect:
             self.hand_present = -6
             return "None"
         # cv.imshow('frame', frame)
-        # cv.waitKey(1)
+        cv.waitKey(1)
 
         self.frameCount +=1
 
@@ -155,7 +155,7 @@ class MotionDetect:
 
         frame_delta = cv.absdiff(ref_gray, present_gray)
         # frame_delta = cv.absdiff(curLine, refLine)
-        frame_delta = cv.threshold(frame_delta, 20, 255, cv.THRESH_BINARY)[1] # the threshold could be modified
+        frame_delta = cv.threshold(frame_delta, 30, 255, cv.THRESH_BINARY)[1] # the threshold could be modified
         
 
         frame_delta = cv.erode(frame_delta,None, iterations=2)

@@ -118,6 +118,8 @@ class ObjectDetector:
 
                 if confidence > 0.8:
                     if AreaCheck(XAxis,YAxis,index).passBaseLine():
+                        # print("confidence with id",confidence,itemId)
+                        
                         results.append((confidence,itemId,cur_time))
                         
                         if settings.SAVE_OUTPUT:

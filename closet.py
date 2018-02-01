@@ -113,7 +113,7 @@ class Closet:
         self.http_port = config['http_port']
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
-        #self.initItemData()
+        self.initItemData()
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
@@ -301,7 +301,12 @@ class Closet:
                 else:
                     self.open_rightdoor_success()
                 self.logger.info('用户已经打开门')
-                self._start_imageprocessing()
+
+
+                later = functools.partial(self._start_imageprocessing)
+                tornado.ioloop.IOLoop.current().call_later(delay=1, callback=later)
+
+                # self._start_imageprocessing()
 
                 door_check = functools.partial(self._check_door_close)
                 self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
@@ -331,14 +336,19 @@ class Closet:
                 #         else:
                 #             return chooseDetect(isLast,upNum,upId)
                 if len(detect) > 0:
+                    print(detect)
                     direction = detect[0]["direction"]
                     id = detect[0]["id"]
                     if direction == "IN":
-                        print(i,"Take out",settings.items[id]["name"])
+                        print(i,"Put back",settings.items[id]["name"])
                         self.cart.remove_item(id)
                     else:
-                        print(i,"Put back",settings.items[id]["name"])
+                        print(i,"Take out",settings.items[id]["name"])
                         self.cart.add_item(id)
+
+                    self.detectResults[i].resetDetect()
+
+
 
 
     def _delay_do_order(self):
