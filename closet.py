@@ -92,10 +92,7 @@ class Closet:
         self.input_queues = [ Queue(maxsize=config['queue_size'])]*4
         # self.output_queues = [ Queue(maxsize=config['queue_size'])]*4
 
-        self._detection_queue =[]
-        for i in range(2):
-            queue = Queue(maxsize=20)
-            self._detection_queue.append(queue)
+        self._detection_queue = Queue(maxsize=20*4)
 
         self.open_door_time_out = settings.door_time_out#which means 80*20ms = 8s
 
@@ -138,6 +135,7 @@ class Closet:
     def start(self):
         # print("initiate start by settings.items",settings.items)
 
+        self.lastDetectTime = time.time()
         # 启动后台物体识别进程
         object_detection_pools = []
 
@@ -147,12 +145,13 @@ class Closet:
 
         # 每个摄像头启动一个进程池
         # motions = [MotionDetect()]*2
+
         self.motions = []
         for i in range(2):
             self.motions.append(MotionDetect())
 
         for input_q, index in zip(self.input_queues, indexs):
-            pool = Pool(self.num_workers, ObjectDetector, (input_q, settings.items,self._detection_queue[i]))
+            pool = Pool(self.num_workers, ObjectDetector, (input_q,settings.items,self._detection_queue))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
 
@@ -304,7 +303,7 @@ class Closet:
 
 
                 later = functools.partial(self._start_imageprocessing)
-                tornado.ioloop.IOLoop.current().call_later(delay=1, callback=later)
+                tornado.ioloop.IOLoop.current().call_later(delay=1.5, callback=later)
 
                 # self._start_imageprocessing()
 
@@ -312,44 +311,55 @@ class Closet:
                 self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
                 self.check_door_close_callback.start()
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
-            for i in range(2):
+            
                 try:
-                    result = self._detection_queue[i].get_nowait()
-                    frame = result[0]
-                    motionType = self.motions[i].checkInput(frame)
-                    self.detectResults[i].checkData({motionType:result[1]})
+                    result = self._detection_queue.get_nowait()
+                    index = result[0]
+                    frame = result[1]
+                    # print(self.motions[i])
+                    checkIndex = index%2
+                    # print("weird index is: ",checkIndex)
+                    motionType = self.motions[checkIndex].checkInput(frame)
+                    self.detectResults[checkIndex].checkData({motionType:result[2]})
+                    detect = self.detectResults[checkIndex].getDetect()
+                    # if downNum == None:
+                    #     if upNum == None:
+                    #         return False
+                    #     else:
+                    #         return chooseDetect(isLast,upNum,upId)
+                    # else:
+                    #     if upNum == None:
+                    #          return chooseDetect(isLast,downNum,downId)
+                    #     else:
+                    #         if downNum > upNum:
+                    #             return chooseDetect(isLast,downNum,downId)
+                    #         else:
+                    #             return chooseDetect(isLast,upNum,upId)
+                    if len(detect) > 0:
+                        print(detect)
+                        direction = detect[0]["direction"]
+                        id = detect[0]["id"]
+                        now_time = time.time()
+
+                        if now_time - self.lastDetectTime > 0.5:
+                            if direction == "IN":
+                                print(checkIndex,"Put back",settings.items[id]["name"])
+
+                                self.cart.remove_item(id)
+                            else:
+                                print(checkIndex,"Take out",settings.items[id]["name"])
+                                self.cart.add_item(id)
+
+                        self.lastDetectTime = time.time()
+                        self.detectResults[checkIndex].resetDetect()
+
                 except queue.Empty:
+                    # print()
                     pass
-                detect = self.detectResults[i].getDetect()
-
-                # if downNum == None:
-                #     if upNum == None:
-                #         return False
-                #     else:
-                #         return chooseDetect(isLast,upNum,upId)
-                # else:
-                #     if upNum == None:
-                #          return chooseDetect(isLast,downNum,downId)
-                #     else:
-                #         if downNum > upNum:
-                #             return chooseDetect(isLast,downNum,downId)
-                #         else:
-                #             return chooseDetect(isLast,upNum,upId)
-                if len(detect) > 0:
-                    print(detect)
-                    direction = detect[0]["direction"]
-                    id = detect[0]["id"]
-                    if direction == "IN":
-                        print(i,"Put back",settings.items[id]["name"])
-                        self.cart.remove_item(id)
-                    else:
-                        print(i,"Take out",settings.items[id]["name"])
-                        self.cart.add_item(id)
-
-                    self.detectResults[i].resetDetect()
+                
 
 
-
+    # def _delay_show_
 
     def _delay_do_order(self):
 
@@ -364,16 +374,19 @@ class Closet:
                 strData = json.dumps(order)
                 self.pollData = self.secretPassword.aes_cbc_encrypt(strData)
                 print(self.pollData)
+
+                req = requests.post(Closet.ORDER_URL, data=self.pollData)
+                self.order_process_success()
                 #发送订单到中央服务
-                self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
-                self.pollPeriod.start()
+                # self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
+                # self.pollPeriod.start()
 
     #chen chen chen
-    def polling(self):
-        req = requests.post(Closet.ORDER_URL, data=self.pollData)
-        if req.status_code == '200':
-            self.pollPeriod.stop()
-            self.order_process_success()
+    # def polling(self):
+    #     req = requests.post(Closet.ORDER_URL, data=self.pollData)
+    #     if req.status_code == '200':
+    #         self.pollPeriod.stop()
+    #         self.order_process_success()
 
     def _check_door_close(self):
         '''

@@ -80,19 +80,21 @@ class DetectResult:
     def getCurrentDetection(self,isLast):
         id,num,_time = self.getMaxNum()
         # print(id,num,_time)
+        threshold1,threshold2,threshold3 = 3,4,3
+        # threshold1,threshold2,threshold3 = 1,2,1
         if id is not None:
             if isLast:
-                if num > 1: # 原来是3
+                if num > threshold1: # 原来是3
                     return id
                 else:
                     self.reset()
             else:
                 now_time = time.time()
                 if now_time-self.actionTime < 0.2:
-                    if num >= 2: # 原来是4
+                    if num >= threshold2: # 原来是4
                         return id
                 else:
-                    if num > 1: # 原来是3
+                    if num > threshold3: # 原来是3
                         return id
                     else:
                         self.reset()

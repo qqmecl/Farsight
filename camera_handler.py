@@ -136,7 +136,7 @@ class CameraHandler:
             data = self.cameras[src].read()
             # print("send frame src is: ",src)
             self.frames_queues[src].put((data,src), timeout=1)
-            self.videoWriter[src].write(data)  # 将每一帧写入视频文件中
+            # self.videoWriter[src].write(data)  # 将每一帧写入视频文件中
         except queue.Full:
             print('[FULL] input_q')
             pass

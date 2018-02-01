@@ -4,6 +4,7 @@ from area import AreaCheck
 
 class MotionDetect:
     def __init__(self):
+        print("Init motion detect")
         self.hand_last = 0
         self.hand_present = 0
         self.curMotion = 0
@@ -35,8 +36,9 @@ class MotionDetect:
             self.hand_last = -6     # -6 = 手在外面， 6 = 手在里面, 其余为中间状态
             self.hand_present = -6
             return "None"
+            
         # cv.imshow('frame', frame)
-        cv.waitKey(1)
+        # cv.waitKey(1)
 
         self.frameCount +=1
 
@@ -161,8 +163,8 @@ class MotionDetect:
         frame_delta = cv.erode(frame_delta,None, iterations=2)
         frame_delta = cv.dilate(frame_delta, None, iterations=5) # 先腐蚀后膨胀，消除因为抖动造成的噪点
 
-        # cv.imshow('frame_delta', frame_delta)
-        # cv.waitKey(1)
+        cv.imshow('frame_delta', frame_delta)
+        cv.waitKey(1)
 
         gray_value_sum = np.sum(frame_delta) # 计算灰度值的总和
 

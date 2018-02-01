@@ -62,6 +62,7 @@ class ObjectDetector:
                 frame,index = input_q.get(timeout=1)
                 #self.detect_objects(frame)
                 results = self.detect_objects(frame,index)
+                # print("get frame from index",index)
                 # index = index%2
                 # motionType = self.motions[index].checkInput(frame)
 
@@ -69,10 +70,14 @@ class ObjectDetector:
                 if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
                     print("object delte detect")
                     waste = detection_queue.get_nowait()
+
                 #if len(results) > 0:
                 #print("put into detection")This maybe cause empty or full.
-                detection_queue.put_nowait([frame,results])#not a good structure
-
+                try:
+                    detection_queue.put_nowait([index,frame,results])#not a good structure
+                except queue.Full:
+                    print('[FULL]')
+                    pass
                 # output_q.put_nowait()
             except queue.Empty:#不进行识别判断的时候帧会变空
                 # print('[EMPTY] input_q is: ')
@@ -119,7 +124,7 @@ class ObjectDetector:
                 if confidence > 0.8:
                     if AreaCheck(XAxis,YAxis,index).passBaseLine():
                         # print("confidence with id",confidence,itemId)
-                        
+
                         results.append((confidence,itemId,cur_time))
                         
                         if settings.SAVE_OUTPUT:
