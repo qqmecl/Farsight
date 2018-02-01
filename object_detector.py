@@ -36,7 +36,7 @@ transfer_table={
 '''
 #全速无停顿处理每一帧数据
 class ObjectDetector:
-    def __init__(self,input_q,items,motions,detection_queue):
+    def __init__(self,input_q,items,detection_queue):
         setproctitle('[farsight-offline] Detect图像处理进程')
         #忽略 SIGINT，由父进程处理
         signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -49,7 +49,7 @@ class ObjectDetector:
 
         self.timeStamp = time.strftime('%Y_%m_%d_%H_%M_%S_',time.localtime(time.time()))
 
-        self.motions = motions
+        # self.motions = motions
 
         #Temporary
         self.classNames = {0: 'background',
@@ -62,8 +62,8 @@ class ObjectDetector:
                 frame,index = input_q.get(timeout=1)
                 #self.detect_objects(frame)
                 results = self.detect_objects(frame,index)
-                index = index%2
-                motionType = self.motions[index].checkInput(frame)
+                # index = index%2
+                # motionType = self.motions[index].checkInput(frame)
 
                 #一般情况下，如果主进程没来得及取队列中的数据，则自行清除，确保队列中始终是最新滑动识别窗口
                 if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
@@ -71,7 +71,7 @@ class ObjectDetector:
                     waste = detection_queue.get_nowait()
                 #if len(results) > 0:
                 #print("put into detection")This maybe cause empty or full.
-                detection_queue.put_nowait({motionType:results})
+                detection_queue.put_nowait({frame:results})#not a good structure
 
                 # output_q.put_nowait()
             except queue.Empty:#不进行识别判断的时候帧会变空

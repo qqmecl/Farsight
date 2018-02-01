@@ -92,6 +92,7 @@ class Closet:
         self.input_queues = [ Queue(maxsize=config['queue_size'])]*4
         # self.output_queues = [ Queue(maxsize=config['queue_size'])]*4
 
+        self._detection_queue =[]
         for i in range(2):
             queue = Queue(maxsize=20)
             self._detection_queue.append(queue)
@@ -145,12 +146,13 @@ class Closet:
         indexs = self.left_cameras + self.right_cameras
 
         # 每个摄像头启动一个进程池
-        motions = []
+        # motions = [MotionDetect()]*2
+        self.motions = []
         for i in range(2):
-            motions.append(MotionDetect())
+            self.motions.append(MotionDetect())
 
         for input_q, index in zip(self.input_queues, indexs):
-            pool = Pool(self.num_workers, ObjectDetector, (input_q, settings.items,motions,self._detection_queue[index%2]))
+            pool = Pool(self.num_workers, ObjectDetector, (input_q, settings.items,self._detection_queue[i]))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
 
@@ -308,11 +310,14 @@ class Closet:
             for i in range(2):
                 try:
                     result = self._detection_queue[i].get_nowait()
-                    self.detectResults[i].checkData(result)
+
+                    for frame,val in result.items():
+                        motionType = self.motions[i].checkInput(frame)
+                        self.detectResults[i].checkData(result)
+                        break
                 except queue.Empty:
                     pass
                 detect = self.detectResults[i].getDetect()
-
 
                 # if downNum == None:
                 #     if upNum == None:
@@ -327,8 +332,6 @@ class Closet:
                 #             return chooseDetect(isLast,downNum,downId)
                 #         else:
                 #             return chooseDetect(isLast,upNum,upId)
-
-
                 if len(detect) > 0:
                     direction = detect[0]["direction"]
                     id = detect[0]["id"]
