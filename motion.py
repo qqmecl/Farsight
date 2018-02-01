@@ -59,12 +59,12 @@ class MotionDetect:
                 motion = motion / abs(motion) # 将motion归一为 1 或 -1
                 self.hand_last = self.hand_present # 只在此处存储hand_last，保证它为 -6 或 6
                 print('hand state changed. the motion is:',self.motion_dict[motion])  # -1--push, 1--pull
-                import os
-                writePath = os.path.join(os.getcwd(),"./data/output/"+self.timeStamp+"/")
-                if os.path.isdir(writePath) == False:
-                    os.mkdir(writePath)
-                cv.putText(frame, self.motion_dict[motion], (320,240), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
-                cv.imwrite(writePath + str(self.frameCount)+".png",frame)
+                # import os
+                # writePath = os.path.join(os.getcwd(),"../data/output/"+self.timeStamp+"/")
+                # if os.path.isdir(writePath) == False:
+                #     os.mkdir(writePath)
+                # cv.putText(frame, self.motion_dict[motion], (320,240), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
+                # cv.imwrite(writePath + str(self.frameCount)+".png",frame)
 
                 return self.motion_dict[motion]
                 #img show with detected motion blob

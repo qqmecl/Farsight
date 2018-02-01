@@ -6,22 +6,13 @@ import queue
 from setproctitle import setproctitle
 import time
 
+from area import AreaCheck
+import settings
+
 CWD_PATH = os.getcwd()
 
 MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph_1.pb')
 DESCRIPTION_PATH = os.path.join(CWD_PATH, 'data', 'ssd_mobilenet_v1_coco.pbtxt')
-
-# FILTER_BASE_LINE = [[(260.0,-1.0),(366.0,481.0)],[(250.0,-1.0),(320.0,481.0)],
-# [(344.0,-1.0),(298.0,481.0)],[(384.0,-1.0),(352.0,481.0)]]
-
-FILTER_BASE_LINE = [[(255.0,-1.0),(300.0,481.0)],[(258.0,-1.0),(287.0,481.0)],
-[(380.0,-1.0),(340.0,481.0)],[(389.0,-1.0),(338.0,481.0)]]
-
-LINE_EQUATION = []
-for points in FILTER_BASE_LINE:
-    k = (points[1][1]-points[0][1])/(points[1][0]-points[0][0])#下斜率
-    b = points[1][1]-k*points[1][0]
-    LINE_EQUATION.append([k,b])
 
 transfer_table={
     '001001':'6921168509256',
@@ -45,7 +36,7 @@ transfer_table={
 '''
 #全速无停顿处理每一帧数据
 class ObjectDetector:
-    def __init__(self,input_q,detection_queue):
+    def __init__(self,input_q,items,motion,detection_queue):
         setproctitle('[farsight-offline] Detect图像处理进程')
         #忽略 SIGINT，由父进程处理
         signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -54,9 +45,11 @@ class ObjectDetector:
 
         self.frameCount = 0
 
+        self.items = items
+
         self.timeStamp = time.strftime('%Y_%m_%d_%H_%M_%S_',time.localtime(time.time()))
 
-        self.motion = MotionDetect()
+        self.motion = motion
 
         #Temporary
         self.classNames = {0: 'background',
@@ -69,6 +62,7 @@ class ObjectDetector:
                 frame,index = input_q.get(timeout=1)
                 #self.detect_objects(frame)
                 results = self.detect_objects(frame,index)
+
                 motionType = self.motion.checkInput(frame)
 
                 #一般情况下，如果主进程没来得及取队列中的数据，则自行清除，确保队列中始终是最新滑动识别窗口
@@ -124,7 +118,7 @@ class ObjectDetector:
 
                 if confidence > 0.8:
                     if AreaCheck(XAxis,YAxis,index).passBaseLine():
-                        results.append((index,confidence,itemId,location,cur_time))
+                        results.append((index,confidence,itemId,cur_time))
                         
                         if settings.SAVE_OUTPUT:
                             import os
@@ -136,11 +130,11 @@ class ObjectDetector:
                             cv.rectangle(frame, (xLeftBottom, yLeftBottom), (xRightTop, yRightTop),
                                   (0, 255, 0))
                             # if class_id in classNames:
-                            label = settings.items[itemId]["name"] + ": " + str(confidence)
+                            label = self.items[itemId]["name"] + ": " + str(confidence)
                             labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
                             yLeftBottom = max(yLeftBottom, labelSize[1])
                             frame = self.addChineseText(frame,label,(xLeftBottom, yLeftBottom+50))
-                            cv.imwrite(writePath + str(self.frameCount)+settings.items[itemId]["name"]+".png",frame)
+                            cv.imwrite(writePath + str(self.frameCount)+self.items[itemId]["name"]+".png",frame)
 
             except KeyError:
                 print("class_id is: ",class_id)

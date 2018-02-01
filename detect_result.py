@@ -46,10 +46,10 @@ class DetectResult:
                     while(not self.window.isEmpty()):
                         self.loadData(self.window.dequeue())
 
-                    detectItem = self.getCurrentDetection(True)
-                    if detectItem is not None:
-                        print("PUT BACK: ",detectItem)
-                        self.detect.append("IN")
+                    detectId = self.getCurrentDetection(True)
+                    if detectId is not None:
+                        # print("PUT BACK: ",settings.items[detectId])
+                        self.detect.append({"direction":"IN","id":detectId})
                     else:#empty push
                         self.window.empty()#清空window
 
@@ -67,10 +67,9 @@ class DetectResult:
     def takeOutCheck(self):
         while(not self.window.isEmpty()):
             self.loadData(self.window.dequeue())
-        detectItem = self.getCurrentDetection(False)
-        if detectItem is not None:
-            print("TAKE OUT: ",detectItem)
-            self.detect.append("OUT")
+        detectId = self.getCurrentDetection(False)
+        if detectId is not None:
+            self.detect.append({"direction":"OUT","id":detectId})
             self.reset()
 
 
@@ -78,7 +77,7 @@ class DetectResult:
         upId,upNum,upTime = self.getMax(True)
         downId,downNum,downTime = self.getMax(False)
 
-         if downNum == None:
+        if downNum == None:
             if upNum == None:
                 return False
             else:
@@ -96,17 +95,17 @@ class DetectResult:
     def chooseDetect(self,isLast,num,id):
         if isLast:
             if num > 1: # 原来是3
-                return settings.items[id]["name"]
+                return id
             else:
                 self.reset()
         else:
             now_time = time.time()
             if now_time-self.actionTime < 0.2:
                 if num >= 2: # 原来是4
-                    return settings.items[id]["name"]
+                    return id
             else:
                 if num > 1: # 原来是3
-                    return settings.items[id]["name"]
+                    return id
                 else:
                     self.reset()
         return None
@@ -114,8 +113,8 @@ class DetectResult:
 
     def loadData(self,detects):
         for val in detects:
-            #(index,confidence,itemId,location,cur_time) one
-            (index,_id,time,XAxis)=(val[0],val[2],val[4],val[3])
+            #(index,confidence,itemId,cur_time) one
+            (index,_id,time)=(val[0],val[2],val[3])
             
             if index % 2 == 0:#up position
                 new_num = self.upDetect[_id]["num"] + 1
@@ -136,8 +135,8 @@ class DetectResult:
 
         self.detect = []
         for k,item in settings.items.items():
-            self.upDetect[k]=dict(num=0,time=0,Out=0,In=0,X=0)
-            self.downDetect[k]=dict(num=0,time=0,Out=0,In=0,X=0)
+            self.upDetect[k]=dict(num=0,time=0)
+            self.downDetect[k]=dict(num=0,time=0)
 
     def getMax(self,isUp):
         val=self.upDetect if isUp else self.downDetect

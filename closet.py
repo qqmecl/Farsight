@@ -29,6 +29,7 @@ from serial_handler.io_controller import IO_Controller
 from detect_result import DetectResult
 import time
 from utils import secretPassword
+from motion import MotionDetect
 
 class Closet:
     '''
@@ -57,6 +58,7 @@ class Closet:
         dict(trigger='init_success', source='pre-init', dest='standby'),
         dict(trigger='authorization_left_success', source='standby', dest='authorized-left'),
         dict(trigger='authorization_right_success', source='standby', dest='authorized-right'),
+
         dict(trigger='door_open_timed_out', source=['authorized-left', 'authorized-right', 'authorized-restock'], dest='standby'),
 
         dict(trigger='open_leftdoor_success', source='authorized-left', dest='left-door-open'),
@@ -94,7 +96,7 @@ class Closet:
 
         self._detection_queue = Queue(maxsize=30*2)
 
-        self.open_door_time_out = 300#which means 80*20ms = 8s
+        self.open_door_time_out = settings.door_time_out#which means 80*20ms = 8s
 
         self.num_workers = config['num_workers']
 
@@ -115,7 +117,7 @@ class Closet:
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
 
-        self.initItemData()
+        # self.initItemData()
 
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
@@ -151,7 +153,6 @@ class Closet:
 
         # 每个摄像头启动一个进程池
         for input_q, index in zip(self.input_queues, indexs):
-            # print(input_q,output_q,index)
             pool = Pool(self.num_workers, ObjectDetector, (input_q, settings.items, self._detection_queue))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
@@ -181,8 +182,7 @@ class Closet:
         #连接串口管理器
         self.IO.start()
 
-        self.detectResult = DetectResult(-1,0)
-
+        self.detectResult = DetectResult()
 
         # 捕获 CTRL-C
         handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
@@ -209,6 +209,7 @@ class Closet:
             else:
                 self.authorization_right_success()
         except transitions.core.MachineError:
+            print(self.state)
             self.logger.warn('状态转换错误!!')
             return
 
@@ -221,7 +222,7 @@ class Closet:
 
         self.beforeScaleVal = self.IO.get_scale_val()
 
-        self.IO.say_welcome()#发声
+        # self.IO.say_welcome()#发声
 
         self.IO.change_to_inventory_page()#进入购物车界面
 
@@ -286,8 +287,8 @@ class Closet:
                 #已经检查足够多次，重置状态机，并且直接返回
                 print('超时未开门')
                 self.door_open_timed_out()
-                print(self.state)
-                self.open_door_time_out = 300#which means 120*12ms = 8s
+                # print(self.state)
+                self.open_door_time_out = settings.door_time_out#which means 120*12ms = 8s
                 self.IO.change_to_welcome_page()
                 self.updateScheduler.stop()
                 return
@@ -308,7 +309,7 @@ class Closet:
             try:
                 result = self._detection_queue.get_nowait()
                 self.detectResult.checkData(result)
-                self.frameCount += 1
+                # self.frameCount += 1
             except queue.Empty:
                 # print("empty")
                 pass
@@ -319,8 +320,10 @@ class Closet:
                 direction = detect[0]["direction"]
                 id = detect[0]["id"]
                 if direction == "IN":
+                    print("Take out",settings.items[id]["name"])
                     self.cart.remove_item(id)
                 else:
+                    print("Put back",settings.items[id]["name"])
                     self.cart.add_item(id)
 
 
@@ -334,49 +337,21 @@ class Closet:
             self.order_process_success()
         else:
             if self.cart.as_order()["data"] != {}:
-                self.logger.info(self.cart.as_order())
-
-
-
-
-                str1 = self.cart.as_order()
-                strData = json.dumps(str1)
-                print(str1)
-                #str2 = list(str1['data'].items())
-                #print('yyyyyyyyyyyy')
-                #print(str2)
-                #print(str(str1['weight']['start']))
-                #strData = 'data=' + str2[0][0] + '&num=' + str(str2[0][1]) + '&token=' + str1['token'] + '&code=' + str1['code'] + '&start=' + str(str1['weight']['start']) + '&final=' + str(str1['weight']['final'])
-                #print('tttttttttttttttttttttttt')
-                #print(strData)
-
-
+                order = self.cart.as_order()
+                self.logger.info(order)
+                strData = json.dumps(order)
                 self.pollData = self.secretPassword.aes_cbc_encrypt(strData)
-
                 print(self.pollData)
-
-
-
-                # 发送订单到中央服务
-
-                poll = tornado.ioloop.PeriodicCallback(self.polling, 50)
-                poll.start()
-                while True:
-                    if poll == 'successMessage':
-                        poll.stop()
-                        break
-                print('response 200')
-
-            if poll == 'successMessage':
-                self.order_process_success()
-            else:
-                self.order_process_success()
+                #发送订单到中央服务
+                self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
+                self.pollPeriod.start()
 
     #chen chen chen
-    def polling():
-        req = requests.post(Closet.ORDER_URL, data=x)
+    def polling(self):
+        req = requests.post(Closet.ORDER_URL, data=self.pollData)
         if req.status_code == '200':
-            return 'successMessage'
+            self.pollPeriod.stop()
+            self.order_process_success()
 
     def _check_door_close(self):
         '''
@@ -404,7 +379,7 @@ class Closet:
 
             self._stop_imageprocessing()
 
-            self.IO.say_goodbye()
+            # self.IO.say_goodbye()
             self.IO.change_to_processing_page()
 
     def _start_imageprocessing(self):
