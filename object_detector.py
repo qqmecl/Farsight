@@ -71,7 +71,7 @@ class ObjectDetector:
                     waste = detection_queue.get_nowait()
                 #if len(results) > 0:
                 #print("put into detection")This maybe cause empty or full.
-                detection_queue.put_nowait({frame:results})#not a good structure
+                detection_queue.put_nowait([frame,results])#not a good structure
 
                 # output_q.put_nowait()
             except queue.Empty:#不进行识别判断的时候帧会变空

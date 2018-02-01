@@ -37,7 +37,6 @@ class DetectResult:
     def checkData(self,data):
         for motion,detects in data.items():
             self.window.enqueue(detects)
-
             # print("current motion is: ",motion)
             if motion == "PUSH":#Action start or Action done.
                 if self.detectState == "PULL_CHECKING":

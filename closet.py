@@ -310,11 +310,9 @@ class Closet:
             for i in range(2):
                 try:
                     result = self._detection_queue[i].get_nowait()
-
-                    for frame,val in result.items():
-                        motionType = self.motions[i].checkInput(frame)
-                        self.detectResults[i].checkData(result)
-                        break
+                    frame = result[0]
+                    motionType = self.motions[i].checkInput(frame)
+                    self.detectResults[i].checkData({motionType:result[1]})
                 except queue.Empty:
                     pass
                 detect = self.detectResults[i].getDetect()
