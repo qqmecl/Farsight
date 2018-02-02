@@ -1,5 +1,4 @@
 from camera_handler import CameraHandler
-from object_detector import ObjectDetector
 from httpd import make_http_app, HTTP_PORT
 from signal_handler import SignalHandler
 from cart import Cart
@@ -20,16 +19,17 @@ import os  # 为视频输出文件创造新的Output文件夹
 
 import requests
 import json
-
 from setproctitle import setproctitle
-
+import time
+from utils import secretPassword
 import settings
 from serial_handler.io_controller import IO_Controller
 
-from detect_result import DetectResult
-import time
-from utils import secretPassword
-from motion import MotionDetect
+from detect.detect_result import DetectResult
+from detect.motion import MotionDetect
+from detect.object_detector import ObjectDetector
+
+
 
 class Closet:
     '''
