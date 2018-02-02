@@ -216,7 +216,7 @@ if __name__ == '__main__':
 
     
     # screen.change_to_page(Screen.INVENTORY_PAGE)
-    screen.change_to_page(Screen.WELCOME_PAGE)
+    #screen.change_to_page(Screen.WELCOME_PAGE)
     
 
     # for i in range(7):

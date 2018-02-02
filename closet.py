@@ -223,7 +223,7 @@ class Closet:
 
         self.beforeScaleVal = self.IO.get_scale_val()
 
-        # self.IO.say_welcome()#发声
+        self.IO.say_welcome()#发声
 
         self.IO.change_to_inventory_page()#进入购物车界面
 
@@ -377,6 +377,8 @@ class Closet:
 
                 req = requests.post(Closet.ORDER_URL, data=self.pollData)
                 self.order_process_success()
+            else:
+                self.order_process_success()
                 #发送订单到中央服务
                 # self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
                 # self.pollPeriod.start()
@@ -414,7 +416,7 @@ class Closet:
 
             self._stop_imageprocessing()
 
-            # self.IO.say_goodbye()
+            self.IO.say_goodbye()
             self.IO.change_to_processing_page()
 
     def _start_imageprocessing(self):
