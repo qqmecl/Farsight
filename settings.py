@@ -30,7 +30,8 @@ usb_cameras=["/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
 
 init_url = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
 
-SAVE_OUTPUT = False
+SAVE_DETECT_OUTPUT = False
+SAVE_VIDEO_OUTPUT = False
 # SAVE_OUTPUT = True
 
 

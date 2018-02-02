@@ -137,7 +137,7 @@ class ObjectDetector:
 
                         results.append((confidence,itemId,cur_time))
                         
-                        if settings.SAVE_OUTPUT:
+                        if settings.SAVE_DETECT_OUTPUT:
                             import os
                             writePath = os.path.join(os.getcwd(),"../data/output/"+self.timeStamp+"/")
 
