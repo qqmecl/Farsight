@@ -130,7 +130,7 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        print(settings.items)
+        # print(settings.items)
 
 
     def start(self):
@@ -307,7 +307,7 @@ class Closet:
 
 
                 later = functools.partial(self._start_imageprocessing)
-                tornado.ioloop.IOLoop.current().call_later(delay=1.5, callback=later)
+                tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
 
                 # self._start_imageprocessing()
 
@@ -370,14 +370,17 @@ class Closet:
         now_scale = self.IO.get_scale_val()
 
         if abs(now_scale - self.beforeScaleVal) < 0.15:
+            print("Can't Envoke weight change")
             self.order_process_success()
         else:
+            print("Envoke weight change")
+
             if self.cart.as_order()["data"] != {}:
                 order = self.cart.as_order()
-                self.logger.info(order)
+                # self.logger.info(order)
                 strData = json.dumps(order)
                 self.pollData = self.secretPassword.aes_cbc_encrypt(strData)
-                print(self.pollData)
+                # print(self.pollData)
 
                 req = requests.post(Closet.ORDER_URL, data=self.pollData)
                 self.order_process_success()
