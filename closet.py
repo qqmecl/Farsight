@@ -148,9 +148,10 @@ class Closet:
         # motions = [MotionDetect()]*2
 
         self.motions = []
+        
         for i in range(2):
             self.motions.append(MotionDetect())
-
+            
         # for input_q, index in zip(self.input_queues, indexs):
             # pool = Pool(self.num_workers, ObjectDetector, (input_q,settings.items,self._detection_queue))
         for i in range(4):
@@ -217,6 +218,15 @@ class Closet:
             print(self.state)
             self.logger.warn('状态转换错误!!')
             return
+
+        
+
+        while True:#empty detection queue
+                try:
+                    result = self._detection_queue.get_nowait()
+                except queue.Empty:
+                    break
+
 
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
         self.cart = Cart(token, self.IO)
@@ -305,7 +315,7 @@ class Closet:
                     self.open_rightdoor_success()
                 self.logger.info('用户已经打开门')
 
-
+                
                 later = functools.partial(self._start_imageprocessing)
                 tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
 
@@ -323,6 +333,7 @@ class Closet:
                     # print(self.motions[i])
                     checkIndex = index%2
                     # print("weird index is: ",checkIndex)
+                    # print(len(self.motions))
                     motionType = self.motions[checkIndex].checkInput(frame)
                     self.detectResults[checkIndex].checkData({motionType:result[2]})
                     detect = self.detectResults[checkIndex].getDetect()
@@ -405,6 +416,7 @@ class Closet:
 
             self.check_door_close_callback.stop()
 
+
             self.logger.info(self.state)
 
             self.logger.info('用户已经关上门')
@@ -422,6 +434,12 @@ class Closet:
             self.updateScheduler.stop()
 
             self._stop_imageprocessing()
+
+            for i in range(2):
+                # del self.motions[0]
+                self.motions[i].reset()
+
+
 
             self.IO.say_goodbye()
             self.IO.change_to_processing_page()

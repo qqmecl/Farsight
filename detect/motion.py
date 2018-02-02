@@ -4,7 +4,7 @@ from area import AreaCheck
 
 class MotionDetect:
     def __init__(self):
-        print("Init motion detect")
+        # print("Init motion detect")
         self.hand_last = 0
         self.hand_present = 0
         self.curMotion = 0
@@ -35,6 +35,12 @@ class MotionDetect:
             self.refLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width]
             self.hand_last = -6     # -6 = 手在外面， 6 = 手在里面, 其余为中间状态
             self.hand_present = -6
+            # print ('Initiate Reference Line')
+            # import time
+            # cv.imwrite(str(time.time())+'.png', frame)
+            # cv.imwrite('./Output/FirstFrame/Frame'+self.timeStamp+'.png', frame)
+            # cv.imwrite('./Output/FirstFrame/refLine'+self.timeStamp+'.png', frame)
+            # cv.imwrite('./Output/FirstFrame/refLine'+self.timeStamp+'.png', frame)
             return "None"
             
         # cv.imshow('frame', frame)
@@ -74,6 +80,10 @@ class MotionDetect:
             #self.hand_last = self.hand_present
         
         return "None"
+
+    def reset(self):
+        self.refLine = None
+        print("reset Done")
 
     def checkInput_old(self,frame):
         if self.last_frame is None:
@@ -148,6 +158,9 @@ class MotionDetect:
 
 
     def CoverCheck(self, curLine, refLine):
+
+        # cv.imshow('refLine', refLine)
+        # cv.waitKey(1)
 
         present_gray = cv.cvtColor(curLine, cv.COLOR_BGR2GRAY)
         # present_gray = cv.GaussianBlur(present_gray, (21, 21), 0) # 还需要检查是否需要高斯模糊
