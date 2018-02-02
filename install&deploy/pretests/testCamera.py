@@ -21,7 +21,8 @@ while(True):
 
     # Display the resulting frame
     if ret:
-	    cv2.imshow('frame',frame)
+	    # cv2.imshow('frame',frame)
+	    cv2.imwrite('frame',frame)
 	    if cv2.waitKey(1) & 0xFF == ord('q'):
 	        break
 

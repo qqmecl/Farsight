@@ -14,8 +14,14 @@ class AreaCheck:
 	def __init__(self,x,y,pos):
 	    y = 480-y
 	    self.pos = pos
+	    self.x=x
 	    self.location = y- LINE_EQUATION[pos][0]*x
 
 	#By pass,we mean the outside part
 	def passBaseLine(self):
-	        return self.location < LINE_EQUATION[self.pos][1]
+		# return self.x > 290 
+		# return True
+		if self.pos >1:
+			return self.x > 150
+		else:
+			return self.location < LINE_EQUATION[self.pos][1] - 160

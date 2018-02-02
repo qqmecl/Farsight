@@ -11,7 +11,8 @@ import settings
 
 CWD_PATH = os.getcwd()
 
-MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph_1.pb')
+# MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph_1.pb')
+MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph.pb')
 DESCRIPTION_PATH = os.path.join(CWD_PATH, 'data', 'ssd_mobilenet_v1_coco.pbtxt')
 
 transfer_table={
@@ -61,7 +62,16 @@ class ObjectDetector:
             try:
                 frame,index = input_q.get(timeout=1)
                 #self.detect_objects(frame)
-                results = self.detect_objects(frame,index)
+
+                if index > 1:
+                    frame = cv.flip(frame,1)
+                    # frame = frame[:, -1: 0, :]
+
+                frame_truncated = frame[:, 160: , :]
+
+                
+
+                results = self.detect_objects(frame_truncated,index)
                 # print("get frame from index",index)
                 # index = index%2
                 # motionType = self.motions[index].checkInput(frame)
@@ -129,7 +139,7 @@ class ObjectDetector:
                         
                         if settings.SAVE_OUTPUT:
                             import os
-                            writePath = os.path.join(os.getcwd(),"../../data/output/"+self.timeStamp+"/")
+                            writePath = os.path.join(os.getcwd(),"../data/output/"+self.timeStamp+"/")
 
                             if os.path.isdir(writePath) == False:
                                 os.mkdir(writePath)
@@ -137,10 +147,19 @@ class ObjectDetector:
                             cv.rectangle(frame, (xLeftBottom, yLeftBottom), (xRightTop, yRightTop),
                                   (0, 255, 0))
                             # if class_id in classNames:
-                            label = self.items[itemId]["name"] + ": " + str(confidence)
-                            labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-                            yLeftBottom = max(yLeftBottom, labelSize[1])
-                            frame = self.addChineseText(frame,label,(xLeftBottom, yLeftBottom+50))
+
+
+                            # label = self.items[itemId]["name"] + ": " + str(confidence)
+                            # labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                            # yLeftBottom = max(yLeftBottom, labelSize[1])
+                            # frame = self.addChineseText(frame,label,(xLeftBottom, yLeftBottom+50))
+
+
+                            # label = itemId + ": " + str(confidence)
+                            # labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                            # yLeftBottom = max(yLeftBottom, labelSize[1])
+                            # frame = self.addChineseText(frame,label,(xLeftBottom, yLeftBottom+50))
+
                             cv.imwrite(writePath + str(self.frameCount)+self.items[itemId]["name"]+".png",frame)
 
             except KeyError:

@@ -89,7 +89,8 @@ class Closet:
         self.logger.setLevel(logging.INFO)
         self.secretPassword = secretPassword()
 
-        self.input_queues = [ Queue(maxsize=config['queue_size'])]*4
+        # self.input_queues = [ Queue(maxsize=config['queue_size'])]*4
+        self.input_queues = Queue(maxsize=config['queue_size']*4)
         # self.output_queues = [ Queue(maxsize=config['queue_size'])]*4
 
         self._detection_queue = Queue(maxsize=20*4)
@@ -129,7 +130,7 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        # print(settings.items)
+        print(settings.items)
 
 
     def start(self):
@@ -150,8 +151,11 @@ class Closet:
         for i in range(2):
             self.motions.append(MotionDetect())
 
-        for input_q, index in zip(self.input_queues, indexs):
-            pool = Pool(self.num_workers, ObjectDetector, (input_q,settings.items,self._detection_queue))
+        # for input_q, index in zip(self.input_queues, indexs):
+            # pool = Pool(self.num_workers, ObjectDetector, (input_q,settings.items,self._detection_queue))
+        for i in range(4):
+            pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue))
+        # pool = Pool(5, ObjectDetector, (self.input_queues,settings.items,self._detection_queue))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
 

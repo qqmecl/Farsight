@@ -13,7 +13,7 @@ if __name__ == '__main__':
     parser.add_argument('--visualize-camera', type=int, help='输出捕获视频的摄像头编号（debug用）')
 
     parser.add_argument('--left-cameras', nargs='+', type=int, help='设置左边摄像头编号列表，-1 为空')
-    # parser.set_defaults(left_cameras=[1])#Maybe adjustable
+    # parser.set_defaults(left_cameras=[0])#Maybe adjustable
     parser.set_defaults(left_cameras=[0, 1])#Maybe adjustable
 
     parser.add_argument('--right-cameras', nargs='+', type=int, help='设置右边摄像头编号列表，-1 为空')

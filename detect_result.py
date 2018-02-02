@@ -32,11 +32,18 @@ class UpDownNotMatchError(Exception):
 class DetectResult:
     def __init__(self):
         self.window = Queue(30)
+        self.logger = multiprocessing.get_logger()
         self.reset()
         self.resetDetect()
 
     def checkData(self,data):
         for motion,detects in data.items():
+            for val in detects:
+            #(confidence,itemId,cur_time) one
+                (_id,_time)=(val[1],val[2])
+                print("check ",settings.items[_id]["name"],"by time ",_time)
+
+
             self.window.enqueue(detects)
             # print("current motion is: ",motion)
             if motion == "PUSH":#Action start or Action done.
@@ -100,20 +107,20 @@ class DetectResult:
                         self.reset()
         return None
 
+
     def loadData(self,detects):
         for val in detects:
             #(confidence,itemId,cur_time) one
             (_id,time)=(val[1],val[2])
+            print("check ",settings.items[_id]["name"],"by time ",time)
             new_num = self.processing[_id]["num"] + 1
             self.processing[_id]["time"] = ((self.processing[_id]["time"]*self.processing[_id]["num"])+time)/new_num
             self.processing[_id]["num"] = new_num
             
     def reset(self):
-        self.logger = multiprocessing.get_logger()
         self.detectState = "NORMAL"
+        self.actionTime = time.time()
         self.processing = {}
-
-        
         for k,item in settings.items.items():
             self.processing[k]=dict(num=0,time=0)
 
