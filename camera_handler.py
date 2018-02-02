@@ -112,7 +112,7 @@ class CameraHandler:
                 self.cameras[src].resume_sending()
                 if settings.SAVE_VIDEO_OUTPUT:
                     video_FileName =  './Output/Video__'\
-                                    + time.strftime("%Y-%m-%d %H-%M-%S", time.localtime( time.time() ) )\
+                                    + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime( time.time() ) )\
                                     + '__'\
                                     + str(src)\
                                     + '.avi'             
