@@ -25,8 +25,8 @@ class MotionDetect:
 
         # Reference Line Settings
         self.refLine = None
-        self.rL_cenX = 300
-        self.rL_half_width = 10
+        # self.rL_cenX = 300
+        # self.rL_half_width = 10
 
 
     def checkInput(self,frame):
@@ -49,7 +49,8 @@ class MotionDetect:
 
         self.frameCount +=1
 
-        curLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width] # 当前帧的参考线
+        curLine = frame # 当前帧的参考线
+        # curLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width] # 当前帧的参考线
 
         isCover = self.CoverCheck(curLine, self.refLine) # 判断是否参考线是否被手覆盖
         # print (isCover)

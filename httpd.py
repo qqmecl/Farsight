@@ -105,7 +105,7 @@ class DataHandler(tornado.web.RequestHandler):
 						self.write('zhou')
 				except IOError as e:
 					self.write('user error')
-		else if data == 'pull':
+		elif data == 'pull':
 			if os.path.exists('/tmp/daemon.pid'):
 				print('sssssss')
 				try:

@@ -14,7 +14,8 @@ CWD_PATH = os.getcwd()
 print(CWD_PATH)
 
 if CWD_PATH != '/':
-    MODEL_PATH = os.path.join(CWD_PATH + '/data/' + 'frozen_inference_graph_2_7.pb')
+    # MODEL_PATH = os.path.join(CWD_PATH + '/data/' + 'frozen_inference_graph_2_7.pb')
+    MODEL_PATH = os.path.join(CWD_PATH + '/data/' + 'frozen_inference_graph.pb')
     DESCRIPTION_PATH = os.path.join(CWD_PATH + '/data/' + 'ssd_mobilenet_v1_coco.pbtxt')
 else:
     MODEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'frozen_inference_graph_2_7.pb')
