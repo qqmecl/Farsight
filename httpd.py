@@ -24,7 +24,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 	def initialize(self, closet):
 		self.closet = closet
 		self.secretData = secretPassword()
-	
+
 	def parseData(self, psData):
 		x = self.secretData.aes_cbc_decrypt(psData)
 		params = x.split('&')
@@ -105,6 +105,17 @@ class DataHandler(tornado.web.RequestHandler):
 						self.write('zhou')
 				except IOError as e:
 					self.write('user error')
+		else if data == 'pull':
+			if os.path.exists('/tmp/daemon.pid'):
+				print('sssssss')
+				try:
+					with open('/tmp/daemon.pid') as f:
+						os.kill(int(f.read()), signal.SIGUSR2)
+						self.write('jun')
+				except IOError as e:
+					self.write('user error')
+
+
 		# print("get result")
 		#self.write('friendly user!')
 

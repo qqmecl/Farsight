@@ -12,6 +12,7 @@ from relatedSpread import Daemon
 class MyTestDaemon(Daemon):
     def run(self):
         signal.signal(signal.SIGUSR1, self.__postHandle)
+        signal.signal(signal.SIGUSR2, self.__pullHandle)
         subprocess.call('/home/votance/anaconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
         sys.stdout.write(sys.path[0])
         while True:
@@ -26,6 +27,17 @@ class MyTestDaemon(Daemon):
     	time.sleep(2)
     	subprocess.call(['/home/votance/anaconda3/bin/python', '/home/votance/Projects/Farsight/main.py'])
     	sys.stdout.write('tttttttttt')
+
+    @staticmethod
+    def __pullHandle(signum, frame):
+        sys.stdout.write('ccccccccc')
+        subprocess.call('cd /home/votance/Projects/Farsight', shell=True)
+        subprocess.call('git pull', shell=True)
+        time.sleep(2)
+        subprocess.call('qqmecl', shell=True)
+        time.sleep(2)
+        subprocess.call('cl144225971', shell=True)
+        sys.stdout.write('tttttttttt')
 
 if __name__ == '__main__':
     PIDFILE = '/tmp/daemon.pid'
