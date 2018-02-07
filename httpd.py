@@ -3,6 +3,8 @@ from serial_handler.door_lock import DoorLockHandler
 import json
 import settings
 from utils import secretPassword
+import os
+import signal
 
 HTTP_PORT = 8888
 SECRET_KEY = "grtrgewfgvs"  # 和原来代码一样，写死了先
@@ -92,17 +94,19 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 #chen
 class DataHandler(tornado.web.RequestHandler):
 	def post(self):
-		data = json.loads(tornado.escape.json_decode(self.request.body))
-		result = {}
-		for res in data:
-			a = float(res['price'])
-			b = float(res['weight'])
-			c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
-			result[res['goods_code']] = c
-		settings.items = result
-		print(settings.items)
+		data = self.get_argument('signal', 'chen')
+		print(data)
+		if data == 'votance':
+			if os.path.exists('/tmp/daemon.pid'):
+				print('tttttttt')
+				try:
+					with open('/tmp/daemon.pid') as f:
+						os.kill(int(f.read()), signal.SIGUSR1)
+						self.write('zhou')
+				except IOError as e:
+					self.write('user error')
 		# print("get result")
-		self.write('friendly user!')
+		#self.write('friendly user!')
 
 def make_http_app(closet):
 	return tornado.web.Application([

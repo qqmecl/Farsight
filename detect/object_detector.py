@@ -10,10 +10,17 @@ from area import AreaCheck
 import settings
 
 CWD_PATH = os.getcwd()
+print(CWD_PATH)
 
+if CWD_PATH != '/':
+    MODEL_PATH = os.path.join(CWD_PATH + '/data/' + 'frozen_inference_graph.pb')
+    DESCRIPTION_PATH = os.path.join(CWD_PATH + '/data/' + 'ssd_mobilenet_v1_coco.pbtxt')
+else:
+    MODEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'frozen_inference_graph.pb')
+    DESCRIPTION_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'ssd_mobilenet_v1_coco.pbtxt')
 # MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph_1.pb')
-MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph.pb')
-DESCRIPTION_PATH = os.path.join(CWD_PATH, 'data', 'ssd_mobilenet_v1_coco.pbtxt')
+#MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph.pb')
+#DESCRIPTION_PATH = os.path.join(CWD_PATH, 'data', 'ssd_mobilenet_v1_coco.pbtxt')
 
 transfer_table={
     '001001':'6921168509256',
