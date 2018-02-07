@@ -326,7 +326,7 @@ class Closet:
                 # self._start_imageprocessing()
 
                 laterDoor = functools.partial(self.delayCheckDoorClose)
-                tornado.ioloop.IOLoop.current().call_later(delay=1.5, callback=laterDoor)
+                tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
             
                 try:
