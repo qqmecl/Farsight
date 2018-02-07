@@ -7,7 +7,7 @@ import signal
 import subprocess
 
 
-from spre import Daemon
+from relatedSpread import Daemon
 
 class MyTestDaemon(Daemon):
     def run(self):
