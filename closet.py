@@ -169,8 +169,8 @@ class Closet:
         self.camera_ctrl_queue = Queue(1)
         cam_handler = CameraHandler(self.camera_ctrl_queue, self.input_queues)
 
-        if not os.path.exists('./Output'):
-            os.makedirs('./Output')
+        if not os.path.exists('/home/votance/Projects/Farsight/Output'):
+            os.makedirs('/home/votance/Projects/Farsight/Output')
 
         # TODO:
         # 使用 Process 需要处理可能存在的进程崩溃问题
@@ -394,10 +394,11 @@ class Closet:
                 # self.logger.info(order)
                 strData = json.dumps(order)
                 self.pollData = self.secretPassword.aes_cbc_encrypt(strData)
-                # print(self.pollData)
+                print(self.pollData)
 
-                req = requests.post(Closet.ORDER_URL, data=self.pollData)
-                self.order_process_success()
+                #req = requests.post(Closet.ORDER_URL, data=self.pollData)
+                self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
+                self.pollPeriod.start()
             else:
                 self.order_process_success()
                 #发送订单到中央服务
@@ -405,11 +406,12 @@ class Closet:
                 # self.pollPeriod.start()
 
     #chen chen chen
-    # def polling(self):
-    #     req = requests.post(Closet.ORDER_URL, data=self.pollData)
-    #     if req.status_code == '200':
-    #         self.pollPeriod.stop()
-    #         self.order_process_success()
+    def polling(self):
+        req = requests.post(Closet.ORDER_URL, data=self.pollData)
+        if req.status_code == 200:
+            self.order_process_success()
+            self.pollPeriod.stop()
+            
 
     def _check_door_close(self):
         '''
