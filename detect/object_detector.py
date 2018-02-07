@@ -11,8 +11,11 @@ import settings
 
 CWD_PATH = os.getcwd()
 
-# MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph_1.pb')
-MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph.pb')
+# MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph.pb')
+
+MODEL_PATH = os.path.join(CWD_PATH, 'data', 'frozen_inference_graph_2_7.pb')
+
+
 DESCRIPTION_PATH = os.path.join(CWD_PATH, 'data', 'ssd_mobilenet_v1_coco.pbtxt')
 
 transfer_table={
@@ -58,6 +61,10 @@ class ObjectDetector:
                   7: '001001', 8: '002001', 9: '002002', 10: '003001', 11: '003002',
                   12: '003003'}
 
+        
+        rCenter = 300
+        rcLen = 10
+
         while True:
             try:
                 frame,index = input_q.get(timeout=1)
@@ -68,8 +75,6 @@ class ObjectDetector:
                     # frame = frame[:, -1: 0, :]
 
                 frame_truncated = frame[:, 160: , :]
-
-                
 
                 results = self.detect_objects(frame_truncated,index)
                 # print("get frame from index",index)
@@ -84,7 +89,7 @@ class ObjectDetector:
                 #if len(results) > 0:
                 #print("put into detection")This maybe cause empty or full.
                 try:
-                    detection_queue.put_nowait([index,frame,results])#not a good structure
+                    detection_queue.put_nowait([index,frame[:,rCenter-rcLen:rCenter+rcLen],results])#not a good structure
                 except queue.Full:
                     print('[FULL]')
                     pass
@@ -99,11 +104,12 @@ class ObjectDetector:
     def detect_objects(self,frame,index):
         self.frameCount += 1
         inWidth,inHeight = 300,300
-        inScaleFactor,meanVal = 0.007843,127.5
         resize = cv.resize(frame,(inWidth,inHeight))
+        inScaleFactor,meanVal = 0.007843,127.5
 
         blob = cv.dnn.blobFromImage(resize, inScaleFactor, (inWidth, inHeight), (meanVal, meanVal, meanVal),
                                     True)
+
         self.detectionNet.setInput(blob)
         detections = self.detectionNet.forward()
 

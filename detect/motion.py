@@ -32,7 +32,8 @@ class MotionDetect:
     def checkInput(self,frame):
         if self.refLine is None:
             # 第一帧的时候切割下原始参考线
-            self.refLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width]
+            # self.refLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width]
+            self.refLine = frame
             self.hand_last = -6     # -6 = 手在外面， 6 = 手在里面, 其余为中间状态
             self.hand_present = -6
             # print ('Initiate Reference Line')
