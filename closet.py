@@ -293,6 +293,10 @@ class Closet:
                 print("adjust take out ",tup[0])
                 self.cart.remove_item(tup[0])#取出物品
 
+    def delayCheckDoorClose(self):
+        door_check = functools.partial(self._check_door_close)
+        self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
+        self.check_door_close_callback.start()
 
     def update(self):
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
@@ -321,9 +325,8 @@ class Closet:
 
                 # self._start_imageprocessing()
 
-                door_check = functools.partial(self._check_door_close)
-                self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
-                self.check_door_close_callback.start()
+                laterDoor = functools.partial(self.delayCheckDoorClose)
+                tornado.ioloop.IOLoop.current().call_later(delay=1.5, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
             
                 try:
