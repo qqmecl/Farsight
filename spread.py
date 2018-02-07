@@ -5,6 +5,7 @@ import sys
 import time
 import signal
 import subprocess
+import pexpect
 
 
 from relatedSpread import Daemon
@@ -32,11 +33,11 @@ class MyTestDaemon(Daemon):
     def __pullHandle(signum, frame):
         sys.stdout.write('ccccccccc')
         subprocess.call('cd /home/votance/Projects/Farsight', shell=True)
-        subprocess.call('git pull', shell=True)
-        time.sleep(2)
-        subprocess.call('qqmecl', shell=True)
-        time.sleep(2)
-        subprocess.call('cl144225971', shell=True)
+        child = pexpect.spawn('git pull')
+        child.expect('Username')
+        child.sendline('qqmecl')
+        child.expect('Password')
+        child.sendline('cl144225971')
         sys.stdout.write('tttttttttt')
 
 if __name__ == '__main__':
