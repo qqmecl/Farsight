@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-#chen chen chen
-
+#chen
 import os
 import sys
 import time
