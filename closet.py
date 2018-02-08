@@ -347,10 +347,11 @@ class Closet:
                     # print(len(self.motions))
                     if index == 0 and self.firstFrameInit0 == False:
                         print("Frist 0 camera Frame Init interval time is: ",time.time()-self.debugTime)
-                        self.firstFrameInit0 == True
+                        self.firstFrameInit0 = True
+                    
                     if index == 0 and self.firstFrameInit1 == False:
                         print("Frist 1 camera Frame Init interval time is: ",time.time()-self.debugTime)
-                        self.firstFrameInit1 == True
+                        self.firstFrameInit1 = True
 
                     motionType = self.motions[checkIndex].checkInput(frame)
                     self.detectResults[checkIndex].checkData({motionType:result[2]})
