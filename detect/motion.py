@@ -25,7 +25,7 @@ class MotionDetect:
 
         # Reference Line Settings
         self.refLine = None
-        # self.rL_cenX = 300
+        # self.rL_cenX = 310
         # self.rL_half_width = 10
 
 
@@ -57,7 +57,7 @@ class MotionDetect:
         if isCover == 1:
             self.hand_present += 2 # 被覆盖的话就将加状态
         else:
-            self.hand_present -= 2 # 不被覆盖就减状态
+            self.hand_present -= 3 # 不被覆盖就减状态
 
         if abs(self.hand_present) > 6:
             self.hand_present = self.hand_present / abs(self.hand_present) * 6 # 状态只在[-6,6]区间内
@@ -158,8 +158,51 @@ class MotionDetect:
         
         return "None"
 
+   def CoverCheck(self, curLine, refLine):
 
-    def CoverCheck(self, curLine, refLine):
+        present_gray = cv.cvtColor(curLine, cv.COLOR_BGR2GRAY)
+        # present_gray = cv.GaussianBlur(present_gray, (21, 21), 0) # 还需要检查是否需要高斯模糊
+
+        ref_gray = cv.cvtColor(refLine, cv.COLOR_BGR2GRAY)
+        # last_gray = cv.GaussianBlur(last_gray, (21, 21), 0)
+
+        # sigX = np.var(ref_gray) * (curLine.shape[0] * curLine.shape[1]) / (curLine.shape[0] * curLine.shape[1] - 1)
+        # sigY = np.var(present_gray) * (curLine.shape[0] * curLine.shape[1]) / (curLine.shape[0] * curLine.shape[1] - 1)
+        # miuX = np.average(ref_gray)
+        # miuY = np.average(present_gray)
+        # sigXY = 0.0
+        # for i in range(curLine.shape[0]):
+        #   for j in range(curLine.shape[1]):
+        #       sigXY += (ref_gray[i,j]-miuX) * (present_gray[i,j]-miuY)
+        # sigXY /= (curLine.shape[0] * curLine.shape[1] - 1)
+        # C3 = 0.0#(0.03*255.0)**2 / 2.0
+        # SIMI = (sigXY+C3) / ((sigX*sigY)**0.5+C3)
+        # print (SIMI)
+
+        SIMI = []
+        for k in range(10):
+            r = curLine.shape[0]/10
+            c = curLine.shape[1]
+            s = int(k*curLine.shape[0]/10)
+            e = int((k+1)*curLine.shape[0]/10)
+            sigX = np.var(ref_gray[s:e,:]) * (r*c) / (r*c-1)
+            sigY = np.var(present_gray[s:e,:]) * (r*c) / (r*c-1)
+            miuX = np.average(ref_gray[s:e,:])
+            miuY = np.average(present_gray[s:e,:])
+            sigXY = 0.0
+            for i in range(s,e):
+                for j in range(curLine.shape[1]):
+                    sigXY += (ref_gray[i,j]-miuX) * (present_gray[i,j]-miuY)
+            sigXY /= (r*c-1)
+            C3 = (0.03*255.0)**2 / 2.0
+            SIMI.append((sigXY+C3) / ((sigX*sigY)**0.5+C3))
+        # print (SIMI)
+        if min(SIMI) < 0.8: # 该阈值需要深入测试
+            return 1
+        else:
+            return 0
+          
+    def CoverCheck_old(self, curLine, refLine):
 
         # cv.imshow('refLine', refLine)
         # cv.waitKey(1)
