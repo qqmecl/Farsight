@@ -64,14 +64,16 @@ class DetectResult:
                     self.reset()
                 #TODO
             elif motion == "PULL":
-                self.detectState = "PULL_CHECKING"
-                self.actionTime = time.time()
+                if self.lastMotion == "PUSH":
+                    self.detectState = "PULL_CHECKING"
+                    self.actionTime = time.time()
             elif motion == "None":
                 # print("self.detectState is ",self.detectState)
                 if self.detectState == "PULL_CHECKING":
                     self.takeOutCheck()
                     #TODO
                     #Check action ending state.
+            self.lastMotion = motion
 
     def takeOutCheck(self):
         while(not self.window.isEmpty()):
@@ -121,6 +123,7 @@ class DetectResult:
         self.detectState = "NORMAL"
         self.actionTime = time.time()
         self.processing = {}
+        self.lastMotion = None
         for k,item in settings.items.items():
             self.processing[k]=dict(num=0,time=0)
 
