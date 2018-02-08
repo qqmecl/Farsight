@@ -249,6 +249,11 @@ class Closet:
 
         print("curside is: ",self.curSide)#default is left side
 
+        self.debugTime = time.time()
+
+        self.firstFrameInit0 = False
+        self.firstFrameInit1 = False
+
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update, 12)#50 fps
         self.updateScheduler.start()
         #self._start_imageprocessing()
@@ -303,13 +308,16 @@ class Closet:
             self.open_door_time_out -= 1
 
             if self.open_door_time_out <= 0:
+                now_time = time.time()
+                print("Time Out time is: ",self.debugTime-time.time())
+
                 #已经检查足够多次，重置状态机，并且直接返回
                 print('超时未开门')
-                self.door_open_timed_out()
                 # print(self.state)
                 self.open_door_time_out = settings.door_time_out#which means 120*12ms = 8s
                 self.IO.change_to_welcome_page()
                 self.updateScheduler.stop()
+                self.door_open_timed_out()
                 return
 
             if self.IO.is_door_open(self.curSide):
@@ -337,6 +345,13 @@ class Closet:
                     checkIndex = index%2
                     # print("weird index is: ",checkIndex)
                     # print(len(self.motions))
+                    if index == 0 and self.firstFrameInit0 == False:
+                        print("Frist 0 camera Frame Init interval time is: ",time.time()-self.debugTime)
+                        self.firstFrameInit0 == True
+                    if index == 0 and self.firstFrameInit1 == False:
+                        print("Frist 1 camera Frame Init interval time is: ",time.time()-self.debugTime)
+                        self.firstFrameInit1 == True
+
                     motionType = self.motions[checkIndex].checkInput(frame)
                     self.detectResults[checkIndex].checkData({motionType:result[2]})
                     detect = self.detectResults[checkIndex].getDetect()
