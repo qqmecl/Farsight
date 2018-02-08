@@ -25,7 +25,7 @@ class MyTestDaemon(Daemon):
     def __postHandle(signum, frame):
     	sys.stdout.write('ccccccccc')
     	subprocess.call(['pkill', 'farsight'])
-    	time.sleep(2)
+    	time.sleep(4)
     	subprocess.call('/home/votance/anaconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
     	sys.stdout.write('tttttttttt')
 
@@ -48,7 +48,7 @@ class MyTestDaemon(Daemon):
             sys.stdout.write('eof error')
         sys.stdout.write((child.before).decode('utf-8'))
         subprocess.call(['pkill', 'farsight'])
-        time.sleep(2)
+        time.sleep(4)
         subprocess.call('/home/votance/anaconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
 
 if __name__ == '__main__':
