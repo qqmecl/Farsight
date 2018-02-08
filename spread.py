@@ -15,7 +15,7 @@ class MyTestDaemon(Daemon):
     def run(self):
         signal.signal(signal.SIGUSR1, self.__postHandle)
         signal.signal(signal.SIGUSR2, self.__pullHandle)
-        subprocess.call('/home/votance/anaconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
+        #subprocess.call('/home/votance/anaconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
         sys.stdout.write(sys.path[0])
         while True:
             sys.stdout.write('Daemon Alive! {}\n'.format(time.ctime()))
@@ -33,12 +33,15 @@ class MyTestDaemon(Daemon):
     @staticmethod
     def __pullHandle(signum, frame):
         sys.stdout.write('ccccccccc')
-        subprocess.call('cd /home/votance/Projects/Farsight', shell=True)
+        os.chdir('/home/votance/Projects/Farsight')
         child = pexpect.spawn('git pull')
-        child.expect('Username')
+        child.logfile = open('/tmp/pull.log', 'wb')
+        child.expect('Username.*')
         child.sendline('qqmecl')
-        child.expect('Password')
+        child.expect('Password.*')
         child.sendline('cl144225971')
+        child.expect('.*files changed.*')
+        child.sendline('right')
         sys.stdout.write('tttttttttt')
 
 if __name__ == '__main__':
