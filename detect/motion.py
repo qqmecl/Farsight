@@ -1,24 +1,19 @@
 import cv2 as cv
 import numpy as np
 from area import AreaCheck
+import time
 
 class MotionDetect:
     def __init__(self):
         # print("Init motion detect")
         self.hand_last = 0
         self.hand_present = 0
-        self.curMotion = 0
-        self.default_width = 640
         self.last_frame = None
         self.motion_dict = {-1:'PUSH',0:'None',1:'PULL'}
-
-        self.fgbg = cv.createBackgroundSubtractorMOG2()
-        self.fgbg_kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE,(3,3))
 
         self.cnt_out =0
         self.cnt_in =0
         self.divide_x = 300
-        self.frameCount = 0
 
         import time
         self.timeStamp = time.strftime('%Y_%m_%d_%H_%M_%S_',time.localtime(time.time()))
@@ -47,12 +42,11 @@ class MotionDetect:
         # cv.imshow('frame', frame)
         # cv.waitKey(1)
 
-        self.frameCount +=1
 
         curLine = frame # 当前帧的参考线
         # curLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width] # 当前帧的参考线
 
-        isCover = self.CoverCheck(curLine, self.refLine) # 判断是否参考线是否被手覆盖
+        isCover = self.CoverCheck_old(curLine, self.refLine) # 判断是否参考线是否被手覆盖
         # print (isCover)
         if isCover == 1:
             self.hand_present += 2 # 被覆盖的话就将加状态
@@ -123,9 +117,10 @@ class MotionDetect:
             sigXY /= (r*c-1)
             C3 = (0.03*255.0)**2 / 2.0
             SIMI.append((sigXY+C3) / ((sigX*sigY)**0.5+C3))
-        # print (SIMI)
+       
         
         if min(SIMI) < 0.8: # 该阈值需要深入测试
+            # print (SIMI)
             return 1
         else:
             return 0

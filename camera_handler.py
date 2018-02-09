@@ -39,6 +39,8 @@ class WebcamVideoStream:
         self.stopped_caching = False
         self.sending_frame = False
 
+        
+
     def start(self):
         # start the thread to read frames from the video stream
         Thread(target=self.update, args=()).start()
@@ -74,6 +76,15 @@ class CameraHandler:
         self.timeout = CameraHandler.BUSY_TIMEOUT
         self.cameras = {}
         self.videoWriter = {}
+        self.isSave=[]
+        self.isSave.append(False)
+        self.isSave.append(False)
+        self.reset()
+
+    def reset(self):
+        print("reset is save ahtne")
+        self.isSave[0]=False
+        self.isSave[1]=False
 
     def start(self):
         # 忽略 SIGINT，由父进程处理
@@ -119,6 +130,7 @@ class CameraHandler:
                     self.videoWriter[src] = cv2.VideoWriter(video_FileName, cv2.VideoWriter_fourcc(*'XVID')
                                         , DEFAULT_FPS, (DEFAULT_WIDTH,DEFAULT_HEIGHT))#每个启动的摄像头有一个保存类
         elif cmd == 'stop':
+            self.reset()
             for src in cameras:
                 self.cameras[src].pause_sending()
                 if settings.SAVE_VIDEO_OUTPUT:
@@ -141,6 +153,16 @@ class CameraHandler:
 
             if settings.SAVE_VIDEO_OUTPUT:
                 self.videoWriter[src].write(data)  # 将每一帧写入视频文件中
+
+            if settings.SAVE_DEBUG_OUTPUT and not self.isSave[src]:
+                self.isSave[src] = True
+                tiem = time.time()
+                cv2.imwrite("Output/"+str(src)+"_"+str(tiem)+".png",data)
+                  # 将每一帧写入视频文件中
+                slide = data[:,300:320]
+                cv2.imwrite("Output/slide"+str(src)+"_"+str(tiem)+".png",slide)
+
+
         except queue.Full:
             print('[FULL] input_q')
             pass

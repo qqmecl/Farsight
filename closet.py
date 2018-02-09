@@ -256,8 +256,13 @@ class Closet:
         self.firstFrameInit0 = False
         self.firstFrameInit1 = False
 
+       
+
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,20)#50 fps
         self.updateScheduler.start()
+
+        
+
         #self._start_imageprocessing()
 
     def authorize_operator(self, token, side):
@@ -333,6 +338,9 @@ class Closet:
                     self.open_rightdoor_success()
                 self.logger.info('用户已经打开门')
 
+                self.debugTime = time.time()
+
+                print("OpenDoor time is ",self.debugTime)
                 
                 later = functools.partial(self._start_imageprocessing)
                 tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
