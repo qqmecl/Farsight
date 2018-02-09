@@ -49,6 +49,7 @@ class DetectResult:
                 print("current motion is: ",motion)
             if motion == "PUSH":#Action start or Action done.
                 if self.detectState == "PULL_CHECKING":
+                    print("From push state detect pull checking last!!!!!")
                     self.takeOutCheck()
                     self.reset()
                 else:
@@ -57,7 +58,6 @@ class DetectResult:
 
                     detectId = self.getCurrentDetection(True)
                     if detectId is not None:
-                        # print("PUT BACK: ",settings.items[detectId])
                         self.detect.append({"direction":"IN","id":detectId})
                     else:#empty push
                         self.window.empty()#清空window
@@ -80,8 +80,6 @@ class DetectResult:
                     #TODO
                     #Check action ending state.
 
-            # if motion != None:
-                # self.lastMotion = motion
 
     def takeOutCheck(self):
         while(not self.window.isEmpty()):
@@ -111,7 +109,7 @@ class DetectResult:
                     if num >= threshold2: # 原来是4
                         return id
                 else:
-                    if num > threshold3: # 原来是3
+                    if num > threshold3: # 原来是3 bigger than 0.5 second and 
                         return id
                     else:
                         self.reset()
