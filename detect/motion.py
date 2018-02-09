@@ -160,21 +160,6 @@ class MotionDetect:
             return 1
         else:
             return 0
-
-# if __name__ == "__main__":
-#     motion = MotionDetect()
-#     #This would check the success rate of Pull Push judge
-#     src_file_name = "../../data/input/left_up2018_01_24_12_13_140.avi"
-#     # src_file_name = "../../data/input/left_up2018_01_25_14_52_420.avi"
-#     # outputpath = "../../data/output/"
-#     cap = cv.VideoCapture(src_file_name)
-
-#     ret, frame = cap.read()
-#     while ret:
-#         #print("frame is: ",frame)
-#         motion.checkInput(frame)
-#         ret, frame = cap.read()
-#     cap.release()
     
 if __name__ == "__main__":
     motion = MotionDetect()
