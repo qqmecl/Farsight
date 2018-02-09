@@ -41,6 +41,7 @@ init_url = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
 
 SAVE_DETECT_OUTPUT = False
 SAVE_VIDEO_OUTPUT = False
+SAVE_DEBUG_OUTPUT = True
 # SAVE_OUTPUT = True
 
 
