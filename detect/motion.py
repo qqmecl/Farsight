@@ -52,7 +52,7 @@ class MotionDetect:
         curLine = frame # 当前帧的参考线
         # curLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width] # 当前帧的参考线
 
-        isCover = self.CoverCheck_old(curLine, self.refLine) # 判断是否参考线是否被手覆盖
+        isCover = self.CoverCheck(curLine, self.refLine) # 判断是否参考线是否被手覆盖
         # print (isCover)
         if isCover == 1:
             self.hand_present += 2 # 被覆盖的话就将加状态
@@ -180,23 +180,21 @@ class MotionDetect:
         # print (SIMI)
 
         SIMI = []
+        r = curLine.shape[0]/10.0
+        c = curLine.shape[1]
         for k in range(10):
-            r = curLine.shape[0]/10
-            c = curLine.shape[1]
-            s = int(k*curLine.shape[0]/10)
-            e = int((k+1)*curLine.shape[0]/10)
+            s = int(k * r)
+            e = int((k+1) * r)
             sigX = np.var(ref_gray[s:e,:]) * (r*c) / (r*c-1)
             sigY = np.var(present_gray[s:e,:]) * (r*c) / (r*c-1)
             miuX = np.average(ref_gray[s:e,:])
             miuY = np.average(present_gray[s:e,:])
-            sigXY = 0.0
-            for i in range(s,e):
-                for j in range(curLine.shape[1]):
-                    sigXY += (ref_gray[i,j]-miuX) * (present_gray[i,j]-miuY)
+            sigXY = np.sum(np.multiply(ref_gray[s:e,:]-miuX, present_gray[s:e,:]-miuY))
             sigXY /= (r*c-1)
             C3 = (0.03*255.0)**2 / 2.0
             SIMI.append((sigXY+C3) / ((sigX*sigY)**0.5+C3))
         # print (SIMI)
+        
         if min(SIMI) < 0.8: # 该阈值需要深入测试
             return 1
         else:
