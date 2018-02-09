@@ -52,7 +52,8 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     
 
     def get_scale_val(self):
-    	return self.val_scale
+        self.val_scale = self.scale.read()[0]
+        return self.val_scale
 
     '''
     	speaker部分接口

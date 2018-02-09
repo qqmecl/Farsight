@@ -62,11 +62,16 @@ class DetectResult:
                         self.window.empty()#清空window
 
                     self.reset()
+
+                self.lastMotion = motion
                 #TODO
             elif motion == "PULL":
+                print("Last motion is: ",self.lastMotion)
                 if self.lastMotion == "PUSH":
                     self.detectState = "PULL_CHECKING"
                     self.actionTime = time.time()
+
+                self.lastMotion = motion
             elif motion == "None":
                 # print("self.detectState is ",self.detectState)
                 if self.detectState == "PULL_CHECKING":
@@ -74,8 +79,8 @@ class DetectResult:
                     #TODO
                     #Check action ending state.
 
-            if self.lastMotion!= None:
-                self.lastMotion = motion
+            # if motion != None:
+                # self.lastMotion = motion
 
     def takeOutCheck(self):
         while(not self.window.isEmpty()):
@@ -116,7 +121,7 @@ class DetectResult:
         for val in detects:
             #(confidence,itemId,cur_time) one
             (_id,time)=(val[1],val[2])
-            print("check ",settings.items[_id]["name"],"by time ",time)
+            # print("check ",settings.items[_id]["name"],"by time ",time)
             new_num = self.processing[_id]["num"] + 1
             self.processing[_id]["time"] = ((self.processing[_id]["time"]*self.processing[_id]["num"])+time)/new_num
             self.processing[_id]["num"] = new_num

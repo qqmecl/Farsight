@@ -95,7 +95,9 @@ class Closet:
 
         self._detection_queue = Queue(maxsize=20*4)
 
-        self.open_door_time_out = settings.door_time_out#which means 80*20ms = 8s
+        # self.open_door_time_out = settings.door_time_out#which means 80*20ms = 8s
+
+        self.check_door_time_out = False
 
         self.num_workers = config['num_workers']
 
@@ -183,7 +185,7 @@ class Closet:
 
 
         #连接串口管理器
-        self.IO.start()
+        # self.IO.start()
 
         self.detectResults = [] 
         for i in range(2):
@@ -254,7 +256,7 @@ class Closet:
         self.firstFrameInit0 = False
         self.firstFrameInit1 = False
 
-        self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update, 12)#50 fps
+        self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,20)#50 fps
         self.updateScheduler.start()
         #self._start_imageprocessing()
 
@@ -305,22 +307,26 @@ class Closet:
 
     def update(self):
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
-            self.open_door_time_out -= 1
+            #self.open_door_time_out -= 1
 
-            if self.open_door_time_out <= 0:
-                now_time = time.time()
-                print("Time Out time is: ",self.debugTime-time.time())
+            # print("Checking time is: ",time.time()-self.debugTime)
+
+            if self.check_door_time_out == False and time.time()-self.debugTime > 7:
+                # now_time = time.time()
+                print("Time Out time is: ",time.time()-self.debugTime)
 
                 #已经检查足够多次，重置状态机，并且直接返回
                 print('超时未开门')
                 # print(self.state)
-                self.open_door_time_out = settings.door_time_out#which means 120*12ms = 8s
+                # self.open_door_time_out = True#which means 120*12ms = 8s
                 self.IO.change_to_welcome_page()
                 self.updateScheduler.stop()
                 self.door_open_timed_out()
                 return
 
             if self.IO.is_door_open(self.curSide):
+                self.open_door_time_out = True
+
                 if self.curSide == self.IO.doorLock.LEFT_DOOR:
                     self.open_leftdoor_success()
                 else:
@@ -353,7 +359,10 @@ class Closet:
                         print("Frist 1 camera Frame Init interval time is: ",time.time()-self.debugTime)
                         self.firstFrameInit1 = True
 
+                    # print("Before check input time: ",time.time())
                     motionType = self.motions[checkIndex].checkInput(frame)
+                    # print("After check input time: ",time.time())
+
                     self.detectResults[checkIndex].checkData({motionType:result[2]})
                     detect = self.detectResults[checkIndex].getDetect()
                     # if downNum == None:
@@ -399,7 +408,7 @@ class Closet:
 
         now_scale = self.IO.get_scale_val()
 
-        if abs(now_scale - self.beforeScaleVal) < 0.15:
+        if now_scale - self.beforeScaleVal < 0.15:
             print("Can't Envoke weight change")
             self.order_process_success()
         else:
@@ -410,7 +419,7 @@ class Closet:
                 # self.logger.info(order)
                 strData = json.dumps(order)
                 self.pollData = self.secretPassword.aes_cbc_encrypt(strData)
-                print(self.pollData)
+                # print(self.pollData)
 
                 #req = requests.post(Closet.ORDER_URL, data=self.pollData)
                 self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)

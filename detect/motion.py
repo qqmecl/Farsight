@@ -52,7 +52,7 @@ class MotionDetect:
         curLine = frame # 当前帧的参考线
         # curLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width] # 当前帧的参考线
 
-        isCover = self.CoverCheck(curLine, self.refLine) # 判断是否参考线是否被手覆盖
+        isCover = self.CoverCheck_old(curLine, self.refLine) # 判断是否参考线是否被手覆盖
         # print (isCover)
         if isCover == 1:
             self.hand_present += 2 # 被覆盖的话就将加状态
@@ -158,7 +158,7 @@ class MotionDetect:
         
         return "None"
 
-   def CoverCheck(self, curLine, refLine):
+    def CoverCheck(self, curLine, refLine):
 
         present_gray = cv.cvtColor(curLine, cv.COLOR_BGR2GRAY)
         # present_gray = cv.GaussianBlur(present_gray, (21, 21), 0) # 还需要检查是否需要高斯模糊

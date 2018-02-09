@@ -11,7 +11,7 @@ import settings
 
 CWD_PATH = os.getcwd()
 
-print(CWD_PATH)
+# print(CWD_PATH)
 
 if CWD_PATH != '/':
     # MODEL_PATH = os.path.join(CWD_PATH + '/data/' + 'frozen_inference_graph_2_7.pb')
@@ -66,7 +66,7 @@ class ObjectDetector:
                   12: '003003'}
 
         
-        rCenter = 300
+        rCenter = 310
         rcLen = 10
 
         while True:

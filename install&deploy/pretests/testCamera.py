@@ -2,17 +2,21 @@ import numpy as np
 import cv2
 
 
-usb_cameras=["/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:9:1.0-video-index0",
+usb_cameras=[
+"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0",
+"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:3:1.0-video-index0",#done
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
 ]
 
-index = 0
+
+index = 3
 
 cap = cv2.VideoCapture(usb_cameras[index])
+# cap = cv2.VideoCapture(0)
+ret=True
 
-while(True):
+while(ret):
     # Capture frame-by-frame
     ret, frame = cap.read()
 
@@ -21,8 +25,8 @@ while(True):
 
     # Display the resulting frame
     if ret:
-	    # cv2.imshow('frame',frame)
-	    cv2.imwrite('frame',frame)
+	    cv2.imshow('frame',frame)
+	    # cv2.imwrite('frame',frame)
 	    if cv2.waitKey(1) & 0xFF == ord('q'):
 	        break
 
