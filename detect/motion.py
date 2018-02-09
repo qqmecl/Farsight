@@ -46,7 +46,8 @@ class MotionDetect:
         curLine = frame # 当前帧的参考线
         # curLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width] # 当前帧的参考线
 
-        isCover = self.CoverCheck_old(curLine, self.refLine) # 判断是否参考线是否被手覆盖
+        # isCover = self.CoverCheck_old(curLine, self.refLine) # 判断是否参考线是否被手覆盖
+        isCover = self.CoverCheck(curLine, self.refLine) # 判断是否参考线是否被手覆盖
         # print (isCover)
         if isCover == 1:
             self.hand_present += 2 # 被覆盖的话就将加状态
@@ -62,7 +63,7 @@ class MotionDetect:
             if motion!= 0:
                 motion = motion / abs(motion) # 将motion归一为 1 或 -1
                 self.hand_last = self.hand_present # 只在此处存储hand_last，保证它为 -6 或 6
-                print('hand state changed. the motion is:',self.motion_dict[motion])  # -1--push, 1--pull
+                # print('hand state changed. the motion is:',self.motion_dict[motion])  # -1--push, 1--pull
                 # import os
                 # writePath = os.path.join(os.getcwd(),"../data/output/"+self.timeStamp+"/")
                 # if os.path.isdir(writePath) == False:

@@ -66,7 +66,7 @@ class ObjectDetector:
                   12: '003003'}
 
         
-        rCenter = 310
+        rCenter = 320
         rcLen = 10
 
         while True:
