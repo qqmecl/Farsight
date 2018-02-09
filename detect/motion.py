@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from area import AreaCheck
+from detect.area import AreaCheck
 import time
 
 class MotionDetect:

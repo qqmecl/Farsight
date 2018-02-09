@@ -6,7 +6,7 @@ import queue
 from setproctitle import setproctitle
 import time
 
-from area import AreaCheck
+from detect.area import AreaCheck
 import settings
 
 CWD_PATH = os.getcwd()
