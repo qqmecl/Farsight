@@ -387,8 +387,10 @@ class Closet:
                     #             return chooseDetect(isLast,upNum,upId)
                     if len(detect) > 0:
                         print(detect)
+
                         direction = detect[0]["direction"]
                         id = detect[0]["id"]
+                        
                         now_time = time.time()
 
                         if now_time - self.lastDetectTime > 0.5:

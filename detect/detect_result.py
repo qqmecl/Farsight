@@ -28,8 +28,11 @@ class Queue:
 class UpDownNotMatchError(Exception):
     pass
 
+
 #TODO:dynamic change reco display.
 
+
+#Theoritically,the ac
 #single pipeline check about detecting.
 class DetectResult:
     def __init__(self):
@@ -108,7 +111,7 @@ class DetectResult:
                     self.reset()
             else:#out item check
                 now_time = time.time()
-                if now_time-self.actionTime < 0.2:
+                if now_time-self.actionTime < 0.4:
                     if num >= threshold2: # 原来是4
                         print("less time check: ",num)
                         return id
@@ -120,6 +123,7 @@ class DetectResult:
                         self.reset()
         return None
 
+#Dynamic adjusting phase.
 
     def loadData(self,detects):
         for val in detects:
