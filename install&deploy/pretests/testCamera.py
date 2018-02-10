@@ -10,7 +10,7 @@ usb_cameras=[
 ]
 
 
-index = 0
+index = 3
 
 cap = cv2.VideoCapture(usb_cameras[index])
 # cap = cv2.VideoCapture(0)
