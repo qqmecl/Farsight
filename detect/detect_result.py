@@ -28,6 +28,7 @@ class Queue:
 class UpDownNotMatchError(Exception):
     pass
 
+#Theoritically,the ac
 #single pipeline check about detecting.
 class DetectResult:
     def __init__(self):
@@ -104,7 +105,7 @@ class DetectResult:
                     self.reset()
             else:
                 now_time = time.time()
-                if now_time-self.actionTime < 0.2:
+                if now_time-self.actionTime < 0.4:
                     if num >= threshold2: # 原来是4
                         return id
                 else:
@@ -114,6 +115,7 @@ class DetectResult:
                         self.reset()
         return None
 
+#Dynamic adjusting phase.
 
     def loadData(self,detects):
         for val in detects:
