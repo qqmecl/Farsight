@@ -28,6 +28,8 @@ class Queue:
 class UpDownNotMatchError(Exception):
     pass
 
+#TODO:dynamic change reco display.
+
 #single pipeline check about detecting.
 class DetectResult:
     def __init__(self):
@@ -71,6 +73,7 @@ class DetectResult:
                 if self.lastMotion == "PUSH":
                     self.detectState = "PULL_CHECKING"
                     self.actionTime = time.time()
+                    print("pull checking start time is: ",self.actionTime)
 
                 self.lastMotion = motion
             elif motion == "None":
@@ -98,18 +101,20 @@ class DetectResult:
         # threshold1,threshold2,threshold3 = 3,4,3
         threshold1,threshold2,threshold3 = 1,2,1
         if id is not None:
-            if isLast:
+            if isLast:#in item check
                 if num > threshold1: # 原来是3
                     return id
                 else:
                     self.reset()
-            else:
+            else:#out item check
                 now_time = time.time()
                 if now_time-self.actionTime < 0.2:
                     if num >= threshold2: # 原来是4
+                        print("less time check: ",num)
                         return id
                 else:
-                    if num > threshold3: # 原来是3 bigger than 0.5 second and 
+                    if num > threshold3: # 原来是3 bigger than 0.5 second and
+                        print("more time check: ",num) 
                         return id
                     else:
                         self.reset()

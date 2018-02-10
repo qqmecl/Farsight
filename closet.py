@@ -415,7 +415,7 @@ class Closet:
 
         now_scale = self.IO.get_scale_val()
 
-        if now_scale - self.beforeScaleVal < 0.15:
+        if now_scale - self.beforeScaleVal < 0.1:
             print("Can't Envoke weight change")
             self.order_process_success()
         else:
