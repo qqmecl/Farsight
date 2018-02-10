@@ -77,14 +77,14 @@ class CameraHandler:
         self.cameras = {}
         self.videoWriter = {}
         self.isSave=[]
-        self.isSave.append(False)
-        self.isSave.append(False)
+        for i in range(4):
+            self.isSave.append(False)
         self.reset()
 
     def reset(self):
         print("reset is save ahtne")
-        self.isSave[0]=False
-        self.isSave[1]=False
+        for i in range(4):
+            self.isSave[i] = False
 
     def start(self):
         # 忽略 SIGINT，由父进程处理
@@ -159,7 +159,7 @@ class CameraHandler:
                 tiem = time.time()
                 cv2.imwrite("Output/"+str(src)+"_"+str(tiem)+".png",data)
                   # 将每一帧写入视频文件中
-                slide = data[:,300:320]
+                slide = data[:,310:330]
                 cv2.imwrite("Output/slide"+str(src)+"_"+str(tiem)+".png",slide)
 
 

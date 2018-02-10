@@ -30,7 +30,6 @@ from detect.motion import MotionDetect
 from detect.object_detector import ObjectDetector
 
 
-
 class Closet:
     '''
         代表整个柜子

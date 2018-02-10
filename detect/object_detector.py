@@ -6,7 +6,7 @@ import queue
 from setproctitle import setproctitle
 import time
 
-from area import AreaCheck
+from detect.area import AreaCheck
 import settings
 
 CWD_PATH = os.getcwd()
@@ -66,7 +66,7 @@ class ObjectDetector:
                   12: '003003'}
 
         
-        rCenter = 310
+        rCenter = 320
         rcLen = 10
 
         while True:

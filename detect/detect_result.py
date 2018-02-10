@@ -42,11 +42,12 @@ class DetectResult:
             for val in detects:
             #(confidence,itemId,cur_time) one
                 (_id,_time)=(val[1],val[2])
-                # print("check ",settings.items[_id]["name"],"by time ",_time)
+                print("check ",settings.items[_id]["name"],"by time ",_time)
 
 
             self.window.enqueue(detects)
-            # print("current motion is: ",motion)
+            if motion is not "None":
+                print("current motion is: ",motion)
             if motion == "PUSH":#Action start or Action done.
                 if self.detectState == "PULL_CHECKING":
                     print("From push state detect pull checking last!!!!!")
