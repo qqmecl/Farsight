@@ -27,14 +27,15 @@ while(ret):
         cv2.imshow('frame',frame)
 
         if index > 1:
-            frame = cv.flip(frame,1)
+            frame = cv2.flip(frame,1)
             #frame = frame[:, -1: 0, :]
 
         frame_truncated = frame[:, 310:330]
-	    cv2.imwrite('frame',frame_truncated)
+        cv2.imwrite("bg"+str(index)+".png",frame)
+        cv2.imwrite("slide"+str(index)+".png",frame_truncated)
 
-	    if cv2.waitKey(1) & 0xFF == ord('q'):
-	        break
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
 # When everything done, release the capture
 cap.release()

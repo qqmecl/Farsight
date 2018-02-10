@@ -417,13 +417,10 @@ class Closet:
 
         now_scale = self.IO.get_scale_val()
 
-        if now_scale - self.beforeScaleVal < 0.1:
-            print("Can't Envoke weight change")
-            self.order_process_success()
-        else:
+        delta = now_scale - self.beforeScaleVal
+        if  delta < -0.1:
             print("Envoke weight change")
-
-            if self.cart.as_order()["data"] != {}:
+            if self.cart.as_order()["data"]!={}:
                 order = self.cart.as_order()
                 # self.logger.info(order)
                 strData = json.dumps(order)
@@ -438,6 +435,10 @@ class Closet:
                 #发送订单到中央服务
                 # self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
                 # self.pollPeriod.start()
+        else:
+            print("Can't Envoke weight change")
+            self.order_process_success()
+           
 
     #chen chen chen
     def polling(self):
