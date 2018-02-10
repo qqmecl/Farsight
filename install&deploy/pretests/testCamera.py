@@ -9,7 +9,6 @@ usb_cameras=[
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
 ]
 
-
 index = 3
 
 cap = cv2.VideoCapture(usb_cameras[index])
@@ -25,8 +24,15 @@ while(ret):
 
     # Display the resulting frame
     if ret:
-	    cv2.imshow('frame',frame)
-	    # cv2.imwrite('frame',frame)
+        cv2.imshow('frame',frame)
+
+        if index > 1:
+            frame = cv.flip(frame,1)
+            #frame = frame[:, -1: 0, :]
+
+        frame_truncated = frame[:, 310:330]
+	    cv2.imwrite('frame',frame_truncated)
+
 	    if cv2.waitKey(1) & 0xFF == ord('q'):
 	        break
 
