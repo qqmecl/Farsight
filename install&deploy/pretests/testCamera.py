@@ -2,14 +2,28 @@ import numpy as np
 import cv2
 
 
+# usb_cameras=[
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0",
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:3:1.0-video-index0",#done
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
+# ]
 usb_cameras=[
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:3:1.0-video-index0",#done
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
 ]
+# pci-0000:00:14.0-usb-0:3:1.0-video-index0
+# pci-0000:00:14.0-usb-0:6:1.0-video-index0
+# pci-0000:00:14.0-usb-0:7:1.0-video-index0
+# pci-0000:00:14.0-usb-0:8:1.0-video-index0
 
-index = 3
+
+
+
+
+index = 2
 
 cap = cv2.VideoCapture(usb_cameras[index])
 # cap = cv2.VideoCapture(0)
@@ -24,11 +38,13 @@ while(ret):
 
     # Display the resulting frame
     if ret:
-        cv2.imshow('frame',frame)
+       
 
         if index > 1:
             frame = cv2.flip(frame,1)
             #frame = frame[:, -1: 0, :]
+
+        cv2.imshow('frame',frame)
 
         frame_truncated = frame[:, 310:330]
         cv2.imwrite("bg"+str(index)+".png",frame)

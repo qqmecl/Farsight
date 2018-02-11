@@ -50,6 +50,8 @@ class MotionDetect:
         isCover = self.CoverCheck(curLine, self.refLine) # 判断是否参考线是否被手覆盖
         # print (isCover)
         if isCover == 1:
+            # cv.imshow('curLine', curLine)
+            # cv.waitKey(1)
             self.hand_present += 2 # 被覆盖的话就将加状态
         else:
             self.hand_present -= 3 # 不被覆盖就减状态
@@ -120,8 +122,8 @@ class MotionDetect:
             SIMI.append((sigXY+C3) / ((sigX*sigY)**0.5+C3))
        
         
-        if min(SIMI) < 0.8: # 该阈值需要深入测试
-            # print (SIMI)
+        if min(SIMI) < 0.5: # 该阈值需要深入测试
+            # print ("isCover",SIMI)
             return 1
         else:
             return 0

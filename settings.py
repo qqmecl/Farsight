@@ -27,13 +27,18 @@ if WELCOME_PAGE == 'error':
 # ]
 
 
+# usb_cameras=[
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0",
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:3:1.0-video-index0",#done
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
+# ]
 usb_cameras=[
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0",
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:3:1.0-video-index0",#done
+"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0",#done
+"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:3:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
 ]
-
 
 # items={}
 
@@ -42,6 +47,7 @@ init_url = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
 SAVE_DETECT_OUTPUT = False
 SAVE_VIDEO_OUTPUT = False
 SAVE_DEBUG_OUTPUT = False
+SAVE_DEBUG_OUTPUT = True
 # SAVE_OUTPUT = True
 
 

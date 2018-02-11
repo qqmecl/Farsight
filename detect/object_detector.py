@@ -122,6 +122,9 @@ class ObjectDetector:
         results=[]
         cur_time = time.time()
 
+        maxConfidence = 0
+        maxItemId=""
+
         for i in range(detections.shape[2]):
             confidence = detections[0, 0, i, 2]
             class_id = int(detections[0, 0, i, 1])
@@ -144,8 +147,10 @@ class ObjectDetector:
                 if confidence > 0.8:
                     if AreaCheck(XAxis,YAxis,index).passBaseLine():
                         # print("confidence with id",confidence,itemId)
-
-                        results.append((confidence,itemId,cur_time))
+                        if confidence > maxConfidence:
+                            maxConfidence = confidence
+                            maxItemId = itemId
+                        # results.append((confidence,itemId,cur_time))
                         
                         if settings.SAVE_DETECT_OUTPUT:
                             import os
@@ -175,6 +180,9 @@ class ObjectDetector:
             except KeyError:
                 print("class_id is: ",class_id)
                 pass
+
+        if maxConfidence !=0:
+            results.append((maxConfidence,maxItemId,cur_time))
 
         return results#默认返回空值
 

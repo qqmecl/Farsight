@@ -27,11 +27,16 @@ class Cart:
         '''
             添加商品到购物车，如果添加过快，会被忽略
         '''
+
+        # self.items[item_id] += 1
+
         if item_id in self.items:
             self.items[item_id] += 1
         else:
             self.items[item_id] = 1
 
+        print("Cart add action!!!!!!!!!!!!!")
+        # if self.items[item_id] > 0:
         self.IO.update_screen_item(True,item_id)
 
     def remove_item(self, item_id):
@@ -41,13 +46,22 @@ class Cart:
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
 
+            print("Trully remove item!!")
+
             self.IO.update_screen_item(False,item_id)
+
+            return True
         else:
+            pass
             # TODO:
-            print('Try to clear an item which is not included in the closet!')
+            # print('Try to clear an item which is not included in the closet!')
         self.last_remove_timestamp = time.time()
-            
-   
+        
+        return False
+    # def isHaveItem(self,item_id):
+        # return self.items[item_id] > 0
+
+
     def as_order(self):
         '''
             转换成下单所需的格式

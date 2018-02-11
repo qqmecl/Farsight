@@ -82,7 +82,7 @@ class CameraHandler:
         self.reset()
 
     def reset(self):
-        print("reset is save ahtne")
+        # print("reset is save ahtne")
         for i in range(4):
             self.isSave[i] = False
 

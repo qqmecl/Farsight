@@ -131,7 +131,7 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        print(settings.items)
+        # print(settings.items)
 
 
     def start(self):
@@ -252,6 +252,8 @@ class Closet:
 
         self.debugTime = time.time()
 
+        self.detectCache=None
+
         self.firstFrameInit0 = False
         self.firstFrameInit1 = False
 
@@ -341,10 +343,11 @@ class Closet:
 
                 print("OpenDoor time is ",self.debugTime)
                 
-                later = functools.partial(self._start_imageprocessing)
-                tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
 
-                # self._start_imageprocessing()
+                # later = functools.partial(self._start_imageprocessing)
+                # tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
+
+                self._start_imageprocessing()
 
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
@@ -366,11 +369,12 @@ class Closet:
                         print("Frist 1 camera Frame Init interval time is: ",time.time()-self.debugTime)
                         self.firstFrameInit1 = True
 
+                    # print("Begin ")
                     # print("Before check input time: ",time.time())
                     motionType = self.motions[checkIndex].checkInput(frame)
                     # print("After check input time: ",time.time())
 
-                    self.detectResults[checkIndex].checkData({motionType:result[2]})
+                    self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]})
                     detect = self.detectResults[checkIndex].getDetect()
                     # if downNum == None:
                     #     if upNum == None:
@@ -386,25 +390,63 @@ class Closet:
                     #         else:
                     #             return chooseDetect(isLast,upNum,upId)
                     if len(detect) > 0:
-                        print(detect)
+                        # print(detect)
 
                         direction = detect[0]["direction"]
                         id = detect[0]["id"]
                         
                         now_time = time.time()
+                        now_num = detect[0]["num"]
 
-                        if now_time - self.lastDetectTime > 0.5:
+                        
+                        intervalTime = now_time - self.lastDetectTime
+
+                        print("action interval is: ",intervalTime)
+
+                        if intervalTime > 0.4:
+                            self.detectCache = None
+
+                            self.detectCache=[detect[0]["id"],detect[0]["num"]]
+
                             if direction == "IN":
-                                print(checkIndex,"Put back",settings.items[id]["name"])
+                                print(checkIndex,"{Put back",settings.items[id]["name"],now_num,"}")
 
-                                self.cart.remove_item(id)
+                                self.detectCache.append(self.cart.remove_item(id))
                             else:
-                                print(checkIndex,"Take out",settings.items[id]["name"])
+                                print(checkIndex,"{Take out",settings.items[id]["name"],now_num,"}")
                                 self.cart.add_item(id)
+                                self.detectCache.append(True)
 
-                        self.lastDetectTime = time.time()
+                        else:
+                            #fix camera result
+                            print("Enter cache result fixing phase!")
+                            cacheId = self.detectCache[0]
+                            cacheNum = self.detectCache[1]
+                            actionSuccess = self.detectCache[2]
+
+                            if now_num > cacheNum and id != cacheId:
+                                if direction == "OUT":
+                                    self.cart.remove_item(cacheId)
+                                    self.cart.add_item(id)
+
+                                    print("{Put back",settings.items[cacheId]["name"],"}")
+                                    print("{Take out",settings.items[id]["name"],"}")
+                                elif direction == "IN":
+                                    # if self.cart.isHaveItem(cacheId):
+                                    if actionSuccess:
+                                        self.cart.add_item(cacheId)
+                                        print("{Take out",settings.items[cacheId]["name"],"}")
+                                    
+                                    self.cart.remove_item(id)
+                                    print("{Put back",settings.items[id]["name"],"}")
+
+
                         self.detectResults[checkIndex].resetDetect()
 
+                        self.lastDetectTime = time.time()
+
+                        print("Action time is: ",time.time())
+                        self.detectResults[checkIndex].setActionTime()
                 except queue.Empty:
                     # print()
                     pass
@@ -430,6 +472,8 @@ class Closet:
                 #req = requests.post(Closet.ORDER_URL, data=self.pollData)
                 self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
                 self.pollPeriod.start()
+
+                # self.order_process_success()
             else:
                 self.order_process_success()
                 #发送订单到中央服务
