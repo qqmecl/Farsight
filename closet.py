@@ -238,7 +238,8 @@ class Closet:
 
         self.beforeScaleVal = self.IO.get_scale_val()
 
-        self.IO.say_welcome()#发声
+        if settings.speaker_on:
+            self.IO.say_welcome()#发声
 
         self.IO.change_to_inventory_page()#进入购物车界面
 
@@ -524,8 +525,9 @@ class Closet:
                 self.motions[i].reset()
 
 
+            if settings.speaker_on:
+                self.IO.say_goodbye()
 
-            self.IO.say_goodbye()
             self.IO.change_to_processing_page()
 
     def _start_imageprocessing(self):

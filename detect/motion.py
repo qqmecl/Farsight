@@ -82,7 +82,7 @@ class MotionDetect:
 
     def reset(self):
         self.refLine = None
-        print("reset Done")
+        # print("reset Done")
 
 
     def CoverCheck(self, curLine, refLine):

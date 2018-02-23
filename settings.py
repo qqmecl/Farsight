@@ -8,6 +8,8 @@ mock_screen = False
 scale_port = 'COM1'
 num_cameras = 4
 http_port = 5000
+speaker_on = True
+speaker_on = False
 
 # door_time_out=150#
 
@@ -34,9 +36,13 @@ if WELCOME_PAGE == 'error':
 # "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
 # ]
 usb_cameras=[
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0",#done
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:3:1.0-video-index0",
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0",#done
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:3:1.0-video-index0",
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",
+# "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
+"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:5:1.0-video-index0",
+"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:4:1.0-video-index0",
+"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",#done
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
 ]
 
