@@ -71,7 +71,7 @@ class ObjectDetector:
 
         while True:
             try:
-                frame,index = input_q.get(timeout=1)
+                frame,index,frame_time = input_q.get(timeout=1)
                 #self.detect_objects(frame)
 
                 if index > 1:
@@ -93,7 +93,7 @@ class ObjectDetector:
                 #if len(results) > 0:
                 #print("put into detection")This maybe cause empty or full.
                 try:
-                    detection_queue.put_nowait([index,frame[:,rCenter-rcLen:rCenter+rcLen],results])#not a good structure
+                    detection_queue.put_nowait([index,frame[:,rCenter-rcLen:rCenter+rcLen],results,frame_time])#not a good structure
                 except queue.Full:
                     print('[FULL]')
                     pass

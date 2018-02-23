@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 from detect.area import AreaCheck
 import time
+import settings
 
 class MotionDetect:
     def __init__(self):
@@ -50,6 +51,11 @@ class MotionDetect:
         isCover = self.CoverCheck(curLine, self.refLine) # 判断是否参考线是否被手覆盖
         # print (isCover)
         if isCover == 1:
+
+            if settings.SAVE_DEBUG_OUTPUT:
+                tiem = time.time()
+                cv.imwrite("Output/"+str(tiem)+"ref.png",self.refLine)
+                cv.imwrite("Output/"+str(tiem)+"cur.png",curLine)
             # cv.imshow('curLine', curLine)
             # cv.waitKey(1)
             self.hand_present += 2 # 被覆盖的话就将加状态

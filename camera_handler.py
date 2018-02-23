@@ -82,6 +82,12 @@ class CameraHandler:
         self.reset()
 
     def reset(self):
+        while True:#empty input frame queue
+            try:
+                frame = self.frames_queues.get_nowait()
+            except queue.Empty:
+                break
+
         # print("reset is save ahtne")
         for i in range(4):
             self.isSave[i] = False
@@ -130,11 +136,11 @@ class CameraHandler:
                     self.videoWriter[src] = cv2.VideoWriter(video_FileName, cv2.VideoWriter_fourcc(*'XVID')
                                         , DEFAULT_FPS, (DEFAULT_WIDTH,DEFAULT_HEIGHT))#每个启动的摄像头有一个保存类
         elif cmd == 'stop':
-            self.reset()
             for src in cameras:
                 self.cameras[src].pause_sending()
                 if settings.SAVE_VIDEO_OUTPUT:
                     del self.videoWriter[src]  # 摄像头停止活动后销毁视频保存类
+            self.reset()
 
     def _sendframe(self, src):
         '''
@@ -149,7 +155,7 @@ class CameraHandler:
             data = self.cameras[src].read()
             # print("send frame src is: ",src)
             # self.frames_queues[src].put((data,src), timeout=1)
-            self.frames_queues.put((data,src), timeout=1)
+            self.frames_queues.put((data,src,time.time()), timeout=1)
 
             if settings.SAVE_VIDEO_OUTPUT:
                 self.videoWriter[src].write(data)  # 将每一帧写入视频文件中
@@ -157,10 +163,10 @@ class CameraHandler:
             if settings.SAVE_DEBUG_OUTPUT and not self.isSave[src]:
                 self.isSave[src] = True
                 tiem = time.time()
-                cv2.imwrite("Output/"+str(src)+"_"+str(tiem)+".png",data)
+                # cv2.imwrite("Output/"+str(src)+"_"+str(tiem)+".png",data)
                   # 将每一帧写入视频文件中
-                slide = data[:,310:330]
-                cv2.imwrite("Output/slide"+str(src)+"_"+str(tiem)+".png",slide)
+                # slide = data[:,310:330]
+                # cv2.imwrite("Output/slide"+str(src)+"_"+str(tiem)+".png",slide)
 
 
         except queue.Full:

@@ -29,6 +29,7 @@ from detect.detect_result import DetectResult
 from detect.motion import MotionDetect
 from detect.object_detector import ObjectDetector
 
+import cv2
 
 class Closet:
     '''
@@ -222,11 +223,11 @@ class Closet:
 
         
 
-        while True:#empty detection queue
-                try:
-                    result = self._detection_queue.get_nowait()
-                except queue.Empty:
-                    break
+        while True:#empty last detection queue
+            try:
+                result = self._detection_queue.get_nowait()
+            except queue.Empty:
+                break
 
 
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
@@ -353,22 +354,29 @@ class Closet:
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
-            
                 try:
                     result = self._detection_queue.get_nowait()
                     index = result[0]
                     frame = result[1]
+                    frame_time = result[3]
+
+                    if frame_time < self.debugTime:
+                        # print("Check cached frame: ",frame_time,self.debugTime)
+                        return
+
                     # print(self.motions[i])
                     checkIndex = index%2
                     # print("weird index is: ",checkIndex)
                     # print(len(self.motions))
-                    if index == 0 and self.firstFrameInit0 == False:
+                    if checkIndex == 0 and self.firstFrameInit0 == False:
                         print("Frist 0 camera Frame Init interval time is: ",time.time()-self.debugTime)
                         self.firstFrameInit0 = True
+                        # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
                     
-                    if index == 0 and self.firstFrameInit1 == False:
+                    if checkIndex == 1 and self.firstFrameInit1 == False:
                         print("Frist 1 camera Frame Init interval time is: ",time.time()-self.debugTime)
                         self.firstFrameInit1 = True
+                        # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
                     # print("Begin ")
                     # print("Before check input time: ",time.time())

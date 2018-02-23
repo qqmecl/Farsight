@@ -9,8 +9,8 @@ import cv2
 # "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
 # ]
 usb_cameras=[
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:5:1.0-video-index0",
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:4:1.0-video-index0",
+"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
+"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:9:1.0-video-index0",
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",#done
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
 ]
@@ -27,7 +27,7 @@ usb_cameras=[
 
 
 
-index = 3
+index = 0
 
 cap = cv2.VideoCapture(usb_cameras[index])
 # cap = cv2.VideoCapture(0)
