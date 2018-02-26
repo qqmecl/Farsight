@@ -48,7 +48,7 @@ else:
     "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
     ]
 
-print(usb_cameras)
+# print(usb_cameras)
 # items={}
 
 init_url = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
