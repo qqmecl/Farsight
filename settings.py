@@ -20,9 +20,7 @@ if WELCOME_PAGE == 'error':
     print('mac address is wrong')
 
 
-
 usb_cameras=[]
-
 if os.path.exists("local/config.ini"):
     from configparser import ConfigParser
     config_parser = ConfigParser()
