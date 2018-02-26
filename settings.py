@@ -9,7 +9,7 @@ scale_port = 'COM1'
 num_cameras = 4
 http_port = 5000
 speaker_on = True
-speaker_on = False
+# speaker_on = False
 
 # door_time_out=150#
 

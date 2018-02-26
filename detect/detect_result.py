@@ -65,8 +65,9 @@ class DetectResult:
             #     print("over")
 
 
-            # if motion is not "None":
-            #     print("current motion is: ",motion)
+            if motion is not "None":
+                print("current motion is: ",motion)
+                
             if motion == "PUSH":#Action start or Action done.
                 if self.detectState == "PULL_CHECKING":
                     # print("From push state detect pull checking last!!!!!")
@@ -141,8 +142,8 @@ class DetectResult:
         #     else:
         #         print(id,num,_time)
 
-        threshold1,threshold2,threshold3 = 3,4,3
-        # threshold1,threshold2,threshold3 = 1,2,1
+        # threshold1,threshold2,threshold3 = 3,4,3
+        threshold1,threshold2,threshold3 = 1,2,1
         if id is not None:
             if isLast:#in item check
                 if num > threshold1: # 原来是3
