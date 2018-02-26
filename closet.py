@@ -3,7 +3,6 @@ from httpd import make_http_app, HTTP_PORT
 from signal_handler import SignalHandler
 from cart import Cart
 
-from visualize import VisualizeDetection
 from selfcheck import selfcheck
 
 import multiprocessing
@@ -261,7 +260,7 @@ class Closet:
 
        
 
-        self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,20)#50 fps
+        self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
         self.updateScheduler.start()
 
         
@@ -345,6 +344,9 @@ class Closet:
 
                 print("OpenDoor time is ",self.debugTime)
                 
+                # self.calcTime = time.time()
+
+                # self.calc_cnt = 0
 
                 # later = functools.partial(self._start_imageprocessing)
                 # tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
@@ -355,10 +357,23 @@ class Closet:
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
                 try:
+
+
+
                     result = self._detection_queue.get_nowait()
+                    
+                    # self.calc_cnt +=1
+
+                    # if time.time() - self.calcTime > 1:
+                    #     print(self.calc_cnt," calc every second")
+                    #     self.calcTime = time.time()
+                    #     self.calc_cnt = 0
+                        # return
+
                     index = result[0]
                     frame = result[1]
                     frame_time = result[3]
+
 
                     if frame_time < self.debugTime:
                         # print("Check cached frame: ",frame_time,self.debugTime)
@@ -378,10 +393,9 @@ class Closet:
                         self.firstFrameInit1 = True
                         # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
-                    # print("Begin ")
-                    # print("Before check input time: ",time.time())
+                    # last_time = time.time()
                     motionType = self.motions[checkIndex].checkInput(frame)
-                    # print("After check input time: ",time.time())
+                    # print("Check input use time: ",time.time()-last_time)
 
                     self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]})
                     detect = self.detectResults[checkIndex].getDetect()

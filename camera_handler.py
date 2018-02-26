@@ -53,6 +53,9 @@ class WebcamVideoStream:
     def read(self):
         return self.frame
 
+    def reset(self):
+        self.frame = None
+
     def stop(self):
         self.stopped_caching = True
 
@@ -91,6 +94,9 @@ class CameraHandler:
         # print("reset is save ahtne")
         for i in range(4):
             self.isSave[i] = False
+
+        # self.calcTime = time.time()
+        # self.calc_cnt = 0
 
     def start(self):
         # 忽略 SIGINT，由父进程处理
@@ -152,22 +158,31 @@ class CameraHandler:
             考虑调低 timeout 或者使用后台线程
         '''
         try:
-            data = self.cameras[src].read()
+            data = self.cameras[src].read()#after fetching,
             # print("send frame src is: ",src)
             # self.frames_queues[src].put((data,src), timeout=1)
-            self.frames_queues.put((data,src,time.time()), timeout=1)
+            if data is not None:
+                self.frames_queues.put((data,src,time.time()), timeout=1)
 
-            if settings.SAVE_VIDEO_OUTPUT:
-                self.videoWriter[src].write(data)  # 将每一帧写入视频文件中
+                # self.calc_cnt +=1
+                # if time.time() - self.calcTime > 1:
+                #     print(self.calc_cnt," frame sent every second")
+                #     self.calcTime = time.time()
+                #     self.calc_cnt = 0
+                #     return
 
-            if settings.SAVE_DEBUG_OUTPUT and not self.isSave[src]:
-                self.isSave[src] = True
-                tiem = time.time()
-                # cv2.imwrite("Output/"+str(src)+"_"+str(tiem)+".png",data)
-                  # 将每一帧写入视频文件中
-                # slide = data[:,310:330]
-                # cv2.imwrite("Output/slide"+str(src)+"_"+str(tiem)+".png",slide)
+                if settings.SAVE_VIDEO_OUTPUT:
+                    self.videoWriter[src].write(data)  # 将每一帧写入视频文件中
 
+                if settings.SAVE_DEBUG_OUTPUT and not self.isSave[src]:
+                    self.isSave[src] = True
+                    tiem = time.time()
+                    # cv2.imwrite("Output/"+str(src)+"_"+str(tiem)+".png",data)
+                      # 将每一帧写入视频文件中
+                    # slide = data[:,310:330]
+                    # cv2.imwrite("Output/slide"+str(src)+"_"+str(tiem)+".png",slide)
+
+            self.cameras[src].reset()
 
         except queue.Full:
             print('[FULL] input_q')
