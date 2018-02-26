@@ -460,11 +460,16 @@ class Closet:
                     # print()
                     pass
                 
-
-
-    # def _delay_show_
-
     def _delay_do_order(self):
+        self.close_door_success()
+
+        self.updateScheduler.stop()
+
+        for i in range(2):
+            self.motions[i].reset()
+
+        self.IO.change_to_processing_page()
+
 
         now_scale = self.IO.get_scale_val()
 
@@ -519,24 +524,18 @@ class Closet:
                 self.restock_close_door_success()
                 return
 
-            self.close_door_success()
-
-            reset = functools.partial(self._delay_do_order)
-            tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
-
-            self.updateScheduler.stop()
-
             self._stop_imageprocessing()
-
-            for i in range(2):
-                # del self.motions[0]
-                self.motions[i].reset()
-
 
             if settings.speaker_on:
                 self.IO.say_goodbye()
 
-            self.IO.change_to_processing_page()
+
+            
+
+            reset = functools.partial(self._delay_do_order)
+            tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
+
+            
 
     def _start_imageprocessing(self):
         '''
