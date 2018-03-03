@@ -426,7 +426,7 @@ class Closet:
 
                         print("action interval is: ",intervalTime)
 
-                        if intervalTime > 0.4:
+                        if intervalTime > 0.9:
                             self.detectCache = None
 
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
