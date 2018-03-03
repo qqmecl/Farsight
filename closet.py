@@ -418,7 +418,7 @@ class Closet:
                         direction = detect[0]["direction"]
                         id = detect[0]["id"]
                         
-                        now_time = time.time()
+                        now_time = detect[0]["time"]
                         now_num = detect[0]["num"]
 
                         
@@ -466,7 +466,7 @@ class Closet:
 
                         self.detectResults[checkIndex].resetDetect()
 
-                        self.lastDetectTime = time.time()
+                        self.lastDetectTime = now_time
 
                         print("Action time is: ",time.time())
                         self.detectResults[checkIndex].setActionTime()
