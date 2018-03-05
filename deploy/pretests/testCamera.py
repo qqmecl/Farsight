@@ -1,7 +1,7 @@
 import numpy as np
 import cv2 as cv
 from PIL import Image, ImageDraw, ImageFont 
-
+import os
 usb_cameras=[]
 if os.path.exists("../../local/config.ini"):
     from configparser import ConfigParser
@@ -115,7 +115,7 @@ def addChineseText(frame,label,pos):
     return frame
 
 index = 0
-cap = cv2.VideoCapture(usb_cameras[index])
+cap = cv.VideoCapture(usb_cameras[index])
 ret=True
 
 while(ret):
@@ -124,12 +124,12 @@ while(ret):
         if index > 1:
             frame = cv.flip(frame,1)
         # frame = 
-        cv2.imshow('frame',frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        cv.imshow('frame',frame)
+        if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
 cap.release()
-cv2.destroyAllWindows()
+cv.destroyAllWindows()
  
 
 

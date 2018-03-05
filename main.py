@@ -13,12 +13,12 @@ if __name__ == '__main__':
     parser.add_argument('--visualize-camera', type=int, help='输出捕获视频的摄像头编号（debug用）')
 
     parser.add_argument('--left-cameras', nargs='+', type=int, help='设置左边摄像头编号列表，-1 为空')
-    # parser.set_defaults(left_cameras=[0])#Maybe adjustable
-    parser.set_defaults(left_cameras=[0,1])#Maybe adjustable
+    parser.set_defaults(left_cameras=[0])#Maybe adjustable
+    # parser.set_defaults(left_cameras=[0,1])#Maybe adjustable
 
     parser.add_argument('--right-cameras', nargs='+', type=int, help='设置右边摄像头编号列表，-1 为空')
-    parser.set_defaults(right_cameras=[2, 3])
-    # parser.set_defaults(right_cameras=[2])
+    # parser.set_defaults(right_cameras=[2, 3])
+    parser.set_defaults(right_cameras=[2])
 
     parser.add_argument('--mock-door', action='store_true', help='是否 MOCK 门和锁')
     parser.set_defaults(mock_door=False)
@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    setproctitle('[farsight] 主进程')
+    setproctitle('[farsight] main process')
 
     # TODO: 使用 fork 方式似乎会导致信号捕获错乱的问题，待验证
     multiprocessing.set_start_method('spawn')#windows only spawn

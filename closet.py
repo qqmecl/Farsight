@@ -155,7 +155,7 @@ class Closet:
             
         # for input_q, index in zip(self.input_queues, indexs):
             # pool = Pool(self.num_workers, ObjectDetector, (input_q,settings.items,self._detection_queue))
-        for i in range(4):
+        for i in range(3):
             pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue))
         # pool = Pool(5, ObjectDetector, (self.input_queues,settings.items,self._detection_queue))
 
@@ -344,9 +344,13 @@ class Closet:
 
                 print("OpenDoor time is ",self.debugTime)
                 
-                # self.calcTime = time.time()
+                self.calcTime0 = time.time()
 
-                # self.calc_cnt = 0
+                self.calc_cnt0 = 0
+
+                self.calcTime1 = time.time()
+
+                self.calc_cnt1 = 0
 
                 # later = functools.partial(self._start_imageprocessing)
                 # tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
@@ -368,7 +372,7 @@ class Closet:
                     #     print(self.calc_cnt," calc every second")
                     #     self.calcTime = time.time()
                     #     self.calc_cnt = 0
-                        # return
+                    #     return
 
                     index = result[0]
                     frame = result[1]
@@ -381,6 +385,25 @@ class Closet:
 
                     # print(self.motions[i])
                     checkIndex = index%2
+                    
+                    # if checkIndex == 0:
+                    #     self.calc_cnt0 +=1
+
+                    #     if time.time() - self.calcTime0 > 1:
+                    #         print(self.calc_cnt0," calc0000 every second")
+                    #         self.calcTime0 = time.time()
+                    #         self.calc_cnt0 = 0
+                    #         return
+
+                    # if checkIndex == 1:
+                    #     self.calc_cnt1 +=1
+
+                    #     if time.time() - self.calcTime1 > 1:
+                    #         print(self.calc_cnt1," calc1111 every second")
+                    #         self.calcTime1 = time.time()
+                    #         self.calc_cnt1 = 0
+                    #         return
+
                     # print("weird index is: ",checkIndex)
                     # print(len(self.motions))
                     if checkIndex == 0 and self.firstFrameInit0 == False:
