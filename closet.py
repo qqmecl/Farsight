@@ -393,7 +393,7 @@ class Closet:
                     #         print(self.calc_cnt0," calc0000 every second")
                     #         self.calcTime0 = time.time()
                     #         self.calc_cnt0 = 0
-                    #         return
+                    # #        return
 
                     # if checkIndex == 1:
                     #     self.calc_cnt1 +=1
@@ -402,7 +402,7 @@ class Closet:
                     #         print(self.calc_cnt1," calc1111 every second")
                     #         self.calcTime1 = time.time()
                     #         self.calc_cnt1 = 0
-                    #         return
+                    # #        return
 
                     # print("weird index is: ",checkIndex)
                     # print(len(self.motions))
@@ -449,7 +449,7 @@ class Closet:
 
                         print("action interval is: ",intervalTime)
 
-                        if intervalTime > 0.9:
+                        if intervalTime > 0.7:
                             self.detectCache = None
 
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
@@ -465,7 +465,7 @@ class Closet:
 
                         else:
                             #fix camera result
-                            print("Enter cache result fixing phase!")
+                            print("Enter cache result fixing phase!: ",intervalTime)
                             cacheId = self.detectCache[0]
                             cacheNum = self.detectCache[1]
                             actionSuccess = self.detectCache[2]

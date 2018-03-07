@@ -29,17 +29,17 @@ class WebcamVideoStream:
         # initialize the video camera stream and read the first frame
         # from the stream
         self.src = src
+        self.width = width
+        self.height = height
         self.stream = cv2.VideoCapture(settings.usb_cameras[src])
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        (self.grabbed, self.frame) = self.stream.read()
+        # (self.grabbed, self.frame) = self.stream.read()
 
         # initialize the variable used to indicate if the thread should
         # be stopped
-        self.stopped_caching = False
-        self.sending_frame = False
-
-        
+        self.stopped_caching = True
+        self.reset()
 
     def start(self):
         # start the thread to read frames from the video stream
@@ -47,8 +47,9 @@ class WebcamVideoStream:
         return self
 
     def update(self):
-        while not self.stopped_caching:
-            (self.grabbed, self.frame) = self.stream.read()
+        while True:
+            if not self.stopped_caching:
+                (self.grabbed, self.frame) = self.stream.read()
 
     def read(self):
         return self.frame
@@ -56,14 +57,15 @@ class WebcamVideoStream:
     def reset(self):
         self.frame = None
 
-    def stop(self):
-        self.stopped_caching = True
-
     def pause_sending(self):
-        self.sending_frame = False
-
+        self.stopped_caching = True
+        # self.stream.release()
+        
     def resume_sending(self):
-        self.sending_frame = True
+        # self.stream = cv2.VideoCapture(settings.usb_cameras[self.src])
+        # self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
+        # self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
+        self.stopped_caching = False
 
 
 class CameraHandler:
@@ -102,7 +104,7 @@ class CameraHandler:
         # 忽略 SIGINT，由父进程处理
         signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-        setproctitle('[farsight] sending process of camera')
+        setproctitle('[farsight] 摄像头发送帧进程')
         
         while True:
             try:
@@ -113,8 +115,7 @@ class CameraHandler:
                 pass
 
             for src in self.cameras.keys():
-                if self.cameras[src].sending_frame:
-                    self._sendframe(src)
+                self._sendframe(src)
 
     def _handle_command(self, cmd, cameras):
         '''
@@ -166,7 +167,7 @@ class CameraHandler:
 
                 # self.calc_cnt +=1
                 # if time.time() - self.calcTime > 1:
-                #     # print(self.calc_cnt," frame sent every second")
+                #     print(self.calc_cnt," frame sent every second")
                 #     self.calcTime = time.time()
                 #     self.calc_cnt = 0
                 #     return
@@ -182,15 +183,14 @@ class CameraHandler:
                     # slide = data[:,310:330]
                     # cv2.imwrite("Output/slide"+str(src)+"_"+str(tiem)+".png",slide)
 
-            self.cameras[src].reset()
-
+                self.cameras[src].reset()
         except queue.Full:
             print('[FULL] input_q')
             pass
 
 
 if __name__ == '__main__':
-    setproctitle('[farsight] main process')
+    setproctitle('[farsight] 主进程')
 
     from multiprocessing import Queue, Process
     ctrl_q = Queue(1)
