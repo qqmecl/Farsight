@@ -88,13 +88,11 @@ class Closet:
         self.logger.setLevel(logging.INFO)
         self.secretPassword = secretPassword()
 
-        # self.input_queues = [ Queue(maxsize=config['queue_size'])]*4
-        self.input_queues = Queue(maxsize=config['queue_size']*4)
-        # self.output_queues = [ Queue(maxsize=config['queue_size'])]*4
+       
+        self.input_queues = Queue(maxsize=20)
+
 
         self._detection_queue = Queue(maxsize=20*4)
-
-        # self.open_door_time_out = settings.door_time_out#which means 80*20ms = 8s
 
         self.check_door_time_out = False
 
@@ -104,6 +102,8 @@ class Closet:
 
         self.left_cameras = config['left_cameras']
         self.right_cameras = config['right_cameras']
+
+        self.run_mode = config['run_mode']
 
         self.door_port = config['door_port']
         self.speaker_port = config['speaker_port']
@@ -155,9 +155,7 @@ class Closet:
             
         # for input_q, index in zip(self.input_queues, indexs):
             # pool = Pool(self.num_workers, ObjectDetector, (input_q,settings.items,self._detection_queue))
-        for i in range(3):
-            pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue))
-        # pool = Pool(5, ObjectDetector, (self.input_queues,settings.items,self._detection_queue))
+        pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue,self.run_mode))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
 

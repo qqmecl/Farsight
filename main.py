@@ -8,7 +8,6 @@ import settings
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-num-w', '--num-workers', type=int, default=1, help='每个摄像头对应的后台进行图像识别的进程数')
-    parser.add_argument('-q-size', '--queue-size', type=int, default=5, help='图像帧队列大小')
 
     parser.add_argument('--visualize-camera', type=int, help='输出捕获视频的摄像头编号（debug用）')
 
@@ -28,6 +27,10 @@ if __name__ == '__main__':
     parser.set_defaults(mock_scale=False)
     parser.add_argument('--mock-screen', action='store_true', help='是否 MOCK 显示屏')
     parser.set_defaults(mock_screen=False)
+
+    parser.add_argument('--run-mode', type=str, help='set running mode')
+    parser.set_defaults(run_mode="CPU")
+
 
     parser.add_argument('--speaker-port', type=str, help='扬声器 COM 口')
     parser.set_defaults(speaker_port="/dev/ttyS0")
