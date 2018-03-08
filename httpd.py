@@ -9,6 +9,7 @@ import signal
 HTTP_PORT = 8888
 SECRET_KEY = "grtrgewfgvs"  # 和原来代码一样，写死了先
 
+
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.write("Hello, world")
@@ -63,6 +64,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 		role = paramsDict.get('role', 'user')
 		itemId = paramsDict.get('itemId', '000')
 		num = int(paramsDict.get('num', 0))
+
 		print(secret, side, token, role, itemId, num)
 		# print(data)
 		# print(data.get('itemId','000'))

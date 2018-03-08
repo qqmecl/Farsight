@@ -20,7 +20,7 @@ import requests
 import json
 from setproctitle import setproctitle
 import time
-from utils import secretPassword
+from utils import secretPassword get_mac_address
 import settings
 from serial_handler.io_controller import IO_Controller
 
@@ -227,6 +227,7 @@ class Closet:
                 break
 
 
+        self.door_token = token      #chen
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
         self.cart = Cart(token, self.IO)
 
@@ -541,7 +542,8 @@ class Closet:
             self.pollPeriod.stop()
 
     def door_polling(self):
-        req = requests.post(Closet.ORDER_URL, data='door close')
+        req = requests.post(Closet.ORDER_URL, data=self.door_Close_Data)
+        print(req.status_code)
         if req.status_code == 200:
             self.pollPeriod_door_close.stop()
 
@@ -558,11 +560,14 @@ class Closet:
             self.logger.info(self.state)
 
             self.logger.info('用户已经关上门')
-
+            #chen
+            order = {'token': self.door_token, 'code': get_mac_address()}
+            strData = json.dumps(order)
+            self.door_Close_Data = self.secretPassword.aes_cbc_encrypt(strData)
             self.pollPeriod_door_close = tornado.ioloop.PeriodicCallback(self.door_polling, 50)
 
             self.pollPeriod_door_close.start()
-
+            #chen
             if self.mode == "operator_mode":
 
                 self.restock_close_door_success()
