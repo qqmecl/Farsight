@@ -3,8 +3,6 @@ from httpd import make_http_app, HTTP_PORT
 from signal_handler import SignalHandler
 from cart import Cart
 
-from selfcheck import selfcheck
-
 import multiprocessing
 import logging
 from multiprocessing import Queue, Pool, Process

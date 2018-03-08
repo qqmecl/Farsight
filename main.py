@@ -31,6 +31,9 @@ if __name__ == '__main__':
     parser.add_argument('--run-mode', type=str, help='set running mode')
     parser.set_defaults(run_mode="CPU")
 
+    parser.add_argument('--sell-mode', type=str, help='set running mode')
+    parser.set_defaults(run_mode="develop")
+
 
     parser.add_argument('--speaker-port', type=str, help='扬声器 COM 口')
     parser.set_defaults(speaker_port="/dev/ttyS0")
@@ -62,14 +65,7 @@ if __name__ == '__main__':
 
     settings.scale_port = args.scale_port
 
-    if -1 in args.left_cameras:
-        args.left_cameras.remove(-1)
-    if -1 in args.right_cameras:
-        args.right_cameras.remove(-1)
-
-    settings.num_cameras = len(args.left_cameras) + len(args.right_cameras)
-
-    # 在 settings 之后再 import，不然 MOCK 无效
+   
     from closet import Closet
 
     Closet(**vars(args)).start()

@@ -1,11 +1,5 @@
 import serial
 import struct
-from error import FarSightError
-
-
-class WeightScaleError(FarSightError):
-    pass
-
 
 class WeightScale:
     '''

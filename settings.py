@@ -5,11 +5,9 @@ mock_door = False
 mock_speaker = False
 mock_scale = False
 mock_screen = False
-scale_port = 'COM1'
-num_cameras = 4
 http_port = 5000
 speaker_on = True
-# speaker_on = False
+
 
 mac_welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,
                     'D8:9E:F3:1D:EE:7C': 0x0D,
@@ -18,7 +16,6 @@ mac_welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,
 WELCOME_PAGE = mac_welcome_page.get(get_mac_address(), 0x33)
 if WELCOME_PAGE == 'error':
     print('mac address is wrong')
-
 
 usb_cameras=[]
 if os.path.exists("local/config.ini"):
@@ -37,9 +34,6 @@ else:
     "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
     ]
 
-# print(usb_cameras)
-# items={}
-
 init_url = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
 
 SAVE_DETECT_OUTPUT = False
@@ -47,7 +41,6 @@ SAVE_VIDEO_OUTPUT = False
 SAVE_DEBUG_OUTPUT = False
 # SAVE_DEBUG_OUTPUT = True
 # SAVE_OUTPUT = True
-
 
 items = {
     '001001': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),

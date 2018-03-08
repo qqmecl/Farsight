@@ -4,34 +4,9 @@ from serial_handler.crc import crc16
 import threading
 import time
 import functools
-from error import FarSightError
 import tornado.ioloop
 
-class DoorError(FarSightError):
-    pass
-
-
-class LockError(FarSightError):
-    pass
-
-
-# class synchronized:
-#     '''
-#         因为和门、锁的交互逻辑比较复杂
-#         为了防止多个线程同时访问串口资源，所有的串口访问都要加锁
-#     '''
-#     def __init__(self, lock):
-#         self.lock = lock
-
-#     def __enter__(self):
-#         self.lock.acquire()
-
-#     def __exit__(self, type, value, traceback):
-#         self.lock.release()
-
-
 # 开某一边门之前要判断另一边锁是否打开，若打开，则不能开锁
-
 # 此处分门和智能锁，工控机接收到信号之后先开锁
 # 并且锁被开启之后，在不开门状态下过3秒之后会自动上锁
 # 处于开门状态不会上锁

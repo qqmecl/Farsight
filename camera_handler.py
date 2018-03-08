@@ -8,16 +8,12 @@ import time
 import signal
 import settings
 from setproctitle import setproctitle
-from error import FarSightError
 import settings
 
 DEFAULT_WIDTH = 640
 DEFAULT_HEIGHT = 480
 DEFAULT_FPS = 25 # 视频文件的保存帧率，还需要和图像处理帧率进行比对
 
-
-class CameraError(FarSightError):
-    pass
 
 class WebcamVideoStream:
     '''
