@@ -88,7 +88,7 @@ class Closet:
         self.logger.setLevel(logging.INFO)
         self.secretPassword = secretPassword()
 
-       
+
         self.input_queues = Queue(maxsize=20)
 
 
@@ -149,10 +149,10 @@ class Closet:
         # motions = [MotionDetect()]*2
 
         self.motions = []
-        
+
         for i in range(2):
             self.motions.append(MotionDetect())
-            
+
         # for input_q, index in zip(self.input_queues, indexs):
             # pool = Pool(self.num_workers, ObjectDetector, (input_q,settings.items,self._detection_queue))
         pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue,self.run_mode))
@@ -184,10 +184,10 @@ class Closet:
         #连接串口管理器
         # self.IO.start()
 
-        self.detectResults = [] 
+        self.detectResults = []
         for i in range(2):
             self.detectResults.append(DetectResult())
-        
+
 
         # 捕获 CTRL-C
         handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
@@ -218,7 +218,7 @@ class Closet:
             self.logger.warn('状态转换错误!!')
             return
 
-        
+
 
         while True:#empty last detection queue
             try:
@@ -256,12 +256,12 @@ class Closet:
         self.firstFrameInit0 = False
         self.firstFrameInit1 = False
 
-       
+
 
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
         self.updateScheduler.start()
 
-        
+
 
         #self._start_imageprocessing()
 
@@ -341,7 +341,7 @@ class Closet:
                 self.debugTime = time.time()
 
                 print("OpenDoor time is ",self.debugTime)
-                
+
                 self.calcTime0 = time.time()
 
                 self.calc_cnt0 = 0
@@ -363,7 +363,7 @@ class Closet:
 
 
                     result = self._detection_queue.get_nowait()
-                    
+
                     # self.calc_cnt +=1
 
                     # if time.time() - self.calcTime > 1:
@@ -383,7 +383,7 @@ class Closet:
 
                     # print(self.motions[i])
                     checkIndex = index%2
-                    
+
                     # if checkIndex == 0:
                     #     self.calc_cnt0 +=1
 
@@ -408,7 +408,7 @@ class Closet:
                         print("Frist 0 camera Frame Init interval time is: ",time.time()-self.debugTime)
                         self.firstFrameInit0 = True
                         # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
-                    
+
                     if checkIndex == 1 and self.firstFrameInit1 == False:
                         print("Frist 1 camera Frame Init interval time is: ",time.time()-self.debugTime)
                         self.firstFrameInit1 = True
@@ -438,11 +438,11 @@ class Closet:
 
                         direction = detect[0]["direction"]
                         id = detect[0]["id"]
-                        
+
                         now_time = detect[0]["time"]
                         now_num = detect[0]["num"]
 
-                        
+
                         intervalTime = now_time - self.lastDetectTime
 
                         print("action interval is: ",intervalTime)
@@ -480,7 +480,7 @@ class Closet:
                                     if actionSuccess:
                                         self.cart.add_item(cacheId)
                                         print("{Take out",settings.items[cacheId]["name"],"}")
-                                    
+
                                     self.cart.remove_item(id)
                                     print("{Put back",settings.items[id]["name"],"}")
 
@@ -494,7 +494,7 @@ class Closet:
                 except queue.Empty:
                     # print()
                     pass
-                
+
     def _delay_do_order(self):
         self.close_door_success()
 
@@ -531,7 +531,7 @@ class Closet:
         else:
             print("Can't Envoke weight change")
             self.order_process_success()
-           
+
 
     #chen chen chen
     def polling(self):
@@ -539,7 +539,12 @@ class Closet:
         if req.status_code == 200:
             self.order_process_success()
             self.pollPeriod.stop()
-            
+
+    def door_polling(self):
+        req = requests.post(Closet.ORDER_URL, data='door close')
+        if req.status_code == 200:
+            self.pollPeriod_door_close.stop()
+
 
     def _check_door_close(self):
         '''
@@ -554,6 +559,10 @@ class Closet:
 
             self.logger.info('用户已经关上门')
 
+            self.pollPeriod_door_close = tornado.ioloop.PeriodicCallback(self.door_polling, 50)
+
+            self.pollPeriod_door_close.start()
+
             if self.mode == "operator_mode":
 
                 self.restock_close_door_success()
@@ -565,12 +574,12 @@ class Closet:
                 self.IO.say_goodbye()
 
 
-            
+
 
             reset = functools.partial(self._delay_do_order)
             tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
 
-            
+
 
     def _start_imageprocessing(self):
         '''
