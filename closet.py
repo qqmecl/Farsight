@@ -545,7 +545,7 @@ class Closet:
     def door_polling(self):
         req = requests.post(Closet.ORDER_URL, data=self.door_Close_Data)
         #print(req.status_code)
-        if req.status_code == 500:
+        if req.status_code == 200:
             self.pollPeriod_door_close.stop()
 
 
@@ -562,7 +562,7 @@ class Closet:
 
             self.logger.info('用户已经关上门')
             #chen
-            order = {'token': self.door_token, 'code': get_mac_address()}
+            order = {'data': {}, 'token': self.door_token, 'code': get_mac_address()}
             strData = json.dumps(order)
             self.door_Close_Data = self.secretPassword.aes_cbc_encrypt(strData)
             self.pollPeriod_door_close = tornado.ioloop.PeriodicCallback(self.door_polling, 50)
