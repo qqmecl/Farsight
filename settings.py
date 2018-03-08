@@ -11,7 +11,11 @@ http_port = 5000
 speaker_on = True
 
 logger = multiprocessing.get_logger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.INFO, format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s")
+if args.verbose:
+    logger.setLevel(logging.INFO)
+else:
+    logger.setLevel(logging.ERROR)
 
 
 mac_welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,

@@ -7,6 +7,7 @@ import settings
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
     parser.add_argument('-num-w', '--num-workers', type=int, default=1, help='每个摄像头对应的后台进行图像识别的进程数')
 
     parser.add_argument('--visualize-camera', type=int, help='输出捕获视频的摄像头编号（debug用）')
@@ -57,7 +58,7 @@ if __name__ == '__main__':
     # TODO: 使用 fork 方式似乎会导致信号捕获错乱的问题，待验证
     multiprocessing.set_start_method('spawn')#windows only spawn
     multiprocessing.log_to_stderr()
-    
+
     settings.mock_door = args.mock_door
     settings.mock_speaker = args.mock_speaker
     settings.mock_scale = args.mock_scale
@@ -65,7 +66,7 @@ if __name__ == '__main__':
 
     settings.scale_port = args.scale_port
 
-   
+
     from closet import Closet
 
     Closet(**vars(args)).start()
