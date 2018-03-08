@@ -87,4 +87,4 @@ if __name__ == '__main__':
     cart.add_item('122003')
     cart.remove_item('123123')
     cart.remove_item('12311312323')
-    settings.logger.info(cart.as_order())
+    settings.logger.info('{data} {token} {code} {weight}'.format(**cart.as_order()))

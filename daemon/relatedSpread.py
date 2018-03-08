@@ -52,7 +52,7 @@ class Daemon:
 
         # Write the PID file
         with open(self.pidfile, 'w') as f:
-            settings.logger.info(os.getpid(), file=f)
+            print(os.getpid(), file=f)
 
         # Arrange to have the PID file removed on exit/signal
         atexit.register(lambda: os.remove(self.pidfile))
@@ -68,7 +68,7 @@ class Daemon:
         try:
             self.daemonize()
         except RuntimeError as e:
-            settings.logger.info(e, file=sys.stderr)
+            print(e, file=sys.stderr)
             raise SystemExit(1)
 
         self.run()
@@ -79,7 +79,7 @@ class Daemon:
                 with open(self.pidfile) as f:
                     os.kill(int(f.read()), signal.SIGTERM)
             else:
-                settings.logger.info('Not running.', file=sys.stderr)
+                print('Not running.', file=sys.stderr)
                 raise SystemExit(1)
         except OSError as e:
             if 'No such process' in str(e) and os.path.exists(self.pidfile):

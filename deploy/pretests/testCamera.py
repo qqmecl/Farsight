@@ -104,7 +104,7 @@ def detect_objects(frame):
 
                     real_calssId = class_id
         except KeyError:
-            settings.logger.info("class_id is: ",class_id)
+            settings.logger.info("class_id is: {}".format(class_id))
             pass
 
     if maxConfidence !=0:

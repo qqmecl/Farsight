@@ -4,6 +4,7 @@ import argparse
 from setproctitle import setproctitle
 import multiprocessing
 import settings
+import logging
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -53,6 +54,14 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s")
+    logger = logging.getLogger(__name__)
+
+    if args.verbose:
+        logger.setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.ERROR)
+    
     setproctitle('[farsight] main process')
 
     # TODO: 使用 fork 方式似乎会导致信号捕获错乱的问题，待验证

@@ -245,7 +245,7 @@ class Closet:
 
         self.curSide = side
 
-        settings.logger.info("curside is: ",self.curSide)#default is left side
+        settings.logger.info("curside is: {}".format(self.curSide))#default is left side
 
         self.debugTime = time.time()
 
@@ -285,7 +285,7 @@ class Closet:
 
         self.curSide = side
 
-        settings.logger.info("curside is: ",self.curSide)#default is left side
+        settings.logger.info("curside is: {}".format(self.curSide))#default is left side
 
         door_check = functools.partial(self._check_door_close)
         self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
@@ -293,14 +293,14 @@ class Closet:
 
 
     def adjust_items(self,tup):
-        settings.logger.info("tup is: ",tup)
+        settings.logger.info("tup is: {}".format(tup))
 
         if self.cart:
             if tup[1] == '1':
-                settings.logger.info("adjust add in ",tup[0])
+                settings.logger.info("adjust add in {}".format(tup[0]))
                 self.cart.add_item(tup[0])#放入物品
             else:
-                settings.logger.info("adjust take out ",tup[0])
+                settings.logger.info("adjust take out {}".format(tup[0]))
                 self.cart.remove_item(tup[0])#取出物品
 
     def delayCheckDoorClose(self):
@@ -316,7 +316,7 @@ class Closet:
 
             if self.check_door_time_out == False and time.time()-self.debugTime > 7:
                 # now_time = time.time()
-                settings.logger.info("Time Out time is: ",time.time()-self.debugTime)
+                settings.logger.info("Time Out time is: {}".format(time.time()-self.debugTime))
 
                 #已经检查足够多次，重置状态机，并且直接返回
                 settings.logger.info('超时未开门')
@@ -338,7 +338,7 @@ class Closet:
 
                 self.debugTime = time.time()
 
-                settings.logger.info("OpenDoor time is ",self.debugTime)
+                settings.logger.info("OpenDoor time is {}".format(self.debugTime))
 
                 self.calcTime0 = time.time()
 
@@ -403,12 +403,12 @@ class Closet:
                     # settings.logger.info("weird index is: ",checkIndex)
                     # settings.logger.info(len(self.motions))
                     if checkIndex == 0 and self.firstFrameInit0 == False:
-                        settings.logger.info("Frist 0 camera Frame Init interval time is: ",time.time()-self.debugTime)
+                        settings.logger.info("Frist 0 camera Frame Init interval time is: {}".format(time.time()-self.debugTime))
                         self.firstFrameInit0 = True
                         # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
                     if checkIndex == 1 and self.firstFrameInit1 == False:
-                        settings.logger.info("Frist 1 camera Frame Init interval time is: ",time.time()-self.debugTime)
+                        settings.logger.info("Frist 1 camera Frame Init interval time is: {}".format(time.time()-self.debugTime))
                         self.firstFrameInit1 = True
                         # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
@@ -443,7 +443,7 @@ class Closet:
 
                         intervalTime = now_time - self.lastDetectTime
 
-                        settings.logger.info("action interval is: ",intervalTime)
+                        settings.logger.info("action interval is: {}".format(intervalTime))
 
                         if intervalTime > 0.9:
                             self.detectCache = None
@@ -487,7 +487,7 @@ class Closet:
 
                         self.lastDetectTime = now_time
 
-                        settings.logger.info("Action time is: ",time.time())
+                        settings.logger.info("Action time is: {}".format(time.time()))
                         self.detectResults[checkIndex].setActionTime()
                 except queue.Empty:
                     # settings.logger.info()
