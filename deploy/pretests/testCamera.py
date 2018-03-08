@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 
+
 items = {
     '001001': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
     '002004': dict(name='美汁源果粒橙', price=5.0, weight=487.0),
@@ -19,6 +20,7 @@ items = {
     '003002': dict(name='小茗同学黄色', price=6.5, weight=546.0),
     '003003': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
 }
+
 
 usb_cameras=[]
 if os.path.exists("../../local/config.ini"):
@@ -135,7 +137,9 @@ def addChineseText(frame,label,pos):
     return frame
 
 
-index = 2
+
+
+index = 0
 cap = cv.VideoCapture(usb_cameras[index])
 ret=True
 
@@ -144,7 +148,10 @@ while(ret):
     if ret:
         if index > 1:
             frame = cv.flip(frame,1)
+
         frame = detect_objects(frame)
+
+
         cv.imshow('frame',frame)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break

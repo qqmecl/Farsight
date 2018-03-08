@@ -102,7 +102,7 @@ class CameraHandler:
         # 忽略 SIGINT，由父进程处理
         signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-        setproctitle('[farsight] 摄像头发送帧进程')
+        setproctitle('[farsight] sending process of camera')
         
         while True:
             try:
@@ -166,7 +166,7 @@ class CameraHandler:
 
                 # self.calc_cnt +=1
                 # if time.time() - self.calcTime > 1:
-                #     print(self.calc_cnt," frame sent every second")
+                #     # print(self.calc_cnt," frame sent every second")
                 #     self.calcTime = time.time()
                 #     self.calc_cnt = 0
                 #     return
@@ -190,7 +190,7 @@ class CameraHandler:
 
 
 if __name__ == '__main__':
-    setproctitle('[farsight] 主进程')
+    setproctitle('[farsight] main process')
 
     from multiprocessing import Queue, Process
     ctrl_q = Queue(1)
