@@ -6,7 +6,7 @@ import time
 import signal
 import subprocess
 import pexpect
-
+import settings
 
 from relatedSpread import Daemon
 
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     daemon = MyTestDaemon(pidfile=PIDFILE, stdout=LOG, stderr=LOG)
 
     if len(sys.argv) == 1:
-        print('Usage: {} [start|stop] but success already'.format(sys.argv[0]), file=sys.stderr)
+        settings.logger.info('Usage: {} [start|stop] but success already'.format(sys.argv[0]), file=sys.stderr)
         daemon.start()
 
     else:
@@ -68,5 +68,5 @@ if __name__ == '__main__':
         elif 'restart' == sys.argv[1]:
             daemon.restart()
         else:
-            print('Unknown command {!r}'.format(sys.argv[1]), file=sys.stderr)
+            settings.logger.info('Unknown command {!r}'.format(sys.argv[1]), file=sys.stderr)
             raise SystemExit(1)

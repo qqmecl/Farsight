@@ -7,7 +7,7 @@ import sys
 import time
 import atexit
 import signal
-
+import settings
 
 class Daemon:
     def __init__(self, pidfile='/tmp/daemon.pid', stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
@@ -52,7 +52,7 @@ class Daemon:
 
         # Write the PID file
         with open(self.pidfile, 'w') as f:
-            print(os.getpid(), file=f)
+            settings.logger.info(os.getpid(), file=f)
 
         # Arrange to have the PID file removed on exit/signal
         atexit.register(lambda: os.remove(self.pidfile))
@@ -68,7 +68,7 @@ class Daemon:
         try:
             self.daemonize()
         except RuntimeError as e:
-            print(e, file=sys.stderr)
+            settings.logger.info(e, file=sys.stderr)
             raise SystemExit(1)
 
         self.run()
@@ -79,7 +79,7 @@ class Daemon:
                 with open(self.pidfile) as f:
                     os.kill(int(f.read()), signal.SIGTERM)
             else:
-                print('Not running.', file=sys.stderr)
+                settings.logger.info('Not running.', file=sys.stderr)
                 raise SystemExit(1)
         except OSError as e:
             if 'No such process' in str(e) and os.path.exists(self.pidfile):

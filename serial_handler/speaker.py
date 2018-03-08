@@ -3,6 +3,7 @@ import struct
 from serial_handler.crc import crc16
 import functools
 import tornado.ioloop
+import settings
 
 class Speaker:#简单触发器
     '''
@@ -25,13 +26,13 @@ class Speaker:#简单触发器
         tornado.ioloop.IOLoop.current().call_later(delay=1,callback=reset)
         # array = list(map(ord, ':161fffff'))
         # array = [1, 5, 0, 2, 0xff, 0]
-        # print(array)
+        # settings.logger.info(array)
         # data = struct.pack(str(len(array)) + "B", *array)
         # # cmd = crc16().createarray(array)
         # # data = struct.pack(str(len(cmd)) + "B", *cmd)
-        # print(data)
+        # settings.logger.info(data)
         # self.com.write(data)
-        # print(self.com.read(8))#读掉数据，如果不读掉数据，会影响后续的数据读取
+        # settings.logger.info(self.com.read(8))#读掉数据，如果不读掉数据，会影响后续的数据读取
 
     def reset_welcome(self):
         self.do_protocol_5_byMode(2,False)#2表示端口地址，1秒之后重置该口状态

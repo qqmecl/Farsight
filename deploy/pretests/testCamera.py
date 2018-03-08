@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 import os
 from PIL import Image, ImageDraw, ImageFont 
-
+import settings
 
 
 
@@ -62,7 +62,7 @@ def detect_objects(frame):
                                 True)
     detectionNet.setInput(blob)
     detections = detectionNet.forward()
-    # print("Detect consume time:",time.time()-last_time)
+    # settings.logger.info("Detect consume time:",time.time()-last_time)
 
     rows = resize.shape[0]
     cols = resize.shape[1]
@@ -90,7 +90,7 @@ def detect_objects(frame):
 
         try:
             # itemId = self.classNames[class_id]
-            # print(settings.items[itemId]["name"])
+            # settings.logger.info(settings.items[itemId]["name"])
             if confidence > 0.8:
                 #location = self.getDetectPos(XAxis,YAxis,index)
                 if XAxis > 100 and confidence > maxConfidence:
@@ -104,7 +104,7 @@ def detect_objects(frame):
 
                     real_calssId = class_id
         except KeyError:
-            print("class_id is: ",class_id)
+            settings.logger.info("class_id is: ",class_id)
             pass
 
     if maxConfidence !=0:

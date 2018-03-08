@@ -1,5 +1,6 @@
 import serial
 import struct
+import settings
 
 class WeightScale:
     '''
@@ -28,5 +29,5 @@ class WeightScale:
 if __name__ == '__main__':
     scale = WeightScale()
 
-    print(scale.read()[0])
+    settings.logger.info(scale.read()[0])
 

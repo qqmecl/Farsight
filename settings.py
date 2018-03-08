@@ -1,5 +1,7 @@
 from utils import get_mac_address
 import os
+import multiprocessing
+import logging
 
 mock_door = False
 mock_speaker = False
@@ -8,6 +10,9 @@ mock_screen = False
 http_port = 5000
 speaker_on = True
 
+logger = multiprocessing.get_logger()
+logger.setLevel(logging.INFO)
+
 
 mac_welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,
                     'D8:9E:F3:1D:EE:7C': 0x0D,
@@ -15,7 +20,7 @@ mac_welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,
 
 WELCOME_PAGE = mac_welcome_page.get(get_mac_address(), 0x33)
 if WELCOME_PAGE == 'error':
-    print('mac address is wrong')
+    logger.info('mac address is wrong')
 
 usb_cameras=[]
 if os.path.exists("local/config.ini"):

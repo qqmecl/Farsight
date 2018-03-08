@@ -82,8 +82,7 @@ class Closet:
     ]
 
     def __init__(self, **config):
-        self.logger = multiprocessing.get_logger()
-        self.logger.setLevel(logging.INFO)
+        self.logger = settings.logger
         self.secretPassword = secretPassword()
 
 
@@ -119,9 +118,9 @@ class Closet:
         import utils
         id = {'uuid': utils.get_mac_address()}
         response = requests.get(settings.init_url,params=id)
-        # print(response)
+        # settings.logger.info(response)
         data = response.json()
-        # print(data)
+        # settings.logger.info(data)
         result = {}
         for res in data:
             a = float(res['price'])
@@ -129,11 +128,11 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        # print(settings.items)
+        # settings.logger.info(settings.items)
 
 
     def start(self):
-        # print("initiate start by settings.items",settings.items)
+        # settings.logger.info("initiate start by settings.items",settings.items)
 
         self.lastDetectTime = time.time()
         # 启动后台物体识别进程
@@ -212,7 +211,7 @@ class Closet:
             else:
                 self.authorization_right_success()
         except transitions.core.MachineError:
-            print(self.state)
+            settings.logger.info(self.state)
             self.logger.warn('状态转换错误!!')
             return
 
@@ -246,7 +245,7 @@ class Closet:
 
         self.curSide = side
 
-        print("curside is: ",self.curSide)#default is left side
+        settings.logger.info("curside is: ",self.curSide)#default is left side
 
         self.debugTime = time.time()
 
@@ -286,7 +285,7 @@ class Closet:
 
         self.curSide = side
 
-        print("curside is: ",self.curSide)#default is left side
+        settings.logger.info("curside is: ",self.curSide)#default is left side
 
         door_check = functools.partial(self._check_door_close)
         self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
@@ -294,14 +293,14 @@ class Closet:
 
 
     def adjust_items(self,tup):
-        print("tup is: ",tup)
+        settings.logger.info("tup is: ",tup)
 
         if self.cart:
             if tup[1] == '1':
-                print("adjust add in ",tup[0])
+                settings.logger.info("adjust add in ",tup[0])
                 self.cart.add_item(tup[0])#放入物品
             else:
-                print("adjust take out ",tup[0])
+                settings.logger.info("adjust take out ",tup[0])
                 self.cart.remove_item(tup[0])#取出物品
 
     def delayCheckDoorClose(self):
@@ -313,15 +312,15 @@ class Closet:
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
             #self.open_door_time_out -= 1
 
-            # print("Checking time is: ",time.time()-self.debugTime)
+            # settings.logger.info("Checking time is: ",time.time()-self.debugTime)
 
             if self.check_door_time_out == False and time.time()-self.debugTime > 7:
                 # now_time = time.time()
-                print("Time Out time is: ",time.time()-self.debugTime)
+                settings.logger.info("Time Out time is: ",time.time()-self.debugTime)
 
                 #已经检查足够多次，重置状态机，并且直接返回
-                print('超时未开门')
-                # print(self.state)
+                settings.logger.info('超时未开门')
+                # settings.logger.info(self.state)
                 # self.open_door_time_out = True#which means 120*12ms = 8s
                 self.IO.change_to_welcome_page()
                 self.updateScheduler.stop()
@@ -339,7 +338,7 @@ class Closet:
 
                 self.debugTime = time.time()
 
-                print("OpenDoor time is ",self.debugTime)
+                settings.logger.info("OpenDoor time is ",self.debugTime)
 
                 self.calcTime0 = time.time()
 
@@ -366,7 +365,7 @@ class Closet:
                     # self.calc_cnt +=1
 
                     # if time.time() - self.calcTime > 1:
-                    #     print(self.calc_cnt," calc every second")
+                    #     settings.logger.info(self.calc_cnt," calc every second")
                     #     self.calcTime = time.time()
                     #     self.calc_cnt = 0
                     #     return
@@ -377,17 +376,17 @@ class Closet:
 
 
                     if frame_time < self.debugTime:
-                        # print("Check cached frame: ",frame_time,self.debugTime)
+                        # settings.logger.info("Check cached frame: ",frame_time,self.debugTime)
                         return
 
-                    # print(self.motions[i])
+                    # settings.logger.info(self.motions[i])
                     checkIndex = index%2
 
                     # if checkIndex == 0:
                     #     self.calc_cnt0 +=1
 
                     #     if time.time() - self.calcTime0 > 1:
-                    #         print(self.calc_cnt0," calc0000 every second")
+                    #         settings.logger.info(self.calc_cnt0," calc0000 every second")
                     #         self.calcTime0 = time.time()
                     #         self.calc_cnt0 = 0
                     #         return
@@ -396,26 +395,26 @@ class Closet:
                     #     self.calc_cnt1 +=1
 
                     #     if time.time() - self.calcTime1 > 1:
-                    #         print(self.calc_cnt1," calc1111 every second")
+                    #         settings.logger.info(self.calc_cnt1," calc1111 every second")
                     #         self.calcTime1 = time.time()
                     #         self.calc_cnt1 = 0
                     #         return
 
-                    # print("weird index is: ",checkIndex)
-                    # print(len(self.motions))
+                    # settings.logger.info("weird index is: ",checkIndex)
+                    # settings.logger.info(len(self.motions))
                     if checkIndex == 0 and self.firstFrameInit0 == False:
-                        print("Frist 0 camera Frame Init interval time is: ",time.time()-self.debugTime)
+                        settings.logger.info("Frist 0 camera Frame Init interval time is: ",time.time()-self.debugTime)
                         self.firstFrameInit0 = True
                         # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
                     if checkIndex == 1 and self.firstFrameInit1 == False:
-                        print("Frist 1 camera Frame Init interval time is: ",time.time()-self.debugTime)
+                        settings.logger.info("Frist 1 camera Frame Init interval time is: ",time.time()-self.debugTime)
                         self.firstFrameInit1 = True
                         # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
                     # last_time = time.time()
                     motionType = self.motions[checkIndex].checkInput(frame)
-                    # print("Check input use time: ",time.time()-last_time)
+                    # settings.logger.info("Check input use time: ",time.time()-last_time)
 
                     self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]})
                     detect = self.detectResults[checkIndex].getDetect()
@@ -433,7 +432,7 @@ class Closet:
                     #         else:
                     #             return chooseDetect(isLast,upNum,upId)
                     if len(detect) > 0:
-                        # print(detect)
+                        # settings.logger.info(detect)
 
                         direction = detect[0]["direction"]
                         id = detect[0]["id"]
@@ -444,7 +443,7 @@ class Closet:
 
                         intervalTime = now_time - self.lastDetectTime
 
-                        print("action interval is: ",intervalTime)
+                        settings.logger.info("action interval is: ",intervalTime)
 
                         if intervalTime > 0.9:
                             self.detectCache = None
@@ -452,17 +451,17 @@ class Closet:
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
 
                             if direction == "IN":
-                                print(checkIndex,"{Put back",settings.items[id]["name"],now_num,"}")
+                                settings.logger.info(checkIndex,"{Put back",settings.items[id]["name"],now_num,"}")
 
                                 self.detectCache.append(self.cart.remove_item(id))
                             else:
-                                print(checkIndex,"{Take out",settings.items[id]["name"],now_num,"}")
+                                settings.logger.info(checkIndex,"{Take out",settings.items[id]["name"],now_num,"}")
                                 self.cart.add_item(id)
                                 self.detectCache.append(True)
 
                         else:
                             #fix camera result
-                            print("Enter cache result fixing phase!")
+                            settings.logger.info("Enter cache result fixing phase!")
                             cacheId = self.detectCache[0]
                             cacheNum = self.detectCache[1]
                             actionSuccess = self.detectCache[2]
@@ -472,26 +471,26 @@ class Closet:
                                     self.cart.remove_item(cacheId)
                                     self.cart.add_item(id)
 
-                                    print("{Put back",settings.items[cacheId]["name"],"}")
-                                    print("{Take out",settings.items[id]["name"],"}")
+                                    settings.logger.info("{Put back",settings.items[cacheId]["name"],"}")
+                                    settings.logger.info("{Take out",settings.items[id]["name"],"}")
                                 elif direction == "IN":
                                     # if self.cart.isHaveItem(cacheId):
                                     if actionSuccess:
                                         self.cart.add_item(cacheId)
-                                        print("{Take out",settings.items[cacheId]["name"],"}")
+                                        settings.logger.info("{Take out",settings.items[cacheId]["name"],"}")
 
                                     self.cart.remove_item(id)
-                                    print("{Put back",settings.items[id]["name"],"}")
+                                    settings.logger.info("{Put back",settings.items[id]["name"],"}")
 
 
                         self.detectResults[checkIndex].resetDetect()
 
                         self.lastDetectTime = now_time
 
-                        print("Action time is: ",time.time())
+                        settings.logger.info("Action time is: ",time.time())
                         self.detectResults[checkIndex].setActionTime()
                 except queue.Empty:
-                    # print()
+                    # settings.logger.info()
                     pass
 
     def _delay_do_order(self):
@@ -509,13 +508,13 @@ class Closet:
 
         delta = now_scale - self.beforeScaleVal
         if  delta < -0.1:
-            print("Envoke weight change")
+            settings.logger.info("Envoke weight change")
             if self.cart.as_order()["data"]!={}:
                 order = self.cart.as_order()
                 # self.logger.info(order)
                 strData = json.dumps(order)
                 self.pollData = self.secretPassword.aes_cbc_encrypt(strData)
-                # print(self.pollData)
+                # settings.logger.info(self.pollData)
 
                 #req = requests.post(Closet.ORDER_URL, data=self.pollData)
                 self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
@@ -528,21 +527,21 @@ class Closet:
                 # self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
                 # self.pollPeriod.start()
         else:
-            print("Can't Envoke weight change")
+            settings.logger.info("Can't Envoke weight change")
             self.order_process_success()
 
 
     #chen chen chen
     def polling(self):
         req = requests.post(Closet.ORDER_URL, data=self.pollData)
-        #print(req.status_code)
+        #settings.logger.info(req.status_code)
         if req.status_code == 200:
             self.order_process_success()
             self.pollPeriod.stop()
 
     def door_polling(self):
         req = requests.post(Closet.ORDER_URL, data=self.door_Close_Data)
-        #print(req.status_code)
+        #settings.logger.info(req.status_code)
         if req.status_code == 200:
             self.pollPeriod_door_close.stop()
 
