@@ -20,7 +20,7 @@ import requests
 import json
 from setproctitle import setproctitle
 import time
-from utils import secretPassword get_mac_address
+from utils import secretPassword, get_mac_address
 import settings
 from serial_handler.io_controller import IO_Controller
 
@@ -537,14 +537,15 @@ class Closet:
     #chen chen chen
     def polling(self):
         req = requests.post(Closet.ORDER_URL, data=self.pollData)
+        #print(req.status_code)
         if req.status_code == 200:
             self.order_process_success()
             self.pollPeriod.stop()
 
     def door_polling(self):
         req = requests.post(Closet.ORDER_URL, data=self.door_Close_Data)
-        print(req.status_code)
-        if req.status_code == 200:
+        #print(req.status_code)
+        if req.status_code == 500:
             self.pollPeriod_door_close.stop()
 
 
