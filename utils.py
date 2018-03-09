@@ -71,7 +71,7 @@ class secretPassword():
 if __name__ == '__main__':
     b = secretPassword()
     y = json.dumps({'secret': 'grtrgewfgvs', 'token': 'fye'})
-    settings.logger.info(y)
+    settings.logger.info('{}'.format(y))
     x = b.aes_cbc_encrypt('data=6902538006100&num=1&token=cb6aa5b6fbbd9acb155121c269c9f594&code=D8:9E:F3:1D:EE:7C&start=39.2799186706543&final=38.822940826416016')
-    settings.logger.info(x)
-    settings.logger.info(b.aes_cbc_decrypt(x))
+    settings.logger.info('{}'.format(x))
+    settings.logger.info('{}'.format(b.aes_cbc_decrypt(x)))

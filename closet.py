@@ -118,9 +118,9 @@ class Closet:
         import utils
         id = {'uuid': utils.get_mac_address()}
         response = requests.get(settings.init_url,params=id)
-        # settings.logger.info(response)
+        #settings.logger.info('{}'.format(response))
         data = response.json()
-        # settings.logger.info(data)
+        #settings.logger.info('{}'.format(data))
         result = {}
         for res in data:
             a = float(res['price'])
@@ -128,7 +128,7 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        # settings.logger.info(settings.items)
+        settings.logger.info('{}'.format(settings.items))
 
 
     def start(self):
@@ -451,11 +451,11 @@ class Closet:
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
 
                             if direction == "IN":
-                                settings.logger.info(checkIndex,"{Put back",settings.items[id]["name"],now_num,"}")
+                                settings.logger.info('{0},|Put back,{1},{2},|'.format(checkIndex,settings.items[id]["name"], now_num))
 
                                 self.detectCache.append(self.cart.remove_item(id))
                             else:
-                                settings.logger.info(checkIndex,"{Take out",settings.items[id]["name"],now_num,"}")
+                                settings.logger.info('{0},|Take out,{1},{2},|'.format(checkIndex,settings.items[id]["name"], now_num))
                                 self.cart.add_item(id)
                                 self.detectCache.append(True)
 
@@ -471,16 +471,16 @@ class Closet:
                                     self.cart.remove_item(cacheId)
                                     self.cart.add_item(id)
 
-                                    settings.logger.info("{Put back",settings.items[cacheId]["name"],"}")
-                                    settings.logger.info("{Take out",settings.items[id]["name"],"}")
+                                    settings.logger.info('|Put back,{},|'.format(settings.items[cacheId]["name"]))
+                                    settings.logger.info('|take out,{},|'.format(settings.items[id]["name"]))
                                 elif direction == "IN":
                                     # if self.cart.isHaveItem(cacheId):
                                     if actionSuccess:
                                         self.cart.add_item(cacheId)
-                                        settings.logger.info("{Take out",settings.items[cacheId]["name"],"}")
+                                        settings.logger.info('|take out,{},|'.format(settings.items[cacheId]["name"]))
 
                                     self.cart.remove_item(id)
-                                    settings.logger.info("{Put back",settings.items[id]["name"],"}")
+                                    settings.logger.info('|Put back,{},|'.format(settings.items[id]["name"]))
 
 
                         self.detectResults[checkIndex].resetDetect()

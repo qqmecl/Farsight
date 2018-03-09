@@ -29,5 +29,5 @@ class WeightScale:
 if __name__ == '__main__':
     scale = WeightScale()
 
-    settings.logger.info(scale.read()[0])
+    settings.logger.info(''.format(scale.read()[0]))
 

@@ -46,7 +46,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 		role = paramsDict.get('role', 'user')
 		itemId = paramsDict.get('itemId', '0000')
 		num = int(paramsDict.get('num', 1))
-		settings.logger.info(secret, side, token, role, itemId, num)
+		settings.logger.info('{0} {1} {2} {3} {4} {5}'.format(secret, side, token, role, itemId, num))
 		#1代表加
 		#0代表减
 		# "product"
@@ -55,10 +55,10 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 
 	def post(self):
 		psp = json.loads((self.request.body).decode())
-		settings.logger.info(psp)
+		settings.logger.info('{}'.format(psp))
 		#data = (self.request.body).decode()
 		paramsDict = self.parseData(psp['aes_token'])
-		settings.logger.info(paramsDict)
+		settings.logger.info(''.format(paramsDict))
 		secret = paramsDict.get('secret')
 		side = paramsDict.get('side', 'left')
 		token = paramsDict.get('token')
@@ -66,7 +66,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 		itemId = paramsDict.get('itemId', '000')
 		num = int(paramsDict.get('num', 0))
 
-		settings.logger.info(secret, side, token, role, itemId, num)
+		settings.logger.info('{0} {1} {2} {3} {4} {5}'.format(secret, side, token, role, itemId, num))
 		# settings.logger.info(data)
 		# settings.logger.info(data.get('itemId','000'))
 		self._handle_door(secret, side, token,itemId,num, role)
@@ -98,7 +98,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 class DataHandler(tornado.web.RequestHandler):
 	def post(self):
 		data = self.get_argument('signal', 'chen')
-		settings.logger.info(data)
+		settings.logger.info(''.format(data))
 		if data == 'votance':
 			if os.path.exists('/tmp/daemon.pid'):
 				settings.logger.info('tttttttt')
