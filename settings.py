@@ -10,6 +10,10 @@ mock_screen = False
 http_port = 5000
 speaker_on = True
 
+
+# logger =logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s")
+    # logger = logging.getLogger(__name__)
+
 logger = multiprocessing.get_logger()
 #logger.setLevel(logging.WARN)
 
@@ -44,10 +48,10 @@ if WELCOME_PAGE == 'error':
 #     ]
 
 usb_cameras=[
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:5:1.0-video-index0",
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:4:1.0-video-index0",
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",
-"/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"]
+    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:3:1.0-video-index0",
+    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:7:1.0-video-index0",
+    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",#done
+    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"]
 
 init_url = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
 

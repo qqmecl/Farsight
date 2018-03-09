@@ -82,7 +82,8 @@ class Closet:
     ]
 
     def __init__(self, **config):
-        self.logger = settings.logger
+        #self.logger = settings.logger
+        
         self.secretPassword = secretPassword()
 
 
@@ -113,6 +114,7 @@ class Closet:
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
+        logging.getLogger('transitions').setLevel(logging.ERROR)
 
     def initItemData(self):
         import utils
@@ -156,7 +158,7 @@ class Closet:
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
 
-        self.logger.info(self.state)
+        #self.logger.info(self.state)
 
         # 自检
         # selfcheck()
@@ -175,7 +177,7 @@ class Closet:
 
         # 对所有的摄像头发送standby指令，启动摄像头并且进入待命状态
         self.camera_ctrl_queue.put(dict(cmd='standby', cameras=self.left_cameras + self.right_cameras))
-        self.logger.info('摄像头已启动')
+        settings.logger.info('camera standby')
 
 
         #连接串口管理器
@@ -195,7 +197,7 @@ class Closet:
         app.listen(self.http_port)
 
         self.init_success()
-        self.logger.info(self.state)
+        #self.logger.info(self.state)
 
         # 最后：启动 tornado ioloop
         tornado.ioloop.IOLoop.current().start()
@@ -211,8 +213,8 @@ class Closet:
             else:
                 self.authorization_right_success()
         except transitions.core.MachineError:
-            settings.logger.info(self.state)
-            self.logger.warn('状态转换错误!!')
+            #settings.logger.info(self.state)
+            settings.logger.warn('State conversion error')
             return
 
 
@@ -241,7 +243,7 @@ class Closet:
 
         self.IO.unlock(side)#开对应门锁
 
-        self.logger.info('用户已经打开锁')
+        settings.logger.info('lock is opened by user')
 
         self.curSide = side
 
@@ -281,7 +283,7 @@ class Closet:
 
         self.IO.unlock(side)#开对应门锁
 
-        self.logger.info('用户已经打开锁')
+        settings.logger.info('lock is opened by user')
 
         self.curSide = side
 
@@ -319,7 +321,7 @@ class Closet:
                 settings.logger.info("Time Out time is: {}".format(time.time()-self.debugTime))
 
                 #已经检查足够多次，重置状态机，并且直接返回
-                settings.logger.info('超时未开门')
+                settings.logger.info('open door timeout')
                 # settings.logger.info(self.state)
                 # self.open_door_time_out = True#which means 120*12ms = 8s
                 self.IO.change_to_welcome_page()
@@ -334,7 +336,7 @@ class Closet:
                     self.open_leftdoor_success()
                 else:
                     self.open_rightdoor_success()
-                self.logger.info('用户已经打开门')
+                settings.logger.info('door is opened by user')
 
                 self.debugTime = time.time()
 
@@ -555,9 +557,9 @@ class Closet:
             self.check_door_close_callback.stop()
 
 
-            self.logger.info(self.state)
+            #self.logger.info(self.state)
 
-            self.logger.info('用户已经关上门')
+            settings.logger.info('door is closed')
             #chen
             order = {'data': {}, 'token': self.door_token, 'code': settings.get_mac_address()}
             strData = json.dumps(order)

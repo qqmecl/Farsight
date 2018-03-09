@@ -1,6 +1,7 @@
 import sys
 # import cv2
 import multiprocessing
+import settings
 
 class SignalHandler:
     def __init__(self, camera_process, object_detection_pools, ioloop):
@@ -10,7 +11,7 @@ class SignalHandler:
         self.logger = multiprocessing.get_logger()
 
     def signal_handler(self, signal, frame):
-        self.logger.info('正在退出...')
+        settings.logger.info('shutdown...')
         self.camera_process.terminate()
 
         for pool in self.object_detection_pools:
