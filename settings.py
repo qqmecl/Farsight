@@ -1,7 +1,7 @@
-from utils import get_mac_address
 import os
 import multiprocessing
 import logging
+import uuid
 
 mock_door = False
 mock_speaker = False
@@ -11,12 +11,18 @@ http_port = 5000
 speaker_on = True
 
 logger = multiprocessing.get_logger()
+#logger.setLevel(logging.WARN)
+
+def get_mac_address():
+    mac=uuid.UUID(int = uuid.getnode()).hex[-12:].upper()
+    return ":".join([mac[e:e+2] for e in range(0,11,2)])
 
 mac_welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,
                     'D8:9E:F3:1D:EE:7C': 0x0D,
-                    'D8:9E:F3:1E:13:8A': 0x0E}
+                    'D8:9E:F3:1E:13:8A': 0x33}
 
 WELCOME_PAGE = mac_welcome_page.get(get_mac_address(), 0x33)
+#print(get_mac_address())
 if WELCOME_PAGE == 'error':
     logger.info('mac address is wrong')
 
@@ -59,3 +65,4 @@ items = {
     '003002': dict(name='小茗同学黄色', price=6.5, weight=546.0),
     '003003': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
 }
+

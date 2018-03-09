@@ -55,12 +55,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s")
-    logger = logging.getLogger(__name__)
+    #logger = logging.getLogger('cheng')
 
     if args.verbose:
-        logger.setLevel(logging.INFO)
+        settings.logger.setLevel(logging.INFO)
     else:
-        logger.setLevel(logging.ERROR)
+        settings.logger.setLevel(logging.ERROR)
     
     setproctitle('[farsight] main process')
 

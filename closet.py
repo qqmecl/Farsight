@@ -18,7 +18,7 @@ import requests
 import json
 from setproctitle import setproctitle
 import time
-from utils import secretPassword, get_mac_address
+from utils import secretPassword
 import settings
 from serial_handler.io_controller import IO_Controller
 
@@ -116,7 +116,7 @@ class Closet:
 
     def initItemData(self):
         import utils
-        id = {'uuid': utils.get_mac_address()}
+        id = {'uuid': settings.get_mac_address()}
         response = requests.get(settings.init_url,params=id)
         #settings.logger.info('{}'.format(response))
         data = response.json()
@@ -559,7 +559,7 @@ class Closet:
 
             self.logger.info('用户已经关上门')
             #chen
-            order = {'data': {}, 'token': self.door_token, 'code': get_mac_address()}
+            order = {'data': {}, 'token': self.door_token, 'code': settings.get_mac_address()}
             strData = json.dumps(order)
             self.door_Close_Data = self.secretPassword.aes_cbc_encrypt(strData)
             self.pollPeriod_door_close = tornado.ioloop.PeriodicCallback(self.door_polling, 50)

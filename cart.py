@@ -74,7 +74,7 @@ class Cart:
         return dict(
             data=self.items,
             token=self.token,
-            code=utils.get_mac_address(),
+            code=settings.get_mac_address(),
             weight=dict(start=self.start_weight, final=self.IO.get_scale_val())
         )
 

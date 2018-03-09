@@ -5,13 +5,8 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 import base64
-import uuid
 import json
 import settings
-
-def get_mac_address():
-	mac=uuid.UUID(int = uuid.getnode()).hex[-12:].upper()
-	return ":".join([mac[e:e+2] for e in range(0,11,2)])
 
 # 128bits block size
 class secretPassword():
