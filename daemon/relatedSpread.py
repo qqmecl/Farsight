@@ -7,7 +7,6 @@ import sys
 import time
 import atexit
 import signal
-import settings
 
 class Daemon:
     def __init__(self, pidfile='/tmp/daemon.pid', stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
