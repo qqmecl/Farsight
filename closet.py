@@ -156,7 +156,7 @@ class Closet:
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
 
-        self.logger.info(self.state)
+        # self.logger.info(self.state)
 
         # 自检
         # selfcheck()
@@ -195,7 +195,7 @@ class Closet:
         app.listen(self.http_port)
 
         self.init_success()
-        self.logger.info(self.state)
+        # self.logger.info(self.state)
 
         # 最后：启动 tornado ioloop
         tornado.ioloop.IOLoop.current().start()
