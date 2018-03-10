@@ -4,7 +4,6 @@ from signal_handler import SignalHandler
 from cart import Cart
 
 import multiprocessing
-import logging
 from multiprocessing import Queue, Pool, Process
 import tornado.ioloop
 import signal
@@ -27,6 +26,7 @@ from detect.motion import MotionDetect
 from detect.object_detector import ObjectDetector
 
 import cv2
+import logging
 
 class Closet:
     '''
@@ -114,7 +114,7 @@ class Closet:
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
-        logging.getLogger('transitions').setLevel(logging.ERROR)
+        logging.getLogger('transitions').setLevel(logging.WARN)
 
     def initItemData(self):
         import utils
@@ -130,7 +130,7 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        settings.logger.info('{}'.format(settings.items))
+        #settings.logger.info('{}'.format(settings.items))
 
 
     def start(self):
@@ -176,7 +176,7 @@ class Closet:
 
         # 对所有的摄像头发送standby指令，启动摄像头并且进入待命状态
         self.camera_ctrl_queue.put(dict(cmd='standby', cameras=self.left_cameras + self.right_cameras))
-        settings.logger.info('camera standby')
+        settings.logger.warning('camera standby')
 
 
         #连接串口管理器
@@ -242,11 +242,11 @@ class Closet:
 
         self.IO.unlock(side)#开对应门锁
 
-        settings.logger.info('lock is opened by user')
+        settings.logger.warning('lock is opened by user')
 
         self.curSide = side
 
-        settings.logger.info("curside is: {}".format(self.curSide))#default is left side
+        settings.logger.warning("curside is: {}".format(self.curSide))#default is left side
 
         self.debugTime = time.time()
 
@@ -282,11 +282,11 @@ class Closet:
 
         self.IO.unlock(side)#开对应门锁
 
-        settings.logger.info('lock is opened by user')
+        settings.logger.warning('lock is opened by user')
 
         self.curSide = side
 
-        settings.logger.info("curside is: {}".format(self.curSide))#default is left side
+        settings.logger.warning("curside is: {}".format(self.curSide))#default is left side
 
         door_check = functools.partial(self._check_door_close)
         self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
@@ -320,7 +320,7 @@ class Closet:
                 settings.logger.info("Time Out time is: {}".format(time.time()-self.debugTime))
 
                 #已经检查足够多次，重置状态机，并且直接返回
-                settings.logger.info('open door timeout')
+                settings.logger.warning('open door timeout')
                 # settings.logger.info(self.state)
                 # self.open_door_time_out = True#which means 120*12ms = 8s
                 self.IO.change_to_welcome_page()
@@ -335,7 +335,7 @@ class Closet:
                     self.open_leftdoor_success()
                 else:
                     self.open_rightdoor_success()
-                settings.logger.info('door is opened by user')
+                settings.logger.warning('door is opened by user')
 
                 self.debugTime = time.time()
 
@@ -452,11 +452,11 @@ class Closet:
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
 
                             if direction == "IN":
-                                settings.logger.info('{0},|Put back,{1},{2},|'.format(checkIndex,settings.items[id]["name"], now_num))
+                                settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
 
                                 self.detectCache.append(self.cart.remove_item(id))
                             else:
-                                settings.logger.info('{0},|Take out,{1},{2},|'.format(checkIndex,settings.items[id]["name"], now_num))
+                                settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
                                 self.cart.add_item(id)
                                 self.detectCache.append(True)
 
@@ -472,16 +472,16 @@ class Closet:
                                     self.cart.remove_item(cacheId)
                                     self.cart.add_item(id)
 
-                                    settings.logger.info('|Put back,{},|'.format(settings.items[cacheId]["name"]))
-                                    settings.logger.info('|take out,{},|'.format(settings.items[id]["name"]))
+                                    settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
+                                    settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
                                 elif direction == "IN":
                                     # if self.cart.isHaveItem(cacheId):
                                     if actionSuccess:
                                         self.cart.add_item(cacheId)
-                                        settings.logger.info('|take out,{},|'.format(settings.items[cacheId]["name"]))
+                                        settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
 
                                     self.cart.remove_item(id)
-                                    settings.logger.info('|Put back,{},|'.format(settings.items[id]["name"]))
+                                    settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
 
 
                         self.detectResults[checkIndex].resetDetect()
@@ -509,7 +509,7 @@ class Closet:
 
         delta = now_scale - self.beforeScaleVal
         if  delta < -0.1:
-            settings.logger.info("Envoke weight change")
+            settings.logger.warning("Envoke weight change")
             if self.cart.as_order()["data"]!={}:
                 order = self.cart.as_order()
                 # self.logger.info(order)
@@ -528,7 +528,7 @@ class Closet:
                 # self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
                 # self.pollPeriod.start()
         else:
-            settings.logger.info("Can't Envoke weight change")
+            settings.logger.warning("Can't Envoke weight change")
             self.order_process_success()
 
 
@@ -558,7 +558,7 @@ class Closet:
 
             #self.logger.info(self.state)
 
-            settings.logger.info('door is closed')
+            settings.logger.warning('door is closed')
             #chen
             order = {'data': {}, 'token': self.door_token, 'code': settings.get_mac_address()}
             strData = json.dumps(order)
