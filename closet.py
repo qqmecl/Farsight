@@ -447,7 +447,7 @@ class Closet:
 
                         settings.logger.info("action interval is: {}".format(intervalTime))
 
-                        if intervalTime > 0.7:
+                        if intervalTime > 0.5:
                             self.detectCache = None
 
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
