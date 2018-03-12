@@ -1,11 +1,6 @@
 import serial
 import struct
-from error import FarSightError
-
-
-class WeightScaleError(FarSightError):
-    pass
-
+import settings
 
 class WeightScale:
     '''
@@ -34,5 +29,5 @@ class WeightScale:
 if __name__ == '__main__':
     scale = WeightScale()
 
-    print(scale.read()[0])
+    settings.logger.info(''.format(scale.read()[0]))
 

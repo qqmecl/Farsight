@@ -5,12 +5,8 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 import base64
-import uuid
 import json
-
-def get_mac_address():
-	mac=uuid.UUID(int = uuid.getnode()).hex[-12:].upper()
-	return ":".join([mac[e:e+2] for e in range(0,11,2)])
+import settings
 
 # 128bits block size
 class secretPassword():
@@ -70,7 +66,7 @@ class secretPassword():
 if __name__ == '__main__':
     b = secretPassword()
     y = json.dumps({'secret': 'grtrgewfgvs', 'token': 'fye'})
-    print(y)
+    settings.logger.info('{}'.format(y))
     x = b.aes_cbc_encrypt('data=6902538006100&num=1&token=cb6aa5b6fbbd9acb155121c269c9f594&code=D8:9E:F3:1D:EE:7C&start=39.2799186706543&final=38.822940826416016')
-    print(x)
-    print(b.aes_cbc_decrypt(x))
+    settings.logger.info('{}'.format(x))
+    settings.logger.info('{}'.format(b.aes_cbc_decrypt(x)))

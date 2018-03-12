@@ -8,16 +8,12 @@ import time
 import signal
 import settings
 from setproctitle import setproctitle
-from error import FarSightError
 import settings
 
 DEFAULT_WIDTH = 640
 DEFAULT_HEIGHT = 480
 DEFAULT_FPS = 25 # 视频文件的保存帧率，还需要和图像处理帧率进行比对
 
-
-class CameraError(FarSightError):
-    pass
 
 class WebcamVideoStream:
     '''
@@ -93,7 +89,7 @@ class CameraHandler:
             except queue.Empty:
                 break
 
-        # print("reset is save ahtne")
+        # settings.logger.info("reset is save ahtne")
         for i in range(4):
             self.isSave[i] = False
 
@@ -111,7 +107,7 @@ class CameraHandler:
                 ctrl_data = self.ctrl_q.get(timeout=self.timeout)
                 self._handle_command(ctrl_data['cmd'], ctrl_data['cameras'])
             except queue.Empty:
-                # print('[EMPTY] ctrl_q')
+                # settings.logger.info('[EMPTY] ctrl_q')
                 pass
 
             for src in self.cameras.keys():
@@ -131,7 +127,7 @@ class CameraHandler:
                 self.cameras[src] = WebcamVideoStream(src)
                 self.cameras[src].start()
         elif cmd == 'start':#打开门之后算法进程才有数据进行检测
-            # print("Cameras are:   ",cameras)
+            # settings.logger.info("Cameras are:   ",cameras)
             for src in cameras:
                 self.cameras[src].resume_sending()
                 if settings.SAVE_VIDEO_OUTPUT:
@@ -160,7 +156,7 @@ class CameraHandler:
         '''
         try:
             data = self.cameras[src].read()#after fetching,
-            # print("send frame src is: ",src)
+            # settings.logger.info("send frame src is: ",src)
             # self.frames_queues[src].put((data,src), timeout=1)
             if data is not None:
                 self.frames_queues.put((data,src,time.time()), timeout=1)
@@ -168,6 +164,7 @@ class CameraHandler:
                 # self.calc_cnt +=1
                 # if time.time() - self.calcTime > 1:
                 #     print(self.calc_cnt," frame sent every second")
+                #     # settings.logger.info(self.calc_cnt," frame sent every second")
                 #     self.calcTime = time.time()
                 #     self.calc_cnt = 0
                 #     return
@@ -185,7 +182,7 @@ class CameraHandler:
 
                 self.cameras[src].reset()
         except queue.Full:
-            print('[FULL] input_q')
+            settings.logger.info('[FULL] input_q')
             pass
 
 

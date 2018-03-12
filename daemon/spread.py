@@ -7,26 +7,25 @@ import signal
 import subprocess
 import pexpect
 
-
 from relatedSpread import Daemon
 
 class MyTestDaemon(Daemon):
     def run(self):
         signal.signal(signal.SIGUSR1, self.__postHandle)
         signal.signal(signal.SIGUSR2, self.__pullHandle)
-        subprocess.call('/home/votance/anaconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
+        subprocess.call('/home/votance/miniconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
         sys.stdout.write(sys.path[0])
         while True:
             sys.stdout.write('Daemon Alive! {}\n'.format(time.ctime()))
             sys.stdout.flush()
-            time.sleep(5)
+            time.sleep(45)
 
     @staticmethod
     def __postHandle(signum, frame):
     	sys.stdout.write('ccccccccc')
     	subprocess.call(['pkill', 'farsight'])
     	time.sleep(4)
-    	subprocess.call('/home/votance/anaconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
+    	subprocess.call('/home/votance/miniconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
     	sys.stdout.write('tttttttttt')
 
     @staticmethod
@@ -49,7 +48,7 @@ class MyTestDaemon(Daemon):
         sys.stdout.write((child.before).decode('utf-8'))
         subprocess.call(['pkill', 'farsight'])
         time.sleep(4)
-        subprocess.call('/home/votance/anaconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
+        subprocess.call('/home/votance/miniconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
 
 if __name__ == '__main__':
     PIDFILE = '/tmp/daemon.pid'

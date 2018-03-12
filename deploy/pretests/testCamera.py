@@ -1,7 +1,27 @@
 import numpy as np
 import cv2 as cv
-from PIL import Image, ImageDraw, ImageFont 
 import os
+from PIL import Image, ImageDraw, ImageFont 
+import settings
+
+
+
+items = {
+    '001001': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
+    '002004': dict(name='美汁源果粒橙', price=5.0, weight=487.0),
+    '006001': dict(name='红牛', price=8.0, weight=298.0),
+    '007001': dict(name='脉动', price=6.5, weight=546.0),
+    '008001': dict(name='三得利乌龙茶', price=6.0, weight=528.0),
+    '009001': dict(name='冰糖雪梨', price=6.0, weight=549.0),
+    '010001': dict(name='维他柠檬茶', price=7.0, weight=552.0),
+    '002001': dict(name='雪碧听装', price=3.5, weight=343.0),
+    '002002': dict(name='可口可乐听装', price=3.5, weight=354.0),
+    '003001': dict(name='统一阿萨姆奶茶', price=6.5, weight=550.0),
+    '003002': dict(name='小茗同学黄色', price=6.5, weight=546.0),
+    '003003': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
+}
+
+
 usb_cameras=[]
 if os.path.exists("../../local/config.ini"):
     from configparser import ConfigParser
@@ -32,7 +52,6 @@ classNames = {0: 'background',
 def detect_objects(frame):
     global detectionNet,classNames
 
-    self.frameCount += 1
     inScaleFactor,meanVal = 0.007843,127.5
     inWidth,inHeight = 300,300
 
@@ -43,7 +62,7 @@ def detect_objects(frame):
                                 True)
     detectionNet.setInput(blob)
     detections = detectionNet.forward()
-    # print("Detect consume time:",time.time()-last_time)
+    # settings.logger.info("Detect consume time:",time.time()-last_time)
 
     rows = resize.shape[0]
     cols = resize.shape[1]
@@ -52,6 +71,8 @@ def detect_objects(frame):
     itemId=None
 
     pos=[]
+    for i in range(4):
+        pos.append(0)
     real_calssId = None
 
     for i in range(detections.shape[2]):
@@ -69,7 +90,7 @@ def detect_objects(frame):
 
         try:
             # itemId = self.classNames[class_id]
-            # print(settings.items[itemId]["name"])
+            # settings.logger.info(settings.items[itemId]["name"])
             if confidence > 0.8:
                 #location = self.getDetectPos(XAxis,YAxis,index)
                 if XAxis > 100 and confidence > maxConfidence:
@@ -83,16 +104,17 @@ def detect_objects(frame):
 
                     real_calssId = class_id
         except KeyError:
-            print("class_id is: ",class_id)
+            settings.logger.info("class_id is: {}".format(class_id))
             pass
 
-    cv.rectangle(frame, (pos[0], pos[1]), (pos[2], pos[3]),(0, 255, 0))
+    if maxConfidence !=0:
+        cv.rectangle(frame, (pos[0]+160, pos[1]+160), (pos[2], pos[3]),(0, 255, 0))
 
-    if class_id in classNames:
-        label = settings.items[itemId]["name"] + ": " + str(confidence)
-        labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-        pos[1] = max(pos[1], labelSize[1])
-        frame = addChineseText(frame,label,(pos[0], pos[1]+50))
+        if real_calssId in classNames:
+            label = items[itemId]["name"] + ": " + str(confidence)
+            labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+            pos[1] = max(pos[1], labelSize[1])
+            frame = addChineseText(frame,label,(pos[0], pos[1]+50))
 
     return frame
 
@@ -110,9 +132,12 @@ def addChineseText(frame,label,pos):
     draw.text(pos, label, font=font, fill=fillColor)  
   
     # 转换回OpenCV格式  
-    frame = cv.cvtColor(numpy.asarray(img_PIL),cv.COLOR_RGB2BGR)  
+    frame = cv.cvtColor(np.asarray(img_PIL),cv.COLOR_RGB2BGR)  
 
     return frame
+
+
+
 
 index = 0
 cap = cv.VideoCapture(usb_cameras[index])
@@ -123,7 +148,10 @@ while(ret):
     if ret:
         if index > 1:
             frame = cv.flip(frame,1)
-        # frame = 
+
+        frame = detect_objects(frame)
+
+
         cv.imshow('frame',frame)
         if cv.waitKey(1) & 0xFF == ord('q'):
             break

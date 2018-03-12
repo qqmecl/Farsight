@@ -3,10 +3,7 @@ from httpd import make_http_app, HTTP_PORT
 from signal_handler import SignalHandler
 from cart import Cart
 
-from selfcheck import selfcheck
-
 import multiprocessing
-import logging
 from multiprocessing import Queue, Pool, Process
 import tornado.ioloop
 import signal
@@ -29,6 +26,7 @@ from detect.motion import MotionDetect
 from detect.object_detector import ObjectDetector
 
 import cv2
+import logging
 
 class Closet:
     '''
@@ -84,11 +82,11 @@ class Closet:
     ]
 
     def __init__(self, **config):
-        self.logger = multiprocessing.get_logger()
-        self.logger.setLevel(logging.INFO)
+        #self.logger = settings.logger
+        
         self.secretPassword = secretPassword()
 
-       
+
         self.input_queues = Queue(maxsize=20)
 
 
@@ -116,14 +114,15 @@ class Closet:
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
+        logging.getLogger('transitions').setLevel(logging.WARN)
 
     def initItemData(self):
         import utils
-        id = {'uuid': utils.get_mac_address()}
+        id = {'uuid': settings.get_mac_address()}
         response = requests.get(settings.init_url,params=id)
-        # print(response)
+        #settings.logger.info('{}'.format(response))
         data = response.json()
-        # print(data)
+        #settings.logger.info('{}'.format(data))
         result = {}
         for res in data:
             a = float(res['price'])
@@ -131,11 +130,11 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        # print(settings.items)
+        #settings.logger.info('{}'.format(settings.items))
 
 
     def start(self):
-        # print("initiate start by settings.items",settings.items)
+        # settings.logger.info("initiate start by settings.items",settings.items)
 
         self.lastDetectTime = time.time()
         # 启动后台物体识别进程
@@ -149,17 +148,16 @@ class Closet:
         # motions = [MotionDetect()]*2
 
         self.motions = []
-        
+
         for i in range(2):
             self.motions.append(MotionDetect())
-            
+
         # for input_q, index in zip(self.input_queues, indexs):
             # pool = Pool(self.num_workers, ObjectDetector, (input_q,settings.items,self._detection_queue))
         pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue,self.run_mode))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
 
-        self.logger.info(self.state)
 
         # 自检
         # selfcheck()
@@ -178,16 +176,16 @@ class Closet:
 
         # 对所有的摄像头发送standby指令，启动摄像头并且进入待命状态
         self.camera_ctrl_queue.put(dict(cmd='standby', cameras=self.left_cameras + self.right_cameras))
-        self.logger.info('摄像头已启动')
+        settings.logger.warning('camera standby')
 
 
         #连接串口管理器
         # self.IO.start()
 
-        self.detectResults = [] 
+        self.detectResults = []
         for i in range(2):
             self.detectResults.append(DetectResult())
-        
+
 
         # 捕获 CTRL-C
         handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
@@ -198,7 +196,7 @@ class Closet:
         app.listen(self.http_port)
 
         self.init_success()
-        self.logger.info(self.state)
+
 
         # 最后：启动 tornado ioloop
         tornado.ioloop.IOLoop.current().start()
@@ -214,11 +212,11 @@ class Closet:
             else:
                 self.authorization_right_success()
         except transitions.core.MachineError:
-            print(self.state)
-            self.logger.warn('状态转换错误!!')
+            #settings.logger.info(self.state)
+            settings.logger.warn('State conversion error')
             return
 
-        
+
 
         while True:#empty last detection queue
             try:
@@ -227,6 +225,7 @@ class Closet:
                 break
 
 
+        self.door_token = token      #chen
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
         self.cart = Cart(token, self.IO)
 
@@ -243,11 +242,11 @@ class Closet:
 
         self.IO.unlock(side)#开对应门锁
 
-        self.logger.info('用户已经打开锁')
+        settings.logger.warning('lock is opened by user')
 
         self.curSide = side
 
-        print("curside is: ",self.curSide)#default is left side
+        settings.logger.warning("curside is: {}".format(self.curSide))#default is left side
 
         self.debugTime = time.time()
 
@@ -256,12 +255,12 @@ class Closet:
         self.firstFrameInit0 = False
         self.firstFrameInit1 = False
 
-       
+
 
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
         self.updateScheduler.start()
 
-        
+
 
         #self._start_imageprocessing()
 
@@ -283,11 +282,11 @@ class Closet:
 
         self.IO.unlock(side)#开对应门锁
 
-        self.logger.info('用户已经打开锁')
+        settings.logger.warning('lock is opened by user')
 
         self.curSide = side
 
-        print("curside is: ",self.curSide)#default is left side
+        settings.logger.warning("curside is: {}".format(self.curSide))#default is left side
 
         door_check = functools.partial(self._check_door_close)
         self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
@@ -295,14 +294,14 @@ class Closet:
 
 
     def adjust_items(self,tup):
-        print("tup is: ",tup)
+        settings.logger.info("tup is: {}".format(tup))
 
         if self.cart:
             if tup[1] == '1':
-                print("adjust add in ",tup[0])
+                settings.logger.info("adjust add in {}".format(tup[0]))
                 self.cart.add_item(tup[0])#放入物品
             else:
-                print("adjust take out ",tup[0])
+                settings.logger.info("adjust take out {}".format(tup[0]))
                 self.cart.remove_item(tup[0])#取出物品
 
     def delayCheckDoorClose(self):
@@ -314,15 +313,15 @@ class Closet:
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
             #self.open_door_time_out -= 1
 
-            # print("Checking time is: ",time.time()-self.debugTime)
+            # settings.logger.info("Checking time is: ",time.time()-self.debugTime)
 
             if self.check_door_time_out == False and time.time()-self.debugTime > 7:
                 # now_time = time.time()
-                print("Time Out time is: ",time.time()-self.debugTime)
+                settings.logger.info("Time Out time is: {}".format(time.time()-self.debugTime))
 
                 #已经检查足够多次，重置状态机，并且直接返回
-                print('超时未开门')
-                # print(self.state)
+                settings.logger.warning('open door timeout')
+                # settings.logger.info(self.state)
                 # self.open_door_time_out = True#which means 120*12ms = 8s
                 self.IO.change_to_welcome_page()
                 self.updateScheduler.stop()
@@ -336,12 +335,12 @@ class Closet:
                     self.open_leftdoor_success()
                 else:
                     self.open_rightdoor_success()
-                self.logger.info('用户已经打开门')
+                settings.logger.warning('door is opened by user')
 
                 self.debugTime = time.time()
 
-                print("OpenDoor time is ",self.debugTime)
-                
+                settings.logger.info("OpenDoor time is {}".format(self.debugTime))
+
                 self.calcTime0 = time.time()
 
                 self.calc_cnt0 = 0
@@ -363,11 +362,11 @@ class Closet:
 
 
                     result = self._detection_queue.get_nowait()
-                    
+
                     # self.calc_cnt +=1
 
                     # if time.time() - self.calcTime > 1:
-                    #     print(self.calc_cnt," calc every second")
+                    #     settings.logger.info(self.calc_cnt," calc every second")
                     #     self.calcTime = time.time()
                     #     self.calc_cnt = 0
                     #     return
@@ -378,17 +377,17 @@ class Closet:
 
 
                     if frame_time < self.debugTime:
-                        # print("Check cached frame: ",frame_time,self.debugTime)
+                        # settings.logger.info("Check cached frame: ",frame_time,self.debugTime)
                         return
 
-                    # print(self.motions[i])
+                    # settings.logger.info(self.motions[i])
                     checkIndex = index%2
-                    
+
                     # if checkIndex == 0:
                     #     self.calc_cnt0 +=1
 
                     #     if time.time() - self.calcTime0 > 1:
-                    #         print(self.calc_cnt0," calc0000 every second")
+                    #         settings.logger.info(self.calc_cnt0," calc0000 every second")
                     #         self.calcTime0 = time.time()
                     #         self.calc_cnt0 = 0
                     # #        return
@@ -397,26 +396,26 @@ class Closet:
                     #     self.calc_cnt1 +=1
 
                     #     if time.time() - self.calcTime1 > 1:
-                    #         print(self.calc_cnt1," calc1111 every second")
+                    #         settings.logger.info(self.calc_cnt1," calc1111 every second")
                     #         self.calcTime1 = time.time()
                     #         self.calc_cnt1 = 0
                     # #        return
 
-                    # print("weird index is: ",checkIndex)
-                    # print(len(self.motions))
+                    # settings.logger.info("weird index is: ",checkIndex)
+                    # settings.logger.info(len(self.motions))
                     if checkIndex == 0 and self.firstFrameInit0 == False:
-                        print("Frist 0 camera Frame Init interval time is: ",time.time()-self.debugTime)
+                        settings.logger.info("Frist 0 camera Frame Init interval time is: {}".format(time.time()-self.debugTime))
                         self.firstFrameInit0 = True
                         # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
-                    
+
                     if checkIndex == 1 and self.firstFrameInit1 == False:
-                        print("Frist 1 camera Frame Init interval time is: ",time.time()-self.debugTime)
+                        settings.logger.info("Frist 1 camera Frame Init interval time is: {}".format(time.time()-self.debugTime))
                         self.firstFrameInit1 = True
                         # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
                     # last_time = time.time()
                     motionType = self.motions[checkIndex].checkInput(frame)
-                    # print("Check input use time: ",time.time()-last_time)
+                    # settings.logger.info("Check input use time: ",time.time()-last_time)
 
                     self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]})
                     detect = self.detectResults[checkIndex].getDetect()
@@ -434,18 +433,18 @@ class Closet:
                     #         else:
                     #             return chooseDetect(isLast,upNum,upId)
                     if len(detect) > 0:
-                        # print(detect)
+                        # settings.logger.info(detect)
 
                         direction = detect[0]["direction"]
                         id = detect[0]["id"]
-                        
+
                         now_time = detect[0]["time"]
                         now_num = detect[0]["num"]
 
-                        
+
                         intervalTime = now_time - self.lastDetectTime
 
-                        print("action interval is: ",intervalTime)
+                        settings.logger.info("action interval is: {}".format(intervalTime))
 
                         if intervalTime > 0.7:
                             self.detectCache = None
@@ -453,48 +452,47 @@ class Closet:
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
 
                             if direction == "IN":
-                                print(checkIndex,"{Put back",settings.items[id]["name"],now_num,"}")
+                                settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
 
                                 self.detectCache.append(self.cart.remove_item(id))
                             else:
-                                print(checkIndex,"{Take out",settings.items[id]["name"],now_num,"}")
+                                settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
                                 self.cart.add_item(id)
                                 self.detectCache.append(True)
-
                         else:
-                            #fix camera result
-                            print("Enter cache result fixing phase!: ",intervalTime)
-                            cacheId = self.detectCache[0]
-                            cacheNum = self.detectCache[1]
-                            actionSuccess = self.detectCache[2]
+                            if self.detectCache is not None:
+                                #fix camera result
+                                settings.logger.info("Enter cache result fixing phase!")
+                                cacheId = self.detectCache[0]
+                                cacheNum = self.detectCache[1]
+                                actionSuccess = self.detectCache[2]
 
-                            if now_num > cacheNum and id != cacheId:
-                                if direction == "OUT":
-                                    self.cart.remove_item(cacheId)
-                                    self.cart.add_item(id)
+                                if now_num > cacheNum and id != cacheId:
+                                    if direction == "OUT":
+                                        self.cart.remove_item(cacheId)
+                                        self.cart.add_item(id)
 
-                                    print("{Put back",settings.items[cacheId]["name"],"}")
-                                    print("{Take out",settings.items[id]["name"],"}")
-                                elif direction == "IN":
-                                    # if self.cart.isHaveItem(cacheId):
-                                    if actionSuccess:
-                                        self.cart.add_item(cacheId)
-                                        print("{Take out",settings.items[cacheId]["name"],"}")
-                                    
-                                    self.cart.remove_item(id)
-                                    print("{Put back",settings.items[id]["name"],"}")
+                                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
+                                        settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
+                                    elif direction == "IN":
+                                        # if self.cart.isHaveItem(cacheId):
+                                        if actionSuccess:
+                                            self.cart.add_item(cacheId)
+                                            settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
 
+                                        self.cart.remove_item(id)
+                                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
 
                         self.detectResults[checkIndex].resetDetect()
 
                         self.lastDetectTime = now_time
 
-                        print("Action time is: ",time.time())
+                        settings.logger.info("Action time is: {}".format(time.time()))
                         self.detectResults[checkIndex].setActionTime()
                 except queue.Empty:
-                    # print()
+                    # settings.logger.info()
                     pass
-                
+
     def _delay_do_order(self):
         self.close_door_success()
 
@@ -510,13 +508,13 @@ class Closet:
 
         delta = now_scale - self.beforeScaleVal
         if  delta < -0.1:
-            print("Envoke weight change")
+            settings.logger.warning("Envoke weight change")
             if self.cart.as_order()["data"]!={}:
                 order = self.cart.as_order()
                 # self.logger.info(order)
                 strData = json.dumps(order)
                 self.pollData = self.secretPassword.aes_cbc_encrypt(strData)
-                # print(self.pollData)
+                # settings.logger.info(self.pollData)
 
                 #req = requests.post(Closet.ORDER_URL, data=self.pollData)
                 self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
@@ -529,17 +527,24 @@ class Closet:
                 # self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
                 # self.pollPeriod.start()
         else:
-            print("Can't Envoke weight change")
+            settings.logger.warning("Can't Envoke weight change")
             self.order_process_success()
-           
+
 
     #chen chen chen
     def polling(self):
         req = requests.post(Closet.ORDER_URL, data=self.pollData)
+        #settings.logger.info(req.status_code)
         if req.status_code == 200:
             self.order_process_success()
             self.pollPeriod.stop()
-            
+
+    def door_polling(self):
+        req = requests.post(Closet.ORDER_URL, data=self.door_Close_Data)
+        #settings.logger.info(req.status_code)
+        if req.status_code == 200:
+            self.pollPeriod_door_close.stop()
+
 
     def _check_door_close(self):
         '''
@@ -550,10 +555,17 @@ class Closet:
             self.check_door_close_callback.stop()
 
 
-            self.logger.info(self.state)
+            #self.logger.info(self.state)
 
-            self.logger.info('用户已经关上门')
+            settings.logger.warning('door is closed')
+            #chen
+            order = {'data': {}, 'token': self.door_token, 'code': settings.get_mac_address()}
+            strData = json.dumps(order)
+            self.door_Close_Data = self.secretPassword.aes_cbc_encrypt(strData)
+            self.pollPeriod_door_close = tornado.ioloop.PeriodicCallback(self.door_polling, 50)
 
+            self.pollPeriod_door_close.start()
+            #chen
             if self.mode == "operator_mode":
 
                 self.restock_close_door_success()
@@ -565,12 +577,12 @@ class Closet:
                 self.IO.say_goodbye()
 
 
-            
+
 
             reset = functools.partial(self._delay_do_order)
             tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
 
-            
+
 
     def _start_imageprocessing(self):
         '''

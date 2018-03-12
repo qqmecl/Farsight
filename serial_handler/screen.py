@@ -8,7 +8,6 @@ import functools
 import tornado.ioloop
 import settings
 
-
 class Screen:
     CHANGE_PAGE_ADDRESS = 0
 
@@ -39,7 +38,7 @@ class Screen:
         # rate = 115200  # 当前串口通信设备波特率
         rate = 9600  # 当前串口通信设备波特率
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
-        # print(self.com)
+        # settings.logger.info(self.com)
         self.resetData()
 
     def resetData(self):
@@ -52,7 +51,7 @@ class Screen:
         # 对商品id增减逻辑进行判断
         fromDeleteIndex = -1
         isNewItem = True
-        # print(self.curItems)
+        # settings.logger.info(self.curItems)
         for i, item in enumerate(self.curItems):
             if itemId == item[0]:
                 isNewItem = False
@@ -75,7 +74,7 @@ class Screen:
                         # self.do_protocol_6(Screen.ITEM_NUM_START_ADDRESS + i * Screen.ITEM_NUM_INTERVAL + num_add, item[3])  # 写商品数量
                 break
 
-        # print(isNewItem,self.curItems)
+        # settings.logger.info(isNewItem,self.curItems)
         
         # 如果是一种新的商品走如下逻辑
         if isNewItem:
@@ -89,12 +88,12 @@ class Screen:
                     break
 
         if fromDeleteIndex > -1:
-            # print("fromDeleteIndex is: ",fromDeleteIndex)
+            # settings.logger.info("fromDeleteIndex is: ",fromDeleteIndex)
             lastIndex = len(self.curItems) - 1
             self.clear_line_content(lastIndex)  # 先清空最后一行内容
             del self.curItems[fromDeleteIndex]  # 从self.curItems中删除当前为零商品行
             index = lastIndex - 1
-            # print(self.curItems)
+            # settings.logger.info(self.curItems)
             while(index >= fromDeleteIndex):
                 self.update_Single_line(index)
                 index -= 1
@@ -127,18 +126,18 @@ class Screen:
 
     # 按ModBus功能码为6的协议写数据
     def do_protocol_6(self, address, content):
-        # print("address is ",address)
+        # settings.logger.info("address is ",address)
         conf = [0x01, 0x06, *divmod(address, 256), *divmod(content, 256)]
         array = crc16().createarray(conf)
         data = struct.pack(str(Screen.PROTOCOL_6_LEN) + "B", *array)
-        # print(data)
+        # settings.logger.info(data)
         self.com.write(data)
         self.com.read(Screen.PROTOCOL_6_LEN)
 
 
     # 按ModBus功能码为5的协议写数据
     def do_protocol_5(self, address, content):
-        # print("5address is ",address)
+        # settings.logger.info("5address is ",address)
         conf = [0x01, 0x05, *divmod(address, 256), 0xff,content]
         array = crc16().createarray(conf)
         data = struct.pack(str(Screen.PROTOCOL_6_LEN) + "B", *array)
@@ -147,7 +146,7 @@ class Screen:
 
     # 按ModBus功能码为16的协议写数据
     def do_protocol_16(self, address, content):
-        # print("address is ",address)
+        # settings.logger.info("address is ",address)
         results = [0x01, 0x10, *divmod(address, 256), 0x00, len(content), len(content) * 2]
         codepoints = [divmod(ord(x), 256) for x in content]
         conf = results + list(itertools.chain.from_iterable(codepoints))
@@ -166,7 +165,7 @@ class Screen:
         result += str(item[2]/10)+HALF_SPACE+"元"
         result += FULL_SPACE+FULL_SPACE+FULL_SPACE
         result += str(item[3])
-        # print(result)
+        # settings.logger.info(result)
         return result
 
     def update_Single_line(self, index):
@@ -177,13 +176,13 @@ class Screen:
         item = self.curItems[index]
         display_item = self.processItemName(item)
         add = 150 if index > 6 else 0
-        # print(item,index)
+        # settings.logger.info(item,index)
         self.do_protocol_16(Screen.ITEM_NAME_START_ADDRESS + index * Screen.ITEM_NAME_INTERVAL + add,display_item)#写商品info
-        # print("weird!!")  
+        # settings.logger.info("weird!!")  
 
 
     def update_static_info(self):
-        # print("")
+        # settings.logger.info("")
         # 设置购物车商品数量
         self.do_protocol_6(Screen.CART_COUNT_ADDRESS, self.cartCount)
         # 设置购物车内商品总价

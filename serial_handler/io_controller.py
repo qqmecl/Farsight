@@ -45,9 +45,9 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
 
     def _check_weight_scale(self):
         import time
-        # print("before time is:",time.time())
+        # settings.logger.info("before time is:",time.time())
         self.val_scale = self.scale.read()[0]
-        # print("after time is:",time.time())
+        # settings.logger.info("after time is:",time.time())
 
     
 

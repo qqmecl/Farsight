@@ -1,23 +1,34 @@
-from utils import get_mac_address
 import os
+import multiprocessing
+import logging
+import uuid
 
 mock_door = False
 mock_speaker = False
 mock_scale = False
 mock_screen = False
-scale_port = 'COM1'
-num_cameras = 4
 http_port = 5000
 speaker_on = True
-# speaker_on = False
+
+
+# logger =logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s")
+    # logger = logging.getLogger(__name__)
+
+logger = multiprocessing.get_logger()
+logger.setLevel(logging.WARN)
+
+def get_mac_address():
+    mac=uuid.UUID(int = uuid.getnode()).hex[-12:].upper()
+    return ":".join([mac[e:e+2] for e in range(0,11,2)])
 
 mac_welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,
                     'D8:9E:F3:1D:EE:7C': 0x0D,
-                    'D8:9E:F3:1E:13:8A': 0x0E}
+                    'D8:9E:F3:1E:13:8A': 0x33}
 
 WELCOME_PAGE = mac_welcome_page.get(get_mac_address(), 0x33)
+#print(get_mac_address())
 if WELCOME_PAGE == 'error':
-    print('mac address is wrong')
+    logger.info('mac address is wrong')
 
 
 usb_cameras=[]
@@ -37,17 +48,12 @@ else:
     "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
     ]
 
-# print(usb_cameras)
-# items={}
 
 init_url = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
 
 SAVE_DETECT_OUTPUT = False
 SAVE_VIDEO_OUTPUT = False
 SAVE_DEBUG_OUTPUT = False
-# SAVE_DEBUG_OUTPUT = True
-# SAVE_OUTPUT = True
-
 
 items = {
     '001001': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
@@ -63,3 +69,4 @@ items = {
     '003002': dict(name='小茗同学黄色', price=6.5, weight=546.0),
     '003003': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
 }
+

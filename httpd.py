@@ -5,9 +5,11 @@ import settings
 from utils import secretPassword
 import os
 import signal
+import settings
 
 HTTP_PORT = 8888
 SECRET_KEY = "grtrgewfgvs"  # 和原来代码一样，写死了先
+
 
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
@@ -44,7 +46,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 		role = paramsDict.get('role', 'user')
 		itemId = paramsDict.get('itemId', '0000')
 		num = int(paramsDict.get('num', 1))
-		print(secret, side, token, role, itemId, num)
+		settings.logger.info('{0} {1} {2} {3} {4} {5}'.format(secret, side, token, role, itemId, num))
 		#1代表加
 		#0代表减
 		# "product"
@@ -53,25 +55,26 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 
 	def post(self):
 		psp = json.loads((self.request.body).decode())
-		print(psp)
+		settings.logger.info('{}'.format(psp))
 		#data = (self.request.body).decode()
 		paramsDict = self.parseData(psp['aes_token'])
-		print(paramsDict)
+		settings.logger.info(''.format(paramsDict))
 		secret = paramsDict.get('secret')
 		side = paramsDict.get('side', 'left')
 		token = paramsDict.get('token')
 		role = paramsDict.get('role', 'user')
 		itemId = paramsDict.get('itemId', '000')
 		num = int(paramsDict.get('num', 0))
-		print(secret, side, token, role, itemId, num)
-		# print(data)
-		# print(data.get('itemId','000'))
+
+		settings.logger.info('{0} {1} {2} {3} {4} {5}'.format(secret, side, token, role, itemId, num))
+		# settings.logger.info(data)
+		# settings.logger.info(data.get('itemId','000'))
 		self._handle_door(secret, side, token,itemId,num, role)
 
 	def _handle_door(self, secret, side, token, itemId, num, role='user'):
 		if secret == SECRET_KEY:
 			if token == "product":
-				# print("adjust: ",itemId,num)
+				# settings.logger.info("adjust: ",itemId,num)
 				self.closet.adjust_items((itemId,num))
 			else:
 				if role == 'user':
@@ -95,10 +98,10 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 class DataHandler(tornado.web.RequestHandler):
 	def post(self):
 		data = self.get_argument('signal', 'chen')
-		print(data)
+		settings.logger.info(''.format(data))
 		if data == 'votance':
 			if os.path.exists('/tmp/daemon.pid'):
-				print('tttttttt')
+				settings.logger.info('tttttttt')
 				try:
 					with open('/tmp/daemon.pid') as f:
 						os.kill(int(f.read()), signal.SIGUSR1)
@@ -107,7 +110,7 @@ class DataHandler(tornado.web.RequestHandler):
 					self.write('user error')
 		elif data == 'pull':
 			if os.path.exists('/tmp/daemon.pid'):
-				print('sssssss')
+				settings.logger.info('sssssss')
 				try:
 					with open('/tmp/daemon.pid') as f:
 						os.kill(int(f.read()), signal.SIGUSR2)
@@ -116,7 +119,7 @@ class DataHandler(tornado.web.RequestHandler):
 					self.write('user error')
 
 
-		# print("get result")
+		# settings.logger.info("get result")
 		#self.write('friendly user!')
 
 def make_http_app(closet):

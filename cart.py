@@ -5,6 +5,8 @@ if settings.mock_screen:
 else:
     from serial_handler.screen import Screen
 
+import settings
+
 class Cart:
     '''
         虚拟购物车
@@ -35,7 +37,7 @@ class Cart:
         else:
             self.items[item_id] = 1
 
-        print("Cart add action!!!!!!!!!!!!!")
+        settings.logger.info("Cart add action!!!!!!!!!!!!!")
         # if self.items[item_id] > 0:
         self.IO.update_screen_item(True,item_id)
 
@@ -46,7 +48,7 @@ class Cart:
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
 
-            print("Trully remove item!!")
+            settings.logger.info("Trully remove item!!")
 
             self.IO.update_screen_item(False,item_id)
 
@@ -54,7 +56,7 @@ class Cart:
         else:
             pass
             # TODO:
-            # print('Try to clear an item which is not included in the closet!')
+            # settings.logger.info('Try to clear an item which is not included in the closet!')
         self.last_remove_timestamp = time.time()
         
         return False
@@ -72,7 +74,7 @@ class Cart:
         return dict(
             data=self.items,
             token=self.token,
-            code=utils.get_mac_address(),
+            code=settings.get_mac_address(),
             weight=dict(start=self.start_weight, final=self.IO.get_scale_val())
         )
 
@@ -85,4 +87,4 @@ if __name__ == '__main__':
     cart.add_item('122003')
     cart.remove_item('123123')
     cart.remove_item('12311312323')
-    print(cart.as_order())
+    settings.logger.info('{data} {token} {code} {weight}'.format(**cart.as_order()))
