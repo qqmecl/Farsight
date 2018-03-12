@@ -137,6 +137,7 @@ class Closet:
         # settings.logger.info("initiate start by settings.items",settings.items)
 
         self.lastDetectTime = time.time()
+        print(self.screen_port)
         # 启动后台物体识别进程
         object_detection_pools = []
 
