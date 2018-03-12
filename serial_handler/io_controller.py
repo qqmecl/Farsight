@@ -31,6 +31,8 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         self.scale = WeightScale(port=scale_port)
         self.screen = Screen(port=screen_port)
 
+        print("speaker port {} scale port {} screen port {}".format(speaker_port,scale_port,screen_port))
+
         #门和锁
         self.doorLock = DoorLockHandler(port=door_port)
 
