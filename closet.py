@@ -459,30 +459,29 @@ class Closet:
                                 settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
                                 self.cart.add_item(id)
                                 self.detectCache.append(True)
-
                         else:
-                            #fix camera result
-                            settings.logger.info("Enter cache result fixing phase!")
-                            cacheId = self.detectCache[0]
-                            cacheNum = self.detectCache[1]
-                            actionSuccess = self.detectCache[2]
+                            if self.detectCache is not None:
+                                #fix camera result
+                                settings.logger.info("Enter cache result fixing phase!")
+                                cacheId = self.detectCache[0]
+                                cacheNum = self.detectCache[1]
+                                actionSuccess = self.detectCache[2]
 
-                            if now_num > cacheNum and id != cacheId:
-                                if direction == "OUT":
-                                    self.cart.remove_item(cacheId)
-                                    self.cart.add_item(id)
+                                if now_num > cacheNum and id != cacheId:
+                                    if direction == "OUT":
+                                        self.cart.remove_item(cacheId)
+                                        self.cart.add_item(id)
 
-                                    settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
-                                    settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
-                                elif direction == "IN":
-                                    # if self.cart.isHaveItem(cacheId):
-                                    if actionSuccess:
-                                        self.cart.add_item(cacheId)
-                                        settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
+                                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
+                                        settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
+                                    elif direction == "IN":
+                                        # if self.cart.isHaveItem(cacheId):
+                                        if actionSuccess:
+                                            self.cart.add_item(cacheId)
+                                            settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
 
-                                    self.cart.remove_item(id)
-                                    settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
-
+                                        self.cart.remove_item(id)
+                                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
 
                         self.detectResults[checkIndex].resetDetect()
 
