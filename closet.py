@@ -137,7 +137,7 @@ class Closet:
         # settings.logger.info("initiate start by settings.items",settings.items)
 
         self.lastDetectTime = time.time()
-        print(self.screen_port)
+        #print(self.screen_port)
         # 启动后台物体识别进程
         object_detection_pools = []
 
@@ -342,13 +342,13 @@ class Closet:
 
                 settings.logger.info("OpenDoor time is {}".format(self.debugTime))
 
-                self.calcTime0 = time.time()
+                #self.calcTime0 = time.time()
 
-                self.calc_cnt0 = 0
+                #self.calc_cnt0 = 0
 
-                self.calcTime1 = time.time()
+                #self.calcTime1 = time.time()
 
-                self.calc_cnt1 = 0
+                #self.calc_cnt1 = 0
 
                 # later = functools.partial(self._start_imageprocessing)
                 # tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
@@ -384,23 +384,21 @@ class Closet:
                     # settings.logger.info(self.motions[i])
                     checkIndex = index%2
 
-                    # if checkIndex == 0:
-                    #     self.calc_cnt0 +=1
+                    #if checkIndex == 0:
+                    #    self.calc_cnt0 +=1
 
-                    #     if time.time() - self.calcTime0 > 1:
-                    #         settings.logger.info(self.calc_cnt0," calc0000 every second")
-                    #         self.calcTime0 = time.time()
-                    #         self.calc_cnt0 = 0
-                    # #        return
+                    #    if time.time() - self.calcTime0 > 1:
+                    #        settings.logger.info("{} calc0000 every second".format(self.calc_cnt0))
+                    #        self.calcTime0 = time.time()
+                    #        self.calc_cnt0 = 0
 
-                    # if checkIndex == 1:
-                    #     self.calc_cnt1 +=1
+                    #if checkIndex == 1:
+                    #    self.calc_cnt1 +=1
 
-                    #     if time.time() - self.calcTime1 > 1:
-                    #         settings.logger.info(self.calc_cnt1," calc1111 every second")
-                    #         self.calcTime1 = time.time()
-                    #         self.calc_cnt1 = 0
-                    # #        return
+                    #    if time.time() - self.calcTime1 > 1:
+                    #        settings.logger.info("{} calc1111 every second".format(self.calc_cnt1))
+                    #        self.calcTime1 = time.time()
+                    #        self.calc_cnt1 = 0
 
                     # settings.logger.info("weird index is: ",checkIndex)
                     # settings.logger.info(len(self.motions))
