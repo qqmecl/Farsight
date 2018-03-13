@@ -314,6 +314,7 @@ class Closet:
         self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
         self.check_door_close_callback.start()
 
+    @gen.coroutine
     def update(self):
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
             #self.open_door_time_out -= 1
@@ -452,97 +453,52 @@ class Closet:
                         settings.logger.info("action interval is: {}".format(intervalTime))
 
                         if intervalTime > 0.5:
-                            self.detectCache = None
 
-                            self.detectCache=[detect[0]["id"],detect[0]["num"]]
+                        self.detectCache = None
 
-                            if direction == "IN":
-                                settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
+                        self.detectCache=[detect[0]["id"],detect[0]["num"]]
 
-                                self.detectCache.append(self.cart.remove_item(id))
-                            else:
-                                settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-                                self.cart.add_item(id)
-                                self.detectCache.append(True)
+                        if direction == "IN":
+                            settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
+                            chen_loop_arg1 = yield self.cart.remove_item(id)
+                            self.detectCache.append(chen_loop_arg1)
                         else:
-                            if self.detectCache is not None:
-                                #fix camera result
-                                settings.logger.info("Enter cache result fixing phase!")
-                                cacheId = self.detectCache[0]
-                                cacheNum = self.detectCache[1]
-                                actionSuccess = self.detectCache[2]
+                            settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
+                            yield self.cart.add_item(id)
+                            self.detectCache.append(True)
+                    else:
+                        if self.detectCache is not None:
+                            #fix camera result
+                            settings.logger.info("Enter cache result fixing phase!")
+                            cacheId = self.detectCache[0]
+                            cacheNum = self.detectCache[1]
+                            actionSuccess = self.detectCache[2]
 
-                                if now_num > cacheNum and id != cacheId:
-                                    if direction == "OUT":
-                                        self.cart.remove_item(cacheId)
-                                        self.cart.add_item(id)
+                            if now_num > cacheNum and id != cacheId:
+                                if direction == "OUT":
+                                    yield self.cart.remove_item(cacheId)
+                                    yield self.cart.add_item(id)
 
-                                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
-                                        settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
-                                    elif direction == "IN":
-                                        # if self.cart.isHaveItem(cacheId):
-                                        if actionSuccess:
-                                            self.cart.add_item(cacheId)
-                                            settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
+                                    settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
+                                    settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
+                                elif direction == "IN":
+                                    # if self.cart.isHaveItem(cacheId):
+                                    if actionSuccess:
+                                        yield self.cart.add_item(cacheId)
+                                        settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
 
-                                        self.cart.remove_item(id)
-                                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
-                        #settings.logger.error('chen_time is {}'.format(time.time() - chen_time))
-                        self.detectResults[checkIndex].resetDetect()
+                                    yield self.cart.remove_item(id)
+                                    settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
 
-                        self.lastDetectTime = now_time
+                    self.detectResults[checkIndex].resetDetect()
 
-                        settings.logger.info("Action time is: {}".format(time.time()))
-                        self.detectResults[checkIndex].setActionTime()
-                        self.loop.run_until_complete(new_chen())
+                    self.lastDetectTime = now_time
+
+                    settings.logger.info("Action time is: {}".format(time.time()))
+                    self.detectResults[checkIndex].setActionTime()
                 except queue.Empty:
                     # settings.logger.info()
                     pass
-    @asyncio.coroutine
-    def new_chen():
-        if intervalTime > 0.5:
-            self.detectCache = None
-
-            self.detectCache=[detect[0]["id"],detect[0]["num"]]
-
-            if direction == "IN":
-                settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-                chen_loop_arg1 = yield from self.cart.remove_item(id)
-                self.detectCache.append(chen_loop_arg1)
-            else:
-                settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-                yield from self.cart.add_item(id)
-                self.detectCache.append(True)
-        else:
-            if self.detectCache is not None:
-                #fix camera result
-                settings.logger.info("Enter cache result fixing phase!")
-                cacheId = self.detectCache[0]
-                cacheNum = self.detectCache[1]
-                actionSuccess = self.detectCache[2]
-
-                if now_num > cacheNum and id != cacheId:
-                    if direction == "OUT":
-                        yield from self.cart.remove_item(cacheId)
-                        yield from self.cart.add_item(id)
-
-                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
-                        settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
-                    elif direction == "IN":
-                        # if self.cart.isHaveItem(cacheId):
-                        if actionSuccess:
-                            yield from self.cart.add_item(cacheId)
-                            settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
-
-                        yield from self.cart.remove_item(id)
-                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
-
-        self.detectResults[checkIndex].resetDetect()
-
-        self.lastDetectTime = now_time
-
-        settings.logger.info("Action time is: {}".format(time.time()))
-        self.detectResults[checkIndex].setActionTime()
 
     def _delay_do_order(self):
         self.close_door_success()
