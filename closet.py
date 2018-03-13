@@ -27,6 +27,8 @@ from detect.object_detector import ObjectDetector
 
 import cv2
 import logging
+#chen
+import asyncio
 
 class Closet:
     '''
@@ -83,7 +85,9 @@ class Closet:
 
     def __init__(self, **config):
         #self.logger = settings.logger
-        
+        #chen
+        self.loop = asyncio.get_event_loop()
+
         self.secretPassword = secretPassword()
 
 
@@ -189,7 +193,7 @@ class Closet:
 
 
         # 捕获 CTRL-C
-        handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
+        handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current(), self.loop)
         signal.signal(signal.SIGINT, handler.signal_handler)
 
         # 启动 web 服务
@@ -488,9 +492,54 @@ class Closet:
 
                         settings.logger.info("Action time is: {}".format(time.time()))
                         self.detectResults[checkIndex].setActionTime()
+                        self.loop.run_until_complete(new_chen())
                 except queue.Empty:
                     # settings.logger.info()
                     pass
+    async def new_chen():
+        if intervalTime > 0.5:
+            self.detectCache = None
+
+            self.detectCache=[detect[0]["id"],detect[0]["num"]]
+
+            if direction == "IN":
+                settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
+
+                self.detectCache.append(yield from self.cart.remove_item(id))
+            else:
+                settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
+                yield from self.cart.add_item(id)
+                self.detectCache.append(True)
+        else:
+            if self.detectCache is not None:
+                #fix camera result
+                settings.logger.info("Enter cache result fixing phase!")
+                cacheId = self.detectCache[0]
+                cacheNum = self.detectCache[1]
+                actionSuccess = self.detectCache[2]
+
+                if now_num > cacheNum and id != cacheId:
+                    if direction == "OUT":
+                        yield from self.cart.remove_item(cacheId)
+                        yield from self.cart.add_item(id)
+
+                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
+                        settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
+                    elif direction == "IN":
+                        # if self.cart.isHaveItem(cacheId):
+                        if actionSuccess:
+                            yield from self.cart.add_item(cacheId)
+                            settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
+
+                        yield from self.cart.remove_item(id)
+                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
+
+        self.detectResults[checkIndex].resetDetect()
+
+        self.lastDetectTime = now_time
+
+        settings.logger.info("Action time is: {}".format(time.time()))
+        self.detectResults[checkIndex].setActionTime()
 
     def _delay_do_order(self):
         self.close_door_success()
