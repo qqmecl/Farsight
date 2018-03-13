@@ -353,6 +353,8 @@ class Closet:
                 #self.calcTime1 = time.time()
 
                 #self.calc_cnt1 = 0
+                #self.calc_cnt = 0
+                #self.calcTime = time.time()
 
                 # later = functools.partial(self._start_imageprocessing)
                 # tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
@@ -368,13 +370,12 @@ class Closet:
 
                     result = self._detection_queue.get_nowait()
 
-                    # self.calc_cnt +=1
+                    #self.calc_cnt +=1
 
-                    # if time.time() - self.calcTime > 1:
-                    #     settings.logger.info(self.calc_cnt," calc every second")
-                    #     self.calcTime = time.time()
-                    #     self.calc_cnt = 0
-                    #     return
+                    #if time.time() - self.calcTime > 1:
+                    #    settings.logger.error("{} calc every second".format(self.calc_cnt))
+                    #    self.calcTime = time.time()
+                    #    self.calc_cnt = 0
 
                     index = result[0]
                     frame = result[1]
@@ -392,7 +393,7 @@ class Closet:
                     #    self.calc_cnt0 +=1
 
                     #    if time.time() - self.calcTime0 > 1:
-                    #        settings.logger.info("{} calc0000 every second".format(self.calc_cnt0))
+                    #        settings.logger.error("{} calc0000 every second".format(self.calc_cnt0))
                     #        self.calcTime0 = time.time()
                     #        self.calc_cnt0 = 0
 
@@ -400,7 +401,7 @@ class Closet:
                     #    self.calc_cnt1 +=1
 
                     #    if time.time() - self.calcTime1 > 1:
-                    #        settings.logger.info("{} calc1111 every second".format(self.calc_cnt1))
+                    #        settings.logger.error("{} calc1111 every second".format(self.calc_cnt1))
                     #        self.calcTime1 = time.time()
                     #        self.calc_cnt1 = 0
 
@@ -436,7 +437,8 @@ class Closet:
                     #         else:
                     #             return chooseDetect(isLast,upNum,upId)
                     if len(detect) > 0:
-                        # settings.logger.info(detect)
+                        #settings.logger.error('detect 000000')
+                        #chen_time = time.time()
 
                         direction = detect[0]["direction"]
                         id = detect[0]["id"]
@@ -485,7 +487,7 @@ class Closet:
 
                                         self.cart.remove_item(id)
                                         settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
-
+                        #settings.logger.error('chen_time is {}'.format(time.time() - chen_time))
                         self.detectResults[checkIndex].resetDetect()
 
                         self.lastDetectTime = now_time
