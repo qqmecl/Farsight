@@ -21,7 +21,7 @@ class Cart:
 
         self.start_weight = self.IO.get_scale_val()
         self.items = {}
-        self.screen = Screen()
+        self.screen = io.screen
         self.last_add_timestamp = time.time()
         self.last_remove_timestamp = time.time()
 

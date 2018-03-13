@@ -142,7 +142,8 @@ class CameraHandler:
             for src in cameras:
                 self.cameras[src].pause_sending()
                 if settings.SAVE_VIDEO_OUTPUT:
-                    del self.videoWriter[src]  # 摄像头停止活动后销毁视频保存类
+                    if not self.cameras[src].stopped_caching:
+                        del self.videoWriter[src]  # 摄像头停止活动后销毁视频保存类
             self.reset()
 
     def _sendframe(self, src):
