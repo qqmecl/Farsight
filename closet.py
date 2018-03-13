@@ -498,7 +498,8 @@ class Closet:
                 except queue.Empty:
                     # settings.logger.info()
                     pass
-    async def new_chen():
+    @asyncio.coroutine
+    def new_chen():
         if intervalTime > 0.5:
             self.detectCache = None
 
@@ -506,8 +507,8 @@ class Closet:
 
             if direction == "IN":
                 settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-
-                self.detectCache.append(yield from self.cart.remove_item(id))
+                chen_loop_arg1 = yield from self.cart.remove_item(id)
+                self.detectCache.append(chen_loop_arg1)
             else:
                 settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
                 yield from self.cart.add_item(id)
