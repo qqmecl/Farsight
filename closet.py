@@ -200,6 +200,9 @@ class Closet:
 
         self.init_success()
 
+        self._chen_queue = Queue(5)
+        Process(target = self.chen_io, args=()).start()
+
 
         # 最后：启动 tornado ioloop
         tornado.ioloop.IOLoop.current().start()
@@ -453,11 +456,11 @@ class Closet:
                         self.detectCache=[detect[0]["id"],detect[0]["num"]]
                         if direction == "IN":
                             settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-                            Process(target=self.cart.remove_item, args=(id,)).start()
+                            self._chen_queue.put_nowait(['remove', id])
                             self.detectCache.append(True)
                         else:
                             settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-                            Processd(target=self.cart.add_item, args=(id,)).start()
+                            self._chen_queue.put_nowait(['add', id])
                             self.detectCache.append(True)
                     else:
                         if self.detectCache is not None:
@@ -469,18 +472,18 @@ class Closet:
 
                             if now_num > cacheNum and id != cacheId:
                                 if direction == "OUT":
-                                    Process(target=self.cart.remove_item, args=(cacheId,)).start()
-                                    Process(target=self.cart.add_item, args=(id,)).start()
+                                    self._chen_queue.put_nowait(['remove', cacheId])
+                                    self._chen_queue.put_nowait(['add', id])
 
                                     settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
                                     settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
                                 elif direction == "IN":
                                     # if self.cart.isHaveItem(cacheId):
                                     if actionSuccess:
-                                        Process(target=self.cart.add_item, args=(cacheId,)).start()
+                                        self._chen_queue.put_nowait(['add', cacheId])
                                         settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
 
-                                    Process(target=self.cart.remove_item, args=(id,)).start()
+                                    self._chen_queue.put_nowait(['remove', id])
                                     settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
                     #settings.logger.error('chen_time is {}'.format(time.time() - chen_time))
                     self.detectResults[checkIndex].resetDetect()
@@ -609,3 +612,15 @@ class Closet:
         if self.visualized_camera is not None:
             # TODO: 是否要 cv2.destroyAllWindows() ?
             self.visualization.stop()
+
+    def chen_io(self):
+        try:
+            chen_queue = self._chen_queue.get_nowait()
+
+            if chen_queue[0] == 'remove':
+                self.cart.remove_item(chen_queue[1])
+
+            if chen_queue[0] == 'add':
+                self.cart.add_item(chen_queue[1])
+        except queue.Empty:
+            pass
