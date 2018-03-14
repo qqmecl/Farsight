@@ -453,11 +453,11 @@ class Closet:
                         self.detectCache=[detect[0]["id"],detect[0]["num"]]
                         if direction == "IN":
                             settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-                            threading.Thread(target=self.cart.remove_item, args=(id,)).start()
+                            Process(target=self.cart.remove_item, args=(id,)).start()
                             self.detectCache.append(True)
                         else:
                             settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-                            threading.Thread(target=self.cart.add_item, args=(id,)).start()
+                            Processd(target=self.cart.add_item, args=(id,)).start()
                             self.detectCache.append(True)
                     else:
                         if self.detectCache is not None:
@@ -469,18 +469,18 @@ class Closet:
 
                             if now_num > cacheNum and id != cacheId:
                                 if direction == "OUT":
-                                    threading.Thread(target=self.cart.remove_item, args=(cacheId,)).start()
-                                    threading.Thread(target=self.cart.add_item, args=(id,)).start()
+                                    Process(target=self.cart.remove_item, args=(cacheId,)).start()
+                                    Process(target=self.cart.add_item, args=(id,)).start()
 
                                     settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
                                     settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
                                 elif direction == "IN":
                                     # if self.cart.isHaveItem(cacheId):
                                     if actionSuccess:
-                                        threading.Thread(target=self.cart.add_item, args=(cacheId,)).start()
+                                        Process(target=self.cart.add_item, args=(cacheId,)).start()
                                         settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
 
-                                    threading.Thread(target=self.cart.remove_item, args=(id,)).start()
+                                    Process(target=self.cart.remove_item, args=(id,)).start()
                                     settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
                     #settings.logger.error('chen_time is {}'.format(time.time() - chen_time))
                     self.detectResults[checkIndex].resetDetect()
