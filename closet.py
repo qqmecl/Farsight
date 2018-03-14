@@ -17,7 +17,7 @@ import requests
 import json
 from setproctitle import setproctitle
 import time
-from utils import secretPassword
+from utils import secretPassword, chen_io
 import settings
 from serial_handler.io_controller import IO_Controller
 
@@ -27,7 +27,6 @@ from detect.object_detector import ObjectDetector
 
 import cv2
 import logging
-import threading
 
 
 class Closet:
@@ -200,9 +199,6 @@ class Closet:
 
         self.init_success()
 
-        self._chen_queue = Queue(5)
-        Process(target = self.chen_io, args=()).start()
-
 
         # 最后：启动 tornado ioloop
         tornado.ioloop.IOLoop.current().start()
@@ -234,6 +230,9 @@ class Closet:
         self.door_token = token      #chen
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
         self.cart = Cart(token, self.IO)
+        
+        self._chen_queue = Queue(5)
+        Process(target=chen_io,args=(self._chen_queue,self.cart)).start()
 
         # self.logger.info(self.state)
 
@@ -441,6 +440,7 @@ class Closet:
 
                     direction = detect[0]["direction"]
                     id = detect[0]["id"]
+                    print(id)
 
                     now_time = detect[0]["time"]
                     now_num = detect[0]["num"]
@@ -613,14 +613,3 @@ class Closet:
             # TODO: 是否要 cv2.destroyAllWindows() ?
             self.visualization.stop()
 
-    def chen_io(self):
-        try:
-            chen_queue = self._chen_queue.get_nowait()
-
-            if chen_queue[0] == 'remove':
-                self.cart.remove_item(chen_queue[1])
-
-            if chen_queue[0] == 'add':
-                self.cart.add_item(chen_queue[1])
-        except queue.Empty:
-            pass

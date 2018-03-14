@@ -7,6 +7,22 @@ from cryptography.hazmat.primitives import padding
 import base64
 import json
 import settings
+import queue
+
+
+def chen_io(_chen_queue, cart):
+    while True:
+        try:
+            chen_queue = _chen_queue.get_nowait()
+            print(chen_queue)
+
+            if chen_queue[0] == 'remove':
+                cart.remove_item(chen_queue[1])
+
+            if chen_queue[0] == 'add':
+                cart.add_item(chen_queue[1])
+        except queue.Empty:
+            pass
 
 # 128bits block size
 class secretPassword():
