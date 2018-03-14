@@ -312,7 +312,6 @@ class Closet:
         self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
         self.check_door_close_callback.start()
 
-    @gen.coroutine
     def update(self):
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
             #self.open_door_time_out -= 1
@@ -363,139 +362,137 @@ class Closet:
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
-                try:
+            try:
+
+                result = self._detection_queue.get_nowait()
+
+                #self.calc_cnt +=1
+
+                #if time.time() - self.calcTime > 1:
+                #    settings.logger.error("{} calc every second".format(self.calc_cnt))
+                #    self.calcTime = time.time()
+                #    self.calc_cnt = 0
+
+                index = result[0]
+                frame = result[1]
+                frame_time = result[3]
 
 
+                if frame_time < self.debugTime:
+                    # settings.logger.info("Check cached frame: ",frame_time,self.debugTime)
+                    return
 
-                    result = self._detection_queue.get_nowait()
+                # settings.logger.info(self.motions[i])
+                checkIndex = index%2
 
-                    #self.calc_cnt +=1
+                #if checkIndex == 0:
+                #    self.calc_cnt0 +=1
 
-                    #if time.time() - self.calcTime > 1:
-                    #    settings.logger.error("{} calc every second".format(self.calc_cnt))
-                    #    self.calcTime = time.time()
-                    #    self.calc_cnt = 0
+                #    if time.time() - self.calcTime0 > 1:
+                #        settings.logger.error("{} calc0000 every second".format(self.calc_cnt0))
+                #        self.calcTime0 = time.time()
+                #        self.calc_cnt0 = 0
 
-                    index = result[0]
-                    frame = result[1]
-                    frame_time = result[3]
+                #if checkIndex == 1:
+                #    self.calc_cnt1 +=1
 
+                #    if time.time() - self.calcTime1 > 1:
+                #        settings.logger.error("{} calc1111 every second".format(self.calc_cnt1))
+                #        self.calcTime1 = time.time()
+                #        self.calc_cnt1 = 0
 
-                    if frame_time < self.debugTime:
-                        # settings.logger.info("Check cached frame: ",frame_time,self.debugTime)
-                        return
+                # settings.logger.info("weird index is: ",checkIndex)
+                # settings.logger.info(len(self.motions))
+                if checkIndex == 0 and self.firstFrameInit0 == False:
+                    settings.logger.info("Frist 0 camera Frame Init interval time is: {}".format(time.time()-self.debugTime))
+                    self.firstFrameInit0 = True
+                    # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
-                    # settings.logger.info(self.motions[i])
-                    checkIndex = index%2
+                if checkIndex == 1 and self.firstFrameInit1 == False:
+                    settings.logger.info("Frist 1 camera Frame Init interval time is: {}".format(time.time()-self.debugTime))
+                    self.firstFrameInit1 = True
+                    # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
-                    #if checkIndex == 0:
-                    #    self.calc_cnt0 +=1
+                # last_time = time.time()
+                motionType = self.motions[checkIndex].checkInput(frame)
+                # settings.logger.info("Check input use time: ",time.time()-last_time)
 
-                    #    if time.time() - self.calcTime0 > 1:
-                    #        settings.logger.error("{} calc0000 every second".format(self.calc_cnt0))
-                    #        self.calcTime0 = time.time()
-                    #        self.calc_cnt0 = 0
+                self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]})
+                detect = self.detectResults[checkIndex].getDetect()
+                # if downNum == None:
+                #     if upNum == None:
+                #         return False
+                #     else:
+                #         return chooseDetect(isLast,upNum,upId)
+                # else:
+                #     if upNum == None:
+                #          return chooseDetect(isLast,downNum,downId)
+                #     else:
+                #         if downNum > upNum:
+                #             return chooseDetect(isLast,downNum,downId)
+                #         else:
+                #             return chooseDetect(isLast,upNum,upId)
+                if len(detect) > 0:
+                    #settings.logger.error('detect 000000')
+                    #chen_time = time.time()
 
-                    #if checkIndex == 1:
-                    #    self.calc_cnt1 +=1
+                    direction = detect[0]["direction"]
+                    id = detect[0]["id"]
 
-                    #    if time.time() - self.calcTime1 > 1:
-                    #        settings.logger.error("{} calc1111 every second".format(self.calc_cnt1))
-                    #        self.calcTime1 = time.time()
-                    #        self.calc_cnt1 = 0
-
-                    # settings.logger.info("weird index is: ",checkIndex)
-                    # settings.logger.info(len(self.motions))
-                    if checkIndex == 0 and self.firstFrameInit0 == False:
-                        settings.logger.info("Frist 0 camera Frame Init interval time is: {}".format(time.time()-self.debugTime))
-                        self.firstFrameInit0 = True
-                        # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
-
-                    if checkIndex == 1 and self.firstFrameInit1 == False:
-                        settings.logger.info("Frist 1 camera Frame Init interval time is: {}".format(time.time()-self.debugTime))
-                        self.firstFrameInit1 = True
-                        # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
-
-                    # last_time = time.time()
-                    motionType = self.motions[checkIndex].checkInput(frame)
-                    # settings.logger.info("Check input use time: ",time.time()-last_time)
-
-                    self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]})
-                    detect = self.detectResults[checkIndex].getDetect()
-                    # if downNum == None:
-                    #     if upNum == None:
-                    #         return False
-                    #     else:
-                    #         return chooseDetect(isLast,upNum,upId)
-                    # else:
-                    #     if upNum == None:
-                    #          return chooseDetect(isLast,downNum,downId)
-                    #     else:
-                    #         if downNum > upNum:
-                    #             return chooseDetect(isLast,downNum,downId)
-                    #         else:
-                    #             return chooseDetect(isLast,upNum,upId)
-                    if len(detect) > 0:
-                        #settings.logger.error('detect 000000')
-                        #chen_time = time.time()
-
-                        direction = detect[0]["direction"]
-                        id = detect[0]["id"]
-
-                        now_time = detect[0]["time"]
-                        now_num = detect[0]["num"]
+                    now_time = detect[0]["time"]
+                    now_num = detect[0]["num"]
 
 
-                        intervalTime = now_time - self.lastDetectTime
+                    intervalTime = now_time - self.lastDetectTime
 
-                        settings.logger.info("action interval is: {}".format(intervalTime))
+                    settings.logger.info("action interval is: {}".format(intervalTime))
 
-                        if intervalTime > 0.5:
+                    if intervalTime > 0.5:
 
-                            self.detectCache = None
-                            self.detectCache=[detect[0]["id"],detect[0]["num"]]
-                            if direction == "IN":
-                                settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-                                threading.Thread(target=self.cart.remove_item, args=(id,)).start()
-                                self.detectCache.append(True)
-                            else:
-                                settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-                                threading.Thread(target=self.cart.add_item, args=(id,)).start()
-                                self.detectCache.append(True)
+                        self.detectCache = None
+                        self.detectCache=[detect[0]["id"],detect[0]["num"]]
+                        if direction == "IN":
+                            settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
+                            threading.Thread(target=self.cart.remove_item, args=(id,)).start()
+                            self.detectCache.append(True)
                         else:
-                            if self.detectCache is not None:
-                                #fix camera result
-                                settings.logger.info("Enter cache result fixing phase!")
-                                cacheId = self.detectCache[0]
-                                cacheNum = self.detectCache[1]
-                                actionSuccess = self.detectCache[2]
+                            settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
+                            threading.Thread(target=self.cart.add_item, args=(id,)).start()
+                            self.detectCache.append(True)
+                    else:
+                        if self.detectCache is not None:
+                            #fix camera result
+                            settings.logger.info("Enter cache result fixing phase!")
+                            cacheId = self.detectCache[0]
+                            cacheNum = self.detectCache[1]
+                            actionSuccess = self.detectCache[2]
 
-                                if now_num > cacheNum and id != cacheId:
-                                    if direction == "OUT":
-                                        threading.Thread(target=self.cart.remove_item, args=(cacheId,)).start()
-                                        threading.Thread(target=self.cart.add_item, args=(id,)).start()
+                            if now_num > cacheNum and id != cacheId:
+                                if direction == "OUT":
+                                    threading.Thread(target=self.cart.remove_item, args=(cacheId,)).start()
+                                    threading.Thread(target=self.cart.add_item, args=(id,)).start()
 
-                                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
-                                        settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
-                                    elif direction == "IN":
-                                        # if self.cart.isHaveItem(cacheId):
-                                        if actionSuccess:
-                                            threading.Thread(target=self.cart.add_item, args=(cacheId,)).start()
-                                            settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
+                                    settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
+                                    settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
+                                elif direction == "IN":
+                                    # if self.cart.isHaveItem(cacheId):
+                                    if actionSuccess:
+                                        threading.Thread(target=self.cart.add_item, args=(cacheId,)).start()
+                                        settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
 
-                                        threading.Thread(target=self.cart.remove_item, args=(id,)).start()
-                                        settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
-                        #settings.logger.error('chen_time is {}'.format(time.time() - chen_time))
-                        self.detectResults[checkIndex].resetDetect()
+                                    threading.Thread(target=self.cart.remove_item, args=(id,)).start()
+                                    settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
+                    #settings.logger.error('chen_time is {}'.format(time.time() - chen_time))
+                    self.detectResults[checkIndex].resetDetect()
 
-                        self.lastDetectTime = now_time
+                    self.lastDetectTime = now_time
 
-                        settings.logger.info("Action time is: {}".format(time.time()))
-                        self.detectResults[checkIndex].setActionTime()
+                    settings.logger.info("Action time is: {}".format(time.time()))
+                    self.detectResults[checkIndex].setActionTime()
 
-                except queue.Empty:
-                    # settings.logger.info()
-                    pass
+            except queue.Empty:
+                # settings.logger.info()
+                pass
 
     def _delay_do_order(self):
         self.close_door_success()
