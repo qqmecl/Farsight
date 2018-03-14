@@ -27,6 +27,8 @@ from detect.object_detector import ObjectDetector
 
 import cv2
 import logging
+import threading
+
 
 class Closet:
     '''
@@ -83,7 +85,7 @@ class Closet:
 
     def __init__(self, **config):
         #self.logger = settings.logger
-        
+
         self.secretPassword = secretPassword()
 
 
@@ -454,11 +456,11 @@ class Closet:
 
                             if direction == "IN":
                                 settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-
-                                self.detectCache.append(self.cart.remove_item(id))
+                                threading.Thread(target=self.cart.remove_item, args=(id,)).start()
+                                self.detectCache.append(True)
                             else:
                                 settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
-                                self.cart.add_item(id)
+                                threading.Thread(target=self.cart.add_item, args=(id,)).start()
                                 self.detectCache.append(True)
                         else:
                             if self.detectCache is not None:
@@ -470,18 +472,18 @@ class Closet:
 
                                 if now_num > cacheNum and id != cacheId:
                                     if direction == "OUT":
-                                        self.cart.remove_item(cacheId)
-                                        self.cart.add_item(id)
+                                        threading.Thread(target=self.cart.remove_item, args=(cacheId,)).start()
+                                        threading.Thread(target=self.cart.add_item, args=(id,)).start()
 
                                         settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
                                         settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
                                     elif direction == "IN":
                                         # if self.cart.isHaveItem(cacheId):
                                         if actionSuccess:
-                                            self.cart.add_item(cacheId)
+                                            threading.Thread(target=self.cart.add_item, args=(cacheId,)).start()
                                             settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
 
-                                        self.cart.remove_item(id)
+                                        threading.Thread(target=self.cart.remove_item, args=(id,)).start()
                                         settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
                         #settings.logger.error('chen_time is {}'.format(time.time() - chen_time))
                         self.detectResults[checkIndex].resetDetect()
