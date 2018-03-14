@@ -58,7 +58,7 @@ class Cart:
             # TODO:
             # settings.logger.info('Try to clear an item which is not included in the closet!')
         self.last_remove_timestamp = time.time()
-        
+
         return False
     # def isHaveItem(self,item_id):
         # return self.items[item_id] > 0
@@ -70,7 +70,7 @@ class Cart:
             TODO: 机器对应的 code 应该从配置中读取
         '''
         import utils
-        
+
         return dict(
             data=self.items,
             token=self.token,

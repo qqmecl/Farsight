@@ -191,7 +191,7 @@ class Closet:
 
 
         # 捕获 CTRL-C
-        handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
+        handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current(), self.loop)
         signal.signal(signal.SIGINT, handler.signal_handler)
 
         # 启动 web 服务
@@ -312,6 +312,7 @@ class Closet:
         self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
         self.check_door_close_callback.start()
 
+    @gen.coroutine
     def update(self):
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
             #self.open_door_time_out -= 1
@@ -450,10 +451,9 @@ class Closet:
                         settings.logger.info("action interval is: {}".format(intervalTime))
 
                         if intervalTime > 0.5:
+
                             self.detectCache = None
-
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
-
                             if direction == "IN":
                                 settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
                                 threading.Thread(target=self.cart.remove_item, args=(id,)).start()
@@ -492,6 +492,7 @@ class Closet:
 
                         settings.logger.info("Action time is: {}".format(time.time()))
                         self.detectResults[checkIndex].setActionTime()
+
                 except queue.Empty:
                     # settings.logger.info()
                     pass
