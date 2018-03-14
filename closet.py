@@ -191,7 +191,7 @@ class Closet:
 
 
         # 捕获 CTRL-C
-        handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current(), self.loop)
+        handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
         signal.signal(signal.SIGINT, handler.signal_handler)
 
         # 启动 web 服务
@@ -351,8 +351,8 @@ class Closet:
                 #self.calcTime1 = time.time()
 
                 #self.calc_cnt1 = 0
-                #self.calc_cnt = 0
-                #self.calcTime = time.time()
+                self.calc_cnt = 0
+                self.calcTime = time.time()
 
                 # later = functools.partial(self._start_imageprocessing)
                 # tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
@@ -366,12 +366,12 @@ class Closet:
 
                 result = self._detection_queue.get_nowait()
 
-                #self.calc_cnt +=1
+                self.calc_cnt +=1
 
-                #if time.time() - self.calcTime > 1:
-                #    settings.logger.error("{} calc every second".format(self.calc_cnt))
-                #    self.calcTime = time.time()
-                #    self.calc_cnt = 0
+                if time.time() - self.calcTime > 1:
+                   settings.logger.error("{} calc every second".format(self.calc_cnt))
+                   self.calcTime = time.time()
+                   self.calc_cnt = 0
 
                 index = result[0]
                 frame = result[1]
