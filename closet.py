@@ -199,7 +199,6 @@ class Closet:
 
         self.init_success()
 
-
         # 最后：启动 tornado ioloop
         tornado.ioloop.IOLoop.current().start()
 
@@ -230,9 +229,10 @@ class Closet:
         self.door_token = token      #chen
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
         self.cart = Cart(token, self.IO)
-        
-        self._chen_queue = Queue(5)
-        Process(target=chen_io,args=(self._chen_queue,self.cart)).start()
+
+        self._chen_queue = Queue(8)
+
+        Process(target=chen_io,args=(self._chen_queue, self.cart, self.IO)).start()
 
         # self.logger.info(self.state)
 
@@ -241,11 +241,11 @@ class Closet:
         self.beforeScaleVal = self.IO.get_scale_val()
 
         if settings.speaker_on:
-            self.IO.say_welcome()#发声
+            self._chen_queue.put_nowait(['speaker', 'say_welcome'])#发声
 
-        self.IO.change_to_inventory_page()#进入购物车界面
+        self._chen_queue.put_nowait(['change_to_inventory_page', 0])#进入购物车界面
 
-        self.IO.unlock(side)#开对应门锁
+        self._chen_queue.put_nowait(['unlock', side])#开对应门锁
 
         settings.logger.warning('lock is opened by user')
 
@@ -328,7 +328,7 @@ class Closet:
                 settings.logger.warning('open door timeout')
                 # settings.logger.info(self.state)
                 # self.open_door_time_out = True#which means 120*12ms = 8s
-                self.IO.change_to_welcome_page()
+                self._chen_queue.put_nowait(['change_to_welcome_page', 0])
                 self.updateScheduler.stop()
                 self.door_open_timed_out()
                 return
@@ -505,7 +505,7 @@ class Closet:
         for i in range(2):
             self.motions[i].reset()
 
-        self.IO.change_to_processing_page()
+        self._chen_queue.put_nowait(['change_to_processing_page', 0])
 
 
         now_scale = self.IO.get_scale_val()
@@ -578,7 +578,7 @@ class Closet:
             self._stop_imageprocessing()
 
             if settings.speaker_on:
-                self.IO.say_goodbye()
+                self._chen_queue.put_nowait(['speaker', 'say_goodbye'])
 
 
 

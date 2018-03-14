@@ -10,7 +10,7 @@ import settings
 import queue
 
 
-def chen_io(_chen_queue, cart):
+def chen_io(_chen_queue, cart, io):
     while True:
         try:
             chen_queue = _chen_queue.get_nowait()
@@ -21,6 +21,30 @@ def chen_io(_chen_queue, cart):
 
             if chen_queue[0] == 'add':
                 cart.add_item(chen_queue[1])
+
+            if chen_queue[0] == 'speaker':
+
+                if chen_queue[1] == 'say_welcome':
+                    io.say_welcome()
+
+                if chen_queue[1] == 'say_goodbye':
+                    io.say_goodbye()
+
+            if chen_queue[0] == 'change_to_welcome_page':
+                io.change_to_welcome_page()
+
+            if chen_queue[0] == 'change_to_inventory_page':
+                io.change_to_inventory_page()
+
+            if chen_queue[0] == 'unlock':
+                io.unlock(chen_queue[1])
+
+            if chen_queue[0] == 'change_to_processing_page':
+                io.change_to_processing_page()
+
+
+
+
         except queue.Empty:
             pass
 
