@@ -15,7 +15,7 @@ class Screen:
     CART_TOTAL_ADDRESS = 201
 
     WELCOME_PAGE = settings.WELCOME_PAGE
-    
+
     INVENTORY_PAGE = 0x34
 
     PROCESSING_PAGE = 0x36
@@ -75,7 +75,7 @@ class Screen:
                 break
 
         # settings.logger.info(isNewItem,self.curItems)
-        
+
         # 如果是一种新的商品走如下逻辑
         if isNewItem:
             for _id, _dict in settings.items.items():
@@ -113,7 +113,8 @@ class Screen:
 
             self.resetData()
             reset = functools.partial(self.change_to_page, Screen.WELCOME_PAGE)
-            tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
+            time.sleep(3)
+            reset()
         elif page == Screen.WELCOME_PAGE:
             self.do_protocol_6(Screen.ALL_COUNT_ADDRESS,0)
             # 设置process order info
@@ -178,7 +179,7 @@ class Screen:
         add = 150 if index > 6 else 0
         # settings.logger.info(item,index)
         self.do_protocol_16(Screen.ITEM_NAME_START_ADDRESS + index * Screen.ITEM_NAME_INTERVAL + add,display_item)#写商品info
-        # settings.logger.info("weird!!")  
+        # settings.logger.info("weird!!")
 
 
     def update_static_info(self):
@@ -192,7 +193,7 @@ class Screen:
         assert index < Screen.LINE_MAX_LIMIT and index > -1, "Index out of range!!!"
         add = 150 if index > 6 else 0
         self.do_protocol_5(Screen.ITEM_NAME_START_ADDRESS + index * Screen.ITEM_NAME_INTERVAL + add, 0)  # 写商品名称
-       
+
 
     def on_close_door():
         self.change_to_page(Screen.PROCESSING_PAGE)
@@ -213,17 +214,17 @@ if __name__ == '__main__':
     # screen.do_protocol_6(Screen.CART_COUNT_ADDRESS,0)
     # screen.do_protocol_6(Screen.CART_TOTAL_ADDRESS,0)
 
-    
+
     # screen.change_to_page(Screen.INVENTORY_PAGE)
     screen.change_to_page(Screen.WELCOME_PAGE)
-    
+
 
     # for i in range(7):
     #     screen.clear_line_content(i)
 
     # screen.update_static_info()
 
-    
+
     # screen.do_protocol_6(Screen.CART_COUNT_ADDRESS, 12)
 
     # screen.update_item(True,"6921168509256")
