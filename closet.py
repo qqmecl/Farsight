@@ -199,7 +199,7 @@ class Closet:
         self.init_success()
 
         self._chen_queue = Queue(20)
-        self._chen_get_queue = Queue(5)
+        self._chen_get_queue = Queue(20)
 
         Process(target=chen_io,args=(self._chen_queue, self._chen_get_queue, self.door_port, self.speaker_port, self.scale_port, self.screen_port
 )).start()
@@ -583,13 +583,27 @@ class Closet:
             except queue.Empty:
                 break
 
-        self._chen_queue.put_nowait(['check_door', self.curSide])
+        try:
+            self._chen_queue.put_nowait(['check_door', self.curSide])
+        except queue.Full:
+            pass
+
         check_is_door_open = self._chen_get_queue.get()
 
         if not check_is_door_open:
-
             self.check_door_close_callback.stop()
 
+            while True:
+                try:
+                    self._chen_queue.get_nowait()
+                except queue.Empty:
+                    break
+
+            while True:
+                try:
+                    self._chen_get_queue.get_nowait()
+                except queue.Empty:
+                    break
 
             #self.logger.info(self.state)
 
