@@ -12,8 +12,8 @@ import settings
 # 并且锁被开启之后，在不开门状态下过3秒之后会自动上锁
 # 处于开门状态不会上锁
 class DoorLockHandler:
-    LEFT_DOOR = 0
-    RIGHT_DOOR = 1
+    LEFT_DOOR = settings.LEFT_DOOR
+    RIGHT_DOOR = settings.RIGHT_DOOR
 
     #串口地址可配置
     def __init__(self, port="/dev/ttyS0"):
@@ -116,7 +116,7 @@ class DoorLockHandler:
     def _send_lock_statuscheck(self):
         array = [1, 1, 0, 0, 0, 4]
         self._send_data(array)
-    
+
 
 if __name__ == '__main__':
     handler = DoorLockHandler()

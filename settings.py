@@ -9,6 +9,8 @@ mock_scale = False
 mock_screen = False
 http_port = 5000
 speaker_on = True
+LEFT_DOOR = 0
+RIGHT_DOOR = 1
 
 
 # logger =logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s")

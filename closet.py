@@ -109,7 +109,6 @@ class Closet:
         self.scale_port = config['scale_port']
         self.screen_port = config['screen_port']
         self.http_port = config['http_port']
-        self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
         self.initItemData()
         if self.visualized_camera is not None:
@@ -214,7 +213,7 @@ class Closet:
             用户授权开启一边的门，会解锁对应的门，并且让各个子进程进入工作状态
         '''
         try:
-            if side == self.IO.doorLock.LEFT_DOOR:
+            if side == settings.LEFT_DOOR:
                 self.authorization_left_success()
             else:
                 self.authorization_right_success()
@@ -295,7 +294,7 @@ class Closet:
 
         self.mode = "operator_mode"
 
-        self.IO.unlock(side)#开对应门锁
+        self._chen_queue.put_nowait(['unlock', 0])#开对应门锁
 
         settings.logger.warning('lock is opened by user')
 
@@ -343,10 +342,17 @@ class Closet:
                 self.door_open_timed_out()
                 return
 
-            if self.IO.is_door_open(self.curSide):
+            while True:
+                try:
+                    self.is_door _open = self._chen_get_queue.get_nowait()
+                    break
+                except queue.Empty:
+                    pass
+
+            if self.is_door_open:
                 self.open_door_time_out = True
 
-                if self.curSide == self.IO.doorLock.LEFT_DOOR:
+                if self.curSide == settings.LEFT_DOOR:
                     self.open_leftdoor_success()
                 else:
                     self.open_rightdoor_success()
@@ -571,7 +577,16 @@ class Closet:
         '''
             检查门是否关闭，此时只是关上了门，并没有真正锁上门
         '''
-        if not self.IO.is_door_open(self.curSide):
+        while True:#empty last detection queue
+            try:
+                result = self._detection_queue.get_nowait()
+            except queue.Empty:
+                break
+
+        self._chen_queue.put_nowait(['check_door', self.curSide])
+        check_is_door_open = self._chen_get_queue.get()
+
+        if not check_is_door_open:
 
             self.check_door_close_callback.stop()
 
@@ -609,7 +624,7 @@ class Closet:
         '''
             发送摄像头工作指令消息
         '''
-        if self.curSide == self.IO.doorLock.LEFT_DOOR:
+        if self.curSide == settings.LEFT_DOOR:
             self.camera_ctrl_queue.put(dict(cmd='start', cameras=self.left_cameras))
         else:
             self.camera_ctrl_queue.put(dict(cmd='start', cameras=self.right_cameras))
@@ -621,7 +636,7 @@ class Closet:
         '''
             发送摄像头停止工作指令消息
         '''
-        if self.curSide == self.IO.doorLock.LEFT_DOOR:
+        if self.curSide == settings.LEFT_DOOR:
             self.camera_ctrl_queue.put(dict(cmd='stop', cameras=self.left_cameras))
         else:
             self.camera_ctrl_queue.put(dict(cmd='stop', cameras=self.right_cameras))
