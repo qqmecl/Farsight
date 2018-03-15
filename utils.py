@@ -19,6 +19,9 @@ def chen_io(_chen_queue, door_port, speaker_port, scale_port, screen_port):
             chen_queue = _chen_queue.get_nowait()
             print(chen_queue)
 
+            if chen_queue[0] == 'get_scale_val':
+                _chen_get_queue.put_nowait(io.get_scale_val())
+
             if chen_queue[0] == 'token':
                 cart = Cart(chen_queue[1], io)
 

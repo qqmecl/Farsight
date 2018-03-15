@@ -109,7 +109,6 @@ class Closet:
         self.scale_port = config['scale_port']
         self.screen_port = config['screen_port']
         self.http_port = config['http_port']
-        self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
         self.initItemData()
         if self.visualized_camera is not None:
@@ -200,8 +199,9 @@ class Closet:
         self.init_success()
 
         self._chen_queue = Queue(20)
+        self._chen_get_queue = Queue(5)
 
-        Process(target=chen_io,args=(self._chen_queue, self.door_port, self.speaker_port, self.scale_port, self.screen_port
+        Process(target=chen_io,args=(self._chen_queue, self._chen_get_queue, self.door_port, self.speaker_port, self.scale_port, self.screen_port
 )).start()
 
         # 最后：启动 tornado ioloop
@@ -222,6 +222,7 @@ class Closet:
             settings.logger.warn('State conversion error')
             return
 
+        self._chen_queue.put_nowait(['get_scale_val', 0])
 
 
         while True:#empty last detection queue
@@ -242,7 +243,12 @@ class Closet:
 
         self.mode ="normal_mode"
 
-        self.beforeScaleVal = self.IO.get_scale_val()
+        while True:
+            try:
+                self.beforeScaleVal = self._chen_get_queue.get_nowait()
+                break
+            except queue.Empty:
+                pass
 
         if settings.speaker_on:
             self._chen_queue.put_nowait(['speaker', 'say_welcome'])#发声
@@ -511,8 +517,15 @@ class Closet:
 
         self._chen_queue.put_nowait(['change_to_processing_page', 0])
 
+        self._chen_queue.put_nowait(['get_scale_val', 0])
 
-        now_scale = self.IO.get_scale_val()
+
+        while True:
+            try:
+                now_scale = self._chen_get_queue.get_nowait()
+                break
+            except queue.Empty:
+                pass
 
         delta = now_scale - self.beforeScaleVal
         if  delta < -0.1:
