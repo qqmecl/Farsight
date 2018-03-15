@@ -199,6 +199,11 @@ class Closet:
 
         self.init_success()
 
+        self._chen_queue = Queue(20)
+
+        Process(target=chen_io,args=(self._chen_queue, self.door_port, self.speaker_port, self.scale_port, self.screen_port
+)).start()
+
         # 最后：启动 tornado ioloop
         tornado.ioloop.IOLoop.current().start()
 
@@ -230,9 +235,8 @@ class Closet:
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
         self.cart = Cart(token, self.IO)
 
-        self._chen_queue = Queue(8)
+        self._chen_queue.put_nowait(['token', token])
 
-        Process(target=chen_io,args=(self._chen_queue, self.cart, self.IO)).start()
 
         # self.logger.info(self.state)
 

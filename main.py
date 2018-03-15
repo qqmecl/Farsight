@@ -61,7 +61,7 @@ if __name__ == '__main__':
         settings.logger.setLevel(logging.INFO)
     else:
         settings.logger.setLevel(logging.WARN)
-    
+
     setproctitle('[farsight] main process')
 
     # TODO: 使用 fork 方式似乎会导致信号捕获错乱的问题，待验证
@@ -74,7 +74,6 @@ if __name__ == '__main__':
     settings.mock_screen = args.mock_screen
 
     settings.scale_port = args.scale_port
-
 
     from closet import Closet
 

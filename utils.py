@@ -8,13 +8,19 @@ import base64
 import json
 import settings
 import queue
+from serial_handler.io_controller import IO_Controller
+from cart import Cart
 
 
-def chen_io(_chen_queue, cart, io):
+def chen_io(_chen_queue, door_port, speaker_port, scale_port, screen_port):
+    io = IO_Controller(door_port, speaker_port, scale_port, screen_port)
     while True:
         try:
             chen_queue = _chen_queue.get_nowait()
             print(chen_queue)
+
+            if chen_queue[0] == 'token':
+                cart = Cart(chen_queue[1], io)
 
             if chen_queue[0] == 'remove':
                 cart.remove_item(chen_queue[1])
