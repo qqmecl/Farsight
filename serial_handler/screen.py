@@ -7,6 +7,7 @@ import itertools
 import functools
 import tornado.ioloop
 import settings
+import time
 
 class Screen:
     CHANGE_PAGE_ADDRESS = 0
@@ -49,6 +50,7 @@ class Screen:
     # 开放给外部的物品更新接口1，增减item
     def update_item(self, isAdd, itemId):  # 当前速度较慢，后期需提高用户体验
         # 对商品id增减逻辑进行判断
+        settings.logger.warning('update items!!!!!!!!!')
         fromDeleteIndex = -1
         isNewItem = True
         # settings.logger.info(self.curItems)
