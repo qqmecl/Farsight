@@ -12,7 +12,7 @@ from serial_handler.io_controller import IO_Controller
 from cart import Cart
 
 
-def chen_io(_chen_queue, door_port, speaker_port, scale_port, screen_port):
+def chen_io(_chen_queue, _chen_get_queue, door_port, speaker_port, scale_port, screen_port):
     io = IO_Controller(door_port, speaker_port, scale_port, screen_port)
     while True:
         try:

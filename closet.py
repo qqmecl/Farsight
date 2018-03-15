@@ -109,6 +109,7 @@ class Closet:
         self.scale_port = config['scale_port']
         self.screen_port = config['screen_port']
         self.http_port = config['http_port']
+        self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
         self.initItemData()
         if self.visualized_camera is not None:
@@ -234,7 +235,6 @@ class Closet:
 
         self.door_token = token      #chen
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
-        self.cart = Cart(token, self.IO)
 
         self._chen_queue.put_nowait(['token', token])
 
