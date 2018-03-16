@@ -10,11 +10,12 @@ import settings
 import queue
 from serial_handler.io_controller import IO_Controller
 from cart import Cart
-import asyncio
+import tornado.ioloop
 
 
 def chen_io(_chen_queue, _chen_get_queue, door_port, speaker_port, scale_port, screen_port):
     io = IO_Controller(door_port, speaker_port, scale_port, screen_port)
+    tornado.ioloop.IOLoop.current().start()
     while True:
         try:
             chen_queue = _chen_queue.get_nowait()

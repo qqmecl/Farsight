@@ -187,9 +187,15 @@ class Closet:
         for i in range(2):
             self.detectResults.append(DetectResult())
 
+        self._chen_queue = Queue(10)
+        self._chen_get_queue = Queue(10)
+
+        chen_io_manage = Process(target=chen_io,args=(self._chen_queue, self._chen_get_queue, self.door_port, self.speaker_port, self.scale_port, self.screen_port
+)).start()
+
 
         # 捕获 CTRL-C
-        handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
+        handler = SignalHandler(camera_process, chen_io_manage, object_detection_pools, tornado.ioloop.IOLoop.current())
         signal.signal(signal.SIGINT, handler.signal_handler)
 
         # 启动 web 服务
@@ -197,12 +203,6 @@ class Closet:
         app.listen(self.http_port)
 
         self.init_success()
-
-        self._chen_queue = Queue(10)
-        self._chen_get_queue = Queue(10)
-
-        Process(target=chen_io,args=(self._chen_queue, self._chen_get_queue, self.door_port, self.speaker_port, self.scale_port, self.screen_port
-)).start()
 
         # 最后：启动 tornado ioloop
         tornado.ioloop.IOLoop.current().start()

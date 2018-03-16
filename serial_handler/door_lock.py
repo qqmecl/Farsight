@@ -79,8 +79,7 @@ class DoorLockHandler:
         self._send_data(array)
         self.com.read(8)  #读掉数据，如果不读掉数据，会影响后续的数据读取
         reset = functools.partial(self.reset_lock,side)
-        time.sleep(1)
-        reset()
+        tornado.ioloop.IOLoop.call_later(self, delay=1, callback=reset)
 
     #重置电平信号
     def reset_lock(self, side):
