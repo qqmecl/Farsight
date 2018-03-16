@@ -1,7 +1,6 @@
 from camera_handler import CameraHandler
 from httpd import make_http_app, HTTP_PORT
 from signal_handler import SignalHandler
-from cart import Cart
 
 import multiprocessing
 from multiprocessing import Queue, Pool, Process
@@ -19,7 +18,6 @@ from setproctitle import setproctitle
 import time
 from utils import secretPassword, chen_io
 import settings
-from serial_handler.io_controller import IO_Controller
 
 from detect.detect_result import DetectResult
 from detect.motion import MotionDetect
@@ -536,23 +534,29 @@ class Closet:
         delta = now_scale - self.beforeScaleVal
         if  delta < -0.1:
             settings.logger.warning("Envoke weight change")
-            if self.cart.as_order()["data"]!={}:
-                order = self.cart.as_order()
-                # self.logger.info(order)
-                strData = json.dumps(order)
-                self.pollData = self.secretPassword.aes_cbc_encrypt(strData)
-                # settings.logger.info(self.pollData)
+            self._chen_queue.put_nowait(['cart', 0])
+            while True:
+                try:
+                    order = self._chen_get_queue.get_nowait()
+                    if order["data"]!={}:
+                        # self.logger.info(order)
+                        strData = json.dumps(order)
+                        self.pollData = self.secretPassword.aes_cbc_encrypt(strData)
+                        # settings.logger.info(self.pollData)
 
-                #req = requests.post(Closet.ORDER_URL, data=self.pollData)
-                self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
-                self.pollPeriod.start()
+                        #req = requests.post(Closet.ORDER_URL, data=self.pollData)
+                        self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
+                        self.pollPeriod.start()
 
-                # self.order_process_success()
-            else:
-                self.order_process_success()
-                #发送订单到中央服务
-                # self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
-                # self.pollPeriod.start()
+                        # self.order_process_success()
+                    else:
+                        self.order_process_success()
+                        #发送订单到中央服务
+                        # self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
+                        # self.pollPeriod.start()
+
+                except queue.Empty:
+                    pass
         else:
             settings.logger.warning("Can't Envoke weight change")
             self.order_process_success()

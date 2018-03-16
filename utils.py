@@ -57,6 +57,9 @@ def chen_io(_chen_queue, _chen_get_queue, door_port, speaker_port, scale_port, s
             if chen_queue[0] == 'check_door':
                 _chen_get_queue.put_nowait(io.is_door_open(chen_queue[1]))
 
+            if chen_queue[0] == 'cart':
+                _chen_get_queue.put_nowait(cart.as_order())
+
         except queue.Empty:
             pass
 

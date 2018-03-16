@@ -24,7 +24,7 @@ class Speaker:#简单触发器
     def say_welcome(self):
         self.do_protocol_5_byMode(2,True)#2表示端口地址，1秒之后重置该口状态
         reset = functools.partial(self.reset_welcome)
-        tornado.ioloop.IOLoop.call_later(self, delay=1, callback=reset)
+        tornado.ioloop.IOLoop.current().call_later(self, delay=1, callback=reset)
         # array = list(map(ord, ':161fffff'))
         # array = [1, 5, 0, 2, 0xff, 0]
         # settings.logger.info(array)
@@ -41,7 +41,7 @@ class Speaker:#简单触发器
     def say_goodbye(self):
         self.do_protocol_5_byMode(3,True)
         reset = functools.partial(self.rest_goodbye)
-        tornado.ioloop.IOLoop.call_later(self, delay=1, callback=reset)
+        tornado.ioloop.IOLoop.current().call_later(self, delay=1, callback=reset)
         # array = list(map(ord, ':162fffff'))
         # data = struct.pack(str(len(array)) + "B", *array)
 
