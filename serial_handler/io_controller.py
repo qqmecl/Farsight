@@ -22,27 +22,29 @@ else:
     from serial_handler.screen import Screen
 
 import tornado.ioloop
+
 class IO_Controller:#统一管理所有IO设备，增加代码清晰度
-    def __init__(self, door_port,speaker_port,scale_port,screen_port ):
+    def __init__(self, door_port,speaker_port,scale_port,screen_port, loop):
         self.blocking = False
 
         # 连接各个串口
-        self.speaker = Speaker(port=speaker_port)
+        self.speaker = Speaker(port=speaker_port, loop)
         self.scale = WeightScale(port=scale_port)
-        self.screen = Screen(port=screen_port)
+        self.screen = Screen(port=screen_port, loop)
 
         print("speaker port {} scale port {} screen port {}".format(speaker_port,scale_port,screen_port))
 
         #门和锁
-        self.doorLock = DoorLockHandler(port=door_port)
+        self.doorLock = DoorLockHandler(port=door_port, loop)
 
         self.val_scale = self._check_weight_scale()
         # self.envoked = False
+        self.loop = loop
 
 
 
     def start(self):
-        scaleUpdate = tornado.ioloop.PeriodicCallback(self._check_weight_scale,50)
+        scaleUpdate = self.loop.call_later(self._check_weight_scale,50)
         scaleUpdate.start()
 
     def _check_weight_scale(self):
@@ -51,7 +53,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         self.val_scale = self.scale.read()[0]
         # settings.logger.info("after time is:",time.time())
 
-    
+
 
     def get_scale_val(self):
         self.val_scale = self.scale.read()[0]
@@ -82,7 +84,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         self.screen.change_to_page(Screen.INVENTORY_PAGE)
 
     def change_to_processing_page(self):
-        
+
         self.screen.change_to_page(Screen.PROCESSING_PAGE)
 
     def update_screen_item(self,isAdd,itemId):
@@ -117,6 +119,5 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     '''
     	Door与Lock部分接口
     '''
-    
 
- 
+

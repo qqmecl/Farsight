@@ -35,12 +35,13 @@ class Screen:
 
     LINE_MAX_LIMIT = 14  # 最大可允许行数
 
-    def __init__(self, port="/dev/usb_screen"):
+    def __init__(self, port="/dev/usb_screen", loop):
         # rate = 115200  # 当前串口通信设备波特率
         rate = 9600  # 当前串口通信设备波特率
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
         # settings.logger.info(self.com)
         self.resetData()
+        self.loop = loop
 
     def resetData(self):
         self.curItems = []  # [['007001','维他柠檬茶',700,1]]id,name,price,num
@@ -115,7 +116,7 @@ class Screen:
 
             self.resetData()
             reset = functools.partial(self.change_to_page, Screen.WELCOME_PAGE)
-            tornado.ioloop.IOLoop.current().call_later(self, delay=3, callback=reset)
+            self.loop.call_later(self, delay=3, callback=reset)
 
         elif page == Screen.WELCOME_PAGE:
             self.do_protocol_6(Screen.ALL_COUNT_ADDRESS,0)

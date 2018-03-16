@@ -188,8 +188,8 @@ class Closet:
         self._chen_queue = Queue(10)
         self._chen_get_queue = Queue(10)
 
-        chen_io_manage = Process(target=chen_io,args=(self._chen_queue, self._chen_get_queue, self.door_port, self.speaker_port, self.scale_port, self.screen_port
-)).start()
+        chen_io_manage = Process(target=chen_io,args=(self._chen_queue, self._chen_get_queue,
+                                 self.door_port, self.speaker_port, self.scale_port, self.screen_port)).start()
 
 
         # 捕获 CTRL-C

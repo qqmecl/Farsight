@@ -6,6 +6,7 @@ import time
 import functools
 import tornado.ioloop
 import settings
+import asyncio
 
 # 开某一边门之前要判断另一边锁是否打开，若打开，则不能开锁
 # 此处分门和智能锁，工控机接收到信号之后先开锁
@@ -16,9 +17,10 @@ class DoorLockHandler:
     RIGHT_DOOR = settings.RIGHT_DOOR
 
     #串口地址可配置
-    def __init__(self, port="/dev/ttyS0"):
+    def __init__(self, port="/dev/ttyS0", loop):
         rate = 9600
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
+        self.loop = loop
         # self.lock = threading.Lock()
 
     def _read_status(self):
@@ -79,7 +81,7 @@ class DoorLockHandler:
         self._send_data(array)
         self.com.read(8)  #读掉数据，如果不读掉数据，会影响后续的数据读取
         reset = functools.partial(self.reset_lock,side)
-        tornado.ioloop.IOLoop.current().call_later(self, delay=1, callback=reset)
+        self.loop.call_later(delay=1, callback=reset)
 
     #重置电平信号
     def reset_lock(self, side):
