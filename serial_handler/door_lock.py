@@ -6,7 +6,7 @@ import time
 import functools
 import tornado.ioloop
 import settings
-import asyncio
+import threading
 
 # 开某一边门之前要判断另一边锁是否打开，若打开，则不能开锁
 # 此处分门和智能锁，工控机接收到信号之后先开锁
@@ -17,10 +17,9 @@ class DoorLockHandler:
     RIGHT_DOOR = settings.RIGHT_DOOR
 
     #串口地址可配置
-    def __init__(self, port="/dev/ttyS0", loop):
+    def __init__(self, port="/dev/ttyS0"):
         rate = 9600
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
-        self.loop = loop
         # self.lock = threading.Lock()
 
     def _read_status(self):
@@ -77,11 +76,15 @@ class DoorLockHandler:
             打开一边的锁，会自动延时重置锁的状态
         '''
         # TODO:确保状态是关闭
+        #from utils import chen_io
+
         array = [1, 5, 0, side, 0xff, 0]  # TODO
         self._send_data(array)
         self.com.read(8)  #读掉数据，如果不读掉数据，会影响后续的数据读取
         reset = functools.partial(self.reset_lock,side)
-        self.loop.call_later(delay=1, callback=reset)
+        threading.Timer(0.8, reset).start()
+
+        #chen_io.loop.call_later(delay=1, callback=reset)
 
     #重置电平信号
     def reset_lock(self, side):
@@ -122,11 +125,20 @@ class DoorLockHandler:
 
 if __name__ == '__main__':
     handler = DoorLockHandler()
+    # if handler.is_door_open(DoorLockHandler.LEFT_DOOR):
+    #     print('vvv')
+    # print('xxxx')
 
-    #分为锁和门
+    # #分为锁和门
     # handler.unlock(DoorLockHandler.LEFT_DOOR)  # 开左边锁，以打开门
+    # #time.sleep(0.5)
+    # while True:
+    #     if handler.is_door_open(DoorLockHandler.LEFT_DOOR):
+    #         print('vvv')
+    #     else:
+    #         print('dfdf')
 
-    # handler.reset_lock(DoorLockHandler.LEFT_DOOR)
+    handler.reset_lock(DoorLockHandler.LEFT_DOOR)
     # handler.reset_lock(DoorLockHandler.RIGHT_DOOR)
 
 

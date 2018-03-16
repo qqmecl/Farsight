@@ -188,12 +188,13 @@ class Closet:
         self._chen_queue = Queue(10)
         self._chen_get_queue = Queue(10)
 
-        chen_io_manage = Process(target=chen_io,args=(self._chen_queue, self._chen_get_queue,
-                                 self.door_port, self.speaker_port, self.scale_port, self.screen_port)).start()
+        chen_io_manage = Process(target=chen_io, args=(self._chen_queue, self._chen_get_queue,
+                                 self.door_port, self.speaker_port, self.scale_port, self.screen_port))
 
 
+        chen_io_manage.start()
         # 捕获 CTRL-C
-        handler = SignalHandler(camera_process, chen_io_manage, object_detection_pools, tornado.ioloop.IOLoop.current())
+        handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
         signal.signal(signal.SIGINT, handler.signal_handler)
 
         # 启动 web 服务
@@ -271,6 +272,7 @@ class Closet:
 
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
         self.updateScheduler.start()
+        print('vffffffff')
 
 
 
@@ -327,6 +329,7 @@ class Closet:
 
             # settings.logger.info("Checking time is: ",time.time()-self.debugTime)
 
+            print('vvvvvvvvvv')
             if self.check_door_time_out == False and time.time()-self.debugTime > 7:
                 # now_time = time.time()
                 settings.logger.info("Time Out time is: {}".format(time.time()-self.debugTime))
@@ -343,11 +346,14 @@ class Closet:
             while True:
                 try:
                     self.is_door_open = self._chen_get_queue.get_nowait()
+                    print('ffffffffff')
+                    print(self.is_door_open)
                     break
                 except queue.Empty:
+                    #print('llllllllll')
                     pass
 
-            if self.is_door_open:
+            if not self.is_door_open:
                 self.open_door_time_out = True
 
                 if self.curSide == settings.LEFT_DOOR:
@@ -378,6 +384,7 @@ class Closet:
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
+            #print('kkkkkkkkkkk')
             try:
 
                 result = self._detection_queue.get_nowait()

@@ -1,5 +1,4 @@
 import tornado.web
-from serial_handler.door_lock import DoorLockHandler
 import json
 import settings
 from utils import secretPassword
@@ -79,17 +78,17 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 			else:
 				if role == 'user':
 					if side == 'left':
-						self.closet.authorize(token=token, side=DoorLockHandler.LEFT_DOOR)
+						self.closet.authorize(token=token, side=settings.LEFT_DOOR)
 					else:
-						self.closet.authorize(token=token, side=DoorLockHandler.RIGHT_DOOR)
+						self.closet.authorize(token=token, side=settings.RIGHT_DOOR)
 				elif role == 'worker':
 					#self.write(role)
 					# 配货员逻辑，同时解锁两边门
 					#self.closet.authorize_operator()
 					if side == 'left':
-						self.closet.authorize_operator(token=token, side=DoorLockHandler.LEFT_DOOR)
+						self.closet.authorize_operator(token=token, side=settings.LEFT_DOOR)
 					else:
-						self.closet.authorize_operator(token=token, side=DoorLockHandler.RIGHT_DOOR)
+						self.closet.authorize_operator(token=token, side=settings.RIGHT_DOOR)
 
 				self.write(json.dumps(dict(message='open sesame', data=dict(status=1))))
 		else:

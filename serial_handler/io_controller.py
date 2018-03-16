@@ -21,30 +21,30 @@ if settings.mock_screen:
 else:
     from serial_handler.screen import Screen
 
-import tornado.ioloop
 
 class IO_Controller:#统一管理所有IO设备，增加代码清晰度
-    def __init__(self, door_port,speaker_port,scale_port,screen_port, loop):
+    def __init__(self, door_port,speaker_port,scale_port,screen_port):
         self.blocking = False
 
         # 连接各个串口
-        self.speaker = Speaker(port=speaker_port, loop)
+        self.speaker = Speaker(port=speaker_port)
         self.scale = WeightScale(port=scale_port)
-        self.screen = Screen(port=screen_port, loop)
+        self.screen = Screen(port=screen_port)
 
-        print("speaker port {} scale port {} screen port {}".format(speaker_port,scale_port,screen_port))
+        #print("speaker port {} scale port {} screen port {}".format(speaker_port,scale_port,screen_port))
 
         #门和锁
-        self.doorLock = DoorLockHandler(port=door_port, loop)
+        self.doorLock = DoorLockHandler(port=door_port)
 
         self.val_scale = self._check_weight_scale()
         # self.envoked = False
-        self.loop = loop
 
 
 
     def start(self):
-        scaleUpdate = self.loop.call_later(self._check_weight_scale,50)
+        from utils import chen_io
+
+        scaleUpdate = chen_io.loop.call_later(self._check_weight_scale,50)
         scaleUpdate.start()
 
     def _check_weight_scale(self):

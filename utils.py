@@ -13,56 +13,64 @@ from cart import Cart
 import tornado.ioloop
 import asyncio
 
+class chen_io():
+    loop = asyncio.get_event_loop()
 
-def chen_io(_chen_queue, _chen_get_queue, door_port, speaker_port, scale_port, screen_port):
-    event_loop = asyncio.get_event_loop()
-    io = IO_Controller(door_port, speaker_port, scale_port, screen_port, event_loop)
-    while True:
-        try:
-            chen_queue = _chen_queue.get_nowait()
-            print(chen_queue)
+    def __init__(self, _chen_queue, _chen_get_queue, door_port, speaker_port, scale_port, screen_port):
+        self.io = IO_Controller(door_port, speaker_port, scale_port, screen_port)
+        self._chen_queue = _chen_queue
+        self._chen_get_queue = _chen_get_queue
+        chen_io.loop.run_until_complete(self.chen_async())
 
-            if chen_queue[0] == 'get_scale_val':
-                _chen_get_queue.put_nowait(io.get_scale_val())
 
-            if chen_queue[0] == 'token':
-                cart = Cart(chen_queue[1], io)
+    async def chen_async(self):
+        while True:
+            try:
+                come_back_queue = self._chen_queue.get_nowait()
+                #print(come_back_queue)
 
-            if chen_queue[0] == 'remove':
-                cart.remove_item(chen_queue[1])
+                if come_back_queue[0] == 'get_scale_val':
+                    self._chen_get_queue.put_nowait(self.io.get_scale_val())
 
-            if chen_queue[0] == 'add':
-                cart.add_item(chen_queue[1])
+                if come_back_queue[0] == 'token':
+                    cart = Cart(come_back_queue[1], self.io)
 
-            if chen_queue[0] == 'speaker':
+                if come_back_queue[0] == 'remove':
+                    cart.remove_item(come_back_queue[1])
 
-                if chen_queue[1] == 'say_welcome':
-                    io.say_welcome()
+                if come_back_queue[0] == 'add':
+                    cart.add_item(come_back_queue[1])
 
-                if chen_queue[1] == 'say_goodbye':
-                    io.say_goodbye()
+                if come_back_queue[0] == 'speaker':
 
-            if chen_queue[0] == 'change_to_welcome_page':
-                io.change_to_welcome_page()
+                    if come_back_queue[1] == 'say_welcome':
+                        self.io.say_welcome()
 
-            if chen_queue[0] == 'change_to_inventory_page':
-                io.change_to_inventory_page()
+                    if come_back_queue[1] == 'say_goodbye':
+                        self.io.say_goodbye()
 
-            if chen_queue[0] == 'unlock':
-                io.unlock(chen_queue[1])
-                _chen_get_queue.put_nowait(io.is_door_open(chen_queue[1]))
+                if come_back_queue[0] == 'change_to_welcome_page':
+                    self.io.change_to_welcome_page()
 
-            if chen_queue[0] == 'change_to_processing_page':
-                io.change_to_processing_page()
+                if come_back_queue[0] == 'change_to_inventory_page':
+                    self.io.change_to_inventory_page()
 
-            if chen_queue[0] == 'check_door':
-                _chen_get_queue.put_nowait(io.is_door_open(chen_queue[1]))
+                if come_back_queue[0] == 'unlock':
+                    self.io.unlock(come_back_queue[1])
+                    print(self.io.is_door_open(come_back_queue[1]))
+                    self._chen_get_queue.put_nowait(self.io.is_door_open(come_back_queue[1]))
 
-            if chen_queue[0] == 'cart':
-                _chen_get_queue.put_nowait(cart.as_order())
+                if come_back_queue[0] == 'change_to_processing_page':
+                    self.io.change_to_processing_page()
 
-        except queue.Empty:
-            pass
+                if come_back_queue[0] == 'check_door':
+                    self._chen_get_queue.put_nowait(self.io.is_door_open(come_back_queue[1]))
+
+                if come_back_queue[0] == 'cart':
+                    self._chen_get_queue.put_nowait(cart.as_order())
+
+            except queue.Empty:
+                pass
 
 # 128bits block size
 class secretPassword():
