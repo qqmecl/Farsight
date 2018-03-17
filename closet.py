@@ -414,7 +414,8 @@ class Closet:
                         # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
                     # last_time = time.time()
-                    motionType = self.motions[checkIndex].checkInput(frame)
+                    motionType = self.motions[checkIndex].checkInput(frame,frame_time)
+
                     # settings.logger.info("Check input use time: ",time.time()-last_time)
 
                     self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]})
@@ -439,7 +440,8 @@ class Closet:
                         direction = detect[0]["direction"]
                         id = detect[0]["id"]
 
-                        now_time = detect[0]["time"]
+                        # now_time = detect[0]["time"]
+                        now_time = self.motions[checkIndex].getMotionTime(direction)
                         now_num = detect[0]["num"]
 
 

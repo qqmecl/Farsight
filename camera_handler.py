@@ -186,34 +186,3 @@ class CameraHandler:
             settings.logger.info('[FULL] input_q')
             pass
 
-
-if __name__ == '__main__':
-    setproctitle('[farsight] 主进程')
-
-    from multiprocessing import Queue, Process
-    ctrl_q = Queue(1)
-    frames_queues = [Queue(5)]
-    cam_handler = CameraHandler(ctrl_q, frames_queues)
-    process = Process(target=cam_handler.start)
-    process.start()
-
-    import sys
-
-    class SignalHandler:
-        def __init__(self, process):
-            self.process = process
-
-        def signal_handler(self, signal, f):
-            self.process.terminate()
-            sys.exit(0)
-
-    sig_handler = SignalHandler(process)
-
-    signal.signal(signal.SIGINT, sig_handler.signal_handler)
-
-    ctrl_q.put(dict(cmd='standby', cameras=[0]))
-    ctrl_q.put(dict(cmd='start', cameras=[0]))
-    time.sleep(3)
-    ctrl_q.put(dict(cmd='stop', cameras=[0]))
-    # while True:
-    #     pass
