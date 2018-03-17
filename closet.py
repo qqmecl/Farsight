@@ -110,7 +110,7 @@ class Closet:
         self.http_port = config['http_port']
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
-        self.initItemData()
+        # self.initItemData()
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
@@ -151,7 +151,7 @@ class Closet:
         self.motions = []
 
         for i in range(2):
-            self.motions.append(MotionDetect())
+            self.motions.append(MotionDetect(i))
 
         # for input_q, index in zip(self.input_queues, indexs):
             # pool = Pool(self.num_workers, ObjectDetector, (input_q,settings.items,self._detection_queue))
@@ -440,8 +440,11 @@ class Closet:
                         direction = detect[0]["direction"]
                         id = detect[0]["id"]
 
-                        # now_time = detect[0]["time"]
-                        now_time = self.motions[checkIndex].getMotionTime(direction)
+                        if direction == "IN":
+                            now_time = self.motions[checkIndex].getMotionTime("PUSH")
+                        else:
+                            now_time = self.motions[checkIndex].getMotionTime("PULL")
+
                         now_num = detect[0]["num"]
 
 
@@ -449,7 +452,7 @@ class Closet:
 
                         settings.logger.info("action interval is: {}".format(intervalTime))
 
-                        if intervalTime > 0.5:
+                        if intervalTime > 0.3:
                             self.detectCache = None
 
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
@@ -465,7 +468,7 @@ class Closet:
                         else:
                             if self.detectCache is not None:
                                 #fix camera result
-                                settings.logger.info("Enter cache result fixing phase!")
+                                # settings.logger.info("Enter cache result fixing phase!")
                                 cacheId = self.detectCache[0]
                                 cacheNum = self.detectCache[1]
                                 actionSuccess = self.detectCache[2]
@@ -490,7 +493,6 @@ class Closet:
 
                         self.lastDetectTime = now_time
 
-                        settings.logger.info("Action time is: {}".format(time.time()))
                         self.detectResults[checkIndex].setActionTime()
                 except queue.Empty:
                     # settings.logger.info()

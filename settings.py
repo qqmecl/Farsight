@@ -9,6 +9,7 @@ mock_scale = False
 mock_screen = False
 http_port = 5000
 speaker_on = True
+speaker_on = False
 
 
 # logger =logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s")
@@ -55,18 +56,19 @@ SAVE_DETECT_OUTPUT = False
 SAVE_VIDEO_OUTPUT = True
 SAVE_DEBUG_OUTPUT = False
 
+
 items = {
-    '001001': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
-    '002004': dict(name='美汁源果粒橙', price=5.0, weight=487.0),
-    '006001': dict(name='红牛', price=8.0, weight=298.0),
-    '007001': dict(name='脉动', price=6.5, weight=546.0),
-    '008001': dict(name='三得利乌龙茶', price=6.0, weight=528.0),
-    '009001': dict(name='冰糖雪梨', price=6.0, weight=549.0),
-    '010001': dict(name='维他柠檬茶', price=7.0, weight=552.0),
-    '002001': dict(name='雪碧听装', price=3.5, weight=343.0),
-    '002002': dict(name='可口可乐听装', price=3.5, weight=354.0),
-    '003001': dict(name='统一阿萨姆奶茶', price=6.5, weight=550.0),
-    '003002': dict(name='小茗同学黄色', price=6.5, weight=546.0),
-    '003003': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
+    '6921168509256': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
+    '6956416200067': dict(name='美汁源果粒橙', price=5.0, weight=487.0),
+    '6920202888883': dict(name='红牛', price=8.0, weight=298.0),
+    '6902538006100': dict(name='脉动', price=6.5, weight=546.0),
+    '6921581596048': dict(name='三得利乌龙茶', price=6.0, weight=528.0),
+    '6920459989463': dict(name='冰糖雪梨', price=6.0, weight=549.0),
+    '4891028705949': dict(name='维他柠檬茶', price=7.0, weight=552.0),
+    '6901939621271': dict(name='雪碧听装', price=3.5, weight=343.0),
+    '6901939621608': dict(name='可口可乐听装', price=3.5, weight=354.0),
+    '6925303730574': dict(name='统一阿萨姆奶茶', price=6.5, weight=550.0),
+    '6925303754952': dict(name='小茗同学黄色', price=6.5, weight=546.0),
+    '6925303714857': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
 }
 

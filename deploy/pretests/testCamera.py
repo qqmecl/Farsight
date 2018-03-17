@@ -2,9 +2,6 @@ import numpy as np
 import cv2 as cv
 import os
 from PIL import Image, ImageDraw, ImageFont 
-import settings
-
-
 
 items = {
     '001001': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
@@ -44,8 +41,8 @@ MODEL_PATH = os.path.join(os.getcwd(), '../../data/', 'frozen_inference_graph.pb
 DESCRIPTION_PATH = os.path.join(os.getcwd(), '../../data/', 'ssd_mobilenet_v1_coco.pbtxt')
 detectionNet = cv.dnn.readNetFromTensorflow(MODEL_PATH,DESCRIPTION_PATH)
 classNames = {0: 'background',
-                  1: '010001', 2: '002004', 3: '006001', 4: '007001', 5: '008001', 6: '009001',
-                  7: '001001', 8: '002001', 9: '002002', 10: '003001', 11: '003002',
+                  1: '001001', 2: '002004', 3: '006001', 4: '007001', 5: '008001', 6: '009001',
+                  7: '010001', 8: '002001', 9: '002002', 10: '003001', 11: '003002',
                   12: '003003'}
 
 
@@ -104,14 +101,15 @@ def detect_objects(frame):
 
                     real_calssId = class_id
         except KeyError:
-            settings.logger.info("class_id is: {}".format(class_id))
+            print("class_id is: {}".format(class_id))
             pass
 
     if maxConfidence !=0:
-        cv.rectangle(frame, (pos[0]+160, pos[1]+160), (pos[2], pos[3]),(0, 255, 0))
+        cv.rectangle(frame, (pos[0]+160, pos[1]), (pos[2]+160, pos[3]),(0, 255, 0))
 
         if real_calssId in classNames:
-            label = items[itemId]["name"] + ": " + str(confidence)
+            label = items[itemId]["name"] + ": " + str(maxConfidence)
+            print("detect ",label)
             labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
             pos[1] = max(pos[1], labelSize[1])
             frame = addChineseText(frame,label,(pos[0], pos[1]+50))
@@ -140,7 +138,10 @@ def addChineseText(frame,label,pos):
 
 
 index = 0
-cap = cv.VideoCapture(usb_cameras[index])
+
+
+# cap = cv.VideoCapture(usb_cameras[index])
+cap = cv.VideoCapture("../../Output/Video__2018-03-17-15-26-25__0.avi")
 ret=True
 
 while(ret):
@@ -153,7 +154,7 @@ while(ret):
 
 
         cv.imshow('frame',frame)
-        if cv.waitKey(1) & 0xFF == ord('q'):
+        if cv.waitKey(10) & 0xFF == ord('q'):
             break
 
 cap.release()
