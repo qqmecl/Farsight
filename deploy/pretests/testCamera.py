@@ -137,11 +137,11 @@ def addChineseText(frame,label,pos):
 
 
 
-index = 0
+index = 2
 
 
-# cap = cv.VideoCapture(usb_cameras[index])
-cap = cv.VideoCapture("../../Output/Video__2018-03-17-15-26-25__0.avi")
+cap = cv.VideoCapture(usb_cameras[index])
+# cap = cv.VideoCapture("../../Output/Video__2018-03-17-15-26-25__0.avi")
 ret=True
 
 while(ret):
