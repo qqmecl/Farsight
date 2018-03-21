@@ -37,7 +37,7 @@ class Screen:
     def __init__(self, port="/dev/usb_screen"):
         # rate = 115200  # 当前串口通信设备波特率
         rate = 9600  # 当前串口通信设备波特率
-        self.com = serial.Serial(port, baudrate=rate, timeout=1)
+        self.com = serial.Serial(port, baudrate=rate, timeout=0.1)
         # settings.logger.info(self.com)
         self.resetData()
 
