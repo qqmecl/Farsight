@@ -9,7 +9,7 @@ mock_scale = False
 mock_screen = False
 http_port = 5000
 speaker_on = True
-speaker_on = False
+#speaker_on = False
 
 
 # logger =logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s")

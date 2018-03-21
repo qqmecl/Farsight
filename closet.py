@@ -110,7 +110,7 @@ class Closet:
         self.http_port = config['http_port']
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
 
-        # self.initItemData()
+        self.initItemData()
         if self.visualized_camera is not None:
             self.visualization = VisualizeDetection(self.output_queues[self.visualized_camera])
 
