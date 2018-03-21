@@ -9,7 +9,7 @@ import json
 import settings
 
 # 128bits block size
-class secretPassword():
+class Encrypter():
     def aes_cbc_encrypt(self, message, key = '20607etgrttplant'):
         '''
         use AES CBC to encrypt message, using key and init vector

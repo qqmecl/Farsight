@@ -2,14 +2,13 @@ import tornado.web
 from serial_handler.door_lock import DoorLockHandler
 import json
 import settings
-from utils import secretPassword
 import os
 import signal
 import settings
+from utils import Encrypter
 
 HTTP_PORT = 8888
-SECRET_KEY = "grtrgewfgvs"  # 和原来代码一样，写死了先
-
+SECRET_KEY = "grtrgewfgvs"  #和原来代码一样，写死了先
 
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
@@ -25,10 +24,10 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 	'''
 	def initialize(self, closet):
 		self.closet = closet
-		self.secretData = secretPassword()
+		self.encrypter=Encrypter()
 
 	def parseData(self, psData):
-		x = self.secretData.aes_cbc_decrypt(psData)
+		x = self.encrypter.aes_cbc_decrypt(psData)
 		params = x.split('&')
 		paramsDict = {}
 		for i in params:
