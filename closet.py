@@ -487,16 +487,9 @@ class Closet:
         else:
             self.camera_ctrl_queue.put(dict(cmd='start', cameras=self.right_cameras))
 
-        if self.visualized_camera is not None:
-            self.visualization.start()
-
     #发送摄像头停止工作指令消息
     def _stop_imageprocessing(self):
         if self.curSide == self.IO.doorLock.LEFT_DOOR:
             self.camera_ctrl_queue.put(dict(cmd='stop', cameras=self.left_cameras))
         else:
             self.camera_ctrl_queue.put(dict(cmd='stop', cameras=self.right_cameras))
-
-        if self.visualized_camera is not None:
-            # TODO: 是否要 cv2.destroyAllWindows() ?
-            self.visualization.stop()
