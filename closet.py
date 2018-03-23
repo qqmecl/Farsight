@@ -27,7 +27,6 @@ from detect.object_detector import ObjectDetector
 
 import cv2
 import logging
-import chen_flask
 
 class Closet:
     '''
@@ -194,7 +193,7 @@ class Closet:
 
 
         # 最后：启动 tornado ioloop
-        #tornado.ioloop.IOLoop.current().start()
+        tornado.ioloop.IOLoop.current().start()
 
 
     def authorize(self, token, side):

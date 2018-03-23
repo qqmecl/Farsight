@@ -52,20 +52,15 @@ SAVE_DEBUG_OUTPUT = False
 SAVE_DETECT_OUTPUT = False
 
 usb_cameras=[]
-if os.path.exists("local/config.ini"):
-    from configparser import ConfigParser
-    config_parser = ConfigParser()
-    config_parser.read("local/config.ini")
-    for i in range(4):
-        content = config_parser.get("usb_cameras","index"+str(i))
-        usb_cameras.append(content)
-    content = config_parser.get("usb_cameras","index"+str(i))
 
-    SAVE_VIDEO_OUTPUT = config_parser.getboolean("maintain_switch","save_video_output")
-else:
-    usb_cameras=[
-    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
-    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:9:1.0-video-index0",
-    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",#done
-    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
-    ]
+from configparser import ConfigParser
+
+config_parser = ConfigParser()
+config_parser.read("/home/votance/Projects/Farsight/local/config.ini")
+
+for i in range(4):
+    content = config_parser.get("usb_cameras","index"+str(i))
+    usb_cameras.append(content)
+content = config_parser.get("usb_cameras","index"+str(i))
+
+SAVE_VIDEO_OUTPUT = config_parser.getboolean("maintain_switch","save_video_output")
