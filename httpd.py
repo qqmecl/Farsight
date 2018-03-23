@@ -73,7 +73,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 	def _handle_door(self, secret, side, token, itemId, num, role='user'):
 		if secret == SECRET_KEY:
 			if token == "product":
-				# settings.logger.info("adjust: ",itemId,num)
+				settings.logger.error("adjust: {}".format(itemId,num))
 				self.closet.adjust_items((itemId,num))
 			else:
 				if role == 'user':

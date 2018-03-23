@@ -267,13 +267,13 @@ class Closet:
 
 
     def adjust_items(self,tup):
-        settings.logger.info("tup is: {}".format(tup))
+        settings.logger.error("tup is: {}".format(tup))
         if self.cart:
-            if tup[1] == '1':
-                settings.logger.info("adjust add in {}".format(tup[0]))
+            if tup[1] == 1:
+                settings.logger.error("adjust add in {}".format(tup[0]))
                 self.cart.add_item(tup[0])#放入物品
             else:
-                settings.logger.info("adjust take out {}".format(tup[0]))
+                settings.logger.error("adjust take out {}".format(tup[0]))
                 self.cart.remove_item(tup[0])#取出物品
 
     def delayCheckDoorClose(self):
@@ -330,7 +330,7 @@ class Closet:
                     result = self._detection_queue.get_nowait()
                     self.calc_cnt +=1
                     if time.time() - self.calcTime > 1:
-                       settings.logger.error("{} calc every second".format(self.calc_cnt))
+                       settings.logger.info("{} calc every second".format(self.calc_cnt))
                        self.calcTime = time.time()
                        self.calc_cnt = 0
 
@@ -395,10 +395,10 @@ class Closet:
                             self.detectCache = None
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
                             if direction == "IN":
-                                settings.logger.warning('camera{0},|Put back,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
+                                settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                                 self.detectCache.append(self.cart.remove_item(id))
                             else:
-                                settings.logger.warning('camera{0},|Take out,{1},inventory is {2}.|'.format(checkIndex,settings.items[id]["name"], now_num))
+                                settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                                 self.cart.add_item(id)
                                 self.detectCache.append(True)
                         else:
