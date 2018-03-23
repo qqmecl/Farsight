@@ -27,6 +27,7 @@ from detect.object_detector import ObjectDetector
 
 import cv2
 import logging
+import chen_flask
 
 class Closet:
     '''
@@ -177,6 +178,9 @@ class Closet:
         for i in range(2):
             self.detectResults.append(DetectResult())
 
+        # self.chen_queue = Queue(20)
+        # Process(target=chen_flask.start).start()
+
 
         # 捕获 CTRL-C
         handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
@@ -190,7 +194,7 @@ class Closet:
 
 
         # 最后：启动 tornado ioloop
-        tornado.ioloop.IOLoop.current().start()
+        #tornado.ioloop.IOLoop.current().start()
 
 
     def authorize(self, token, side):
@@ -315,8 +319,8 @@ class Closet:
                 #self.calcTime1 = time.time()
                 #self.calc_cnt1 = 0
 
-                self.calc_cnt = 0
-                self.calcTime = time.time()
+                # self.calc_cnt = 0
+                # self.calcTime = time.time()
 
                 # later = functools.partial(self._start_imageprocessing)
                 # tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
@@ -328,11 +332,11 @@ class Closet:
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
                 try:
                     result = self._detection_queue.get_nowait()
-                    self.calc_cnt +=1
-                    if time.time() - self.calcTime > 1:
-                       settings.logger.info("{} calc every second".format(self.calc_cnt))
-                       self.calcTime = time.time()
-                       self.calc_cnt = 0
+                    # self.calc_cnt +=1
+                    # if time.time() - self.calcTime > 1:
+                    #    settings.logger.info("{} calc every second".format(self.calc_cnt))
+                    #    self.calcTime = time.time()
+                    #    self.calc_cnt = 0
 
                     index = result[0]
                     frame = result[1]
