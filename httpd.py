@@ -104,7 +104,7 @@ class DataHandler(tornado.web.RequestHandler):
 				try:
 					with open('/tmp/daemon.pid') as f:
 						os.kill(int(f.read()), signal.SIGUSR1)
-						self.write('zhou')
+						#self.write('zhou')
 				except IOError as e:
 					self.write('user error')
 		elif data == 'pull':
@@ -113,7 +113,7 @@ class DataHandler(tornado.web.RequestHandler):
 				try:
 					with open('/tmp/daemon.pid') as f:
 						os.kill(int(f.read()), signal.SIGUSR2)
-						self.write('jun')
+						#self.write('jun')
 				except IOError as e:
 					self.write('user error')
 
