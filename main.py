@@ -8,7 +8,7 @@ import logging
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', help='Enable debug info')
+    parser.add_argument('-v', '--verbose', action='store_true', dest='dev', help='Enable debug info')
     parser.add_argument('-num-w', '--num-workers', type=int, default=1, help='每个摄像头对应的后台进行图像识别的进程数')
 
     parser.add_argument('--left-cameras', nargs='+', type=int, help='设置左边摄像头编号列表，-1 为空')

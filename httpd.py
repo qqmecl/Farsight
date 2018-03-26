@@ -7,6 +7,7 @@ import signal
 import settings
 from utils import Encrypter
 
+
 HTTP_PORT = 8888
 SECRET_KEY = "grtrgewfgvs"  #和原来代码一样，写死了先
 

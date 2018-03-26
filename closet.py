@@ -27,12 +27,15 @@ from detect.object_detector import ObjectDetector
 
 import cv2
 import logging
+import httpd
 
 class Closet:
     '''
         代表整个柜子
     '''
     ORDER_URL = 'https://www.hihigo.shop/api/v1/order'
+    log = None
+    video_FileName = None
 
     states = [
         'pre-init',            # 尚未初始化和自检
@@ -103,6 +106,7 @@ class Closet:
         self.http_port = config['http_port']
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
         self.initItemData()
+        self.dev = config['dev']
        
         logging.getLogger('transitions').setLevel(logging.WARN)
 
@@ -200,6 +204,14 @@ class Closet:
         '''
             用户授权开启一边的门，会解锁对应的门，并且让各个子进程进入工作状态
         '''
+        log_time = time.localtime()
+        xx = time.strftime('%Y/%m/%d', log_time)
+        yy = time.strftime('%H:%M:%S', log_time)
+        Closet.video_FileName =  'Output/' + xx + '/' + yy + '/' + yy + '.avi'
+        if self.dev:
+            Closet.log = Logger(dev = True, time = log_time)
+        else:
+            Closet.log = Logger(dev = False, time = log_time)
         try:
             if side == self.IO.doorLock.LEFT_DOOR:
                 self.authorization_left_success()
