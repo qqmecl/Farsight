@@ -1,5 +1,5 @@
 from camera_handler import CameraHandler
-from httpd import make_http_app, HTTP_PORT
+from network.httpd import make_http_app
 from signal_handler import SignalHandler
 from cart import Cart
 
@@ -15,28 +15,22 @@ import os  # 为视频输出文件创造新的Output文件夹
 
 import requests
 import json
-from setproctitle import setproctitle
 import time
-from utils import Encrypter
-import settings
-from serial_handler.io_controller import IO_Controller
 
+from network.utils import Encrypter
+from setproctitle import setproctitle
+import common.settings as settings
+
+from serial_handler.io_controller import IO_Controller
 from detect.detect_result import DetectResult
 from detect.motion import MotionDetect
 from detect.object_detector import ObjectDetector
-
 import cv2
-import logging
-import httpd
 
 class Closet:
     '''
         代表整个柜子
     '''
-    ORDER_URL = 'https://www.hihigo.shop/api/v1/order'
-    log = None
-    video_FileName = None
-
     states = [
         'pre-init',            # 尚未初始化和自检
         'standby',             # 等待授权
@@ -111,9 +105,10 @@ class Closet:
         logging.getLogger('transitions').setLevel(logging.WARN)
 
     def initItemData(self):
-        import utils
-        id = {'uuid': settings.get_mac_address()}
-        response = requests.get(settings.init_url,params=id)
+        from common.util import get_mac_address
+        id = {'uuid': get_mac_address()}
+
+        response = requests.get(settings.INIT_URL,params=id)
         #settings.logger.info('{}'.format(response))
         data = response.json()
         #settings.logger.info('{}'.format(data))
@@ -161,8 +156,6 @@ class Closet:
         self.camera_ctrl_queue = Queue(1)
         cam_handler = CameraHandler(self.camera_ctrl_queue, self.input_queues)
 
-        if not os.path.exists('/home/votance/Projects/Farsight/Output'):
-            os.makedirs('/home/votance/Projects/Farsight/Output')
 
         # TODO:
         # 使用 Process 需要处理可能存在的进程崩溃问题
@@ -204,14 +197,17 @@ class Closet:
         '''
             用户授权开启一边的门，会解锁对应的门，并且让各个子进程进入工作状态
         '''
-        log_time = time.localtime()
-        xx = time.strftime('%Y/%m/%d', log_time)
-        yy = time.strftime('%H:%M:%S', log_time)
-        Closet.video_FileName =  'Output/' + xx + '/' + yy + '/' + yy + '.avi'
-        if self.dev:
-            Closet.log = Logger(dev = True, time = log_time)
-        else:
-            Closet.log = Logger(dev = False, time = log_time)
+        
+        # log_time = time.localtime()
+        # xx = time.strftime('%Y/%m/%d', log_time)
+        # yy = time.strftime('%H:%M:%S', log_time)
+        # Closet.video_FileName =  'Output/' + xx + '/' + yy + '/' + yy + '.avi'
+        # if self.dev:
+        #     Closet.log = Logger(dev = True, time = log_time)
+        # else:
+        #     Closet.log = Logger(dev = False, time = log_time)
+
+
         try:
             if side == self.IO.doorLock.LEFT_DOOR:
                 self.authorization_left_success()
@@ -221,8 +217,6 @@ class Closet:
             #settings.logger.info(self.state)
             settings.logger.warn('State conversion error')
             return
-
-
 
         while True:#empty last detection queue
             try:
@@ -471,7 +465,7 @@ class Closet:
 
     #chen chen chen
     def polling(self):
-        req = requests.post(Closet.ORDER_URL, data=self.pollData)
+        req = requests.post(settings.ORDER_URL, data=self.pollData)
         #settings.logger.info(req.status_code)
         if req.status_code == 200:
             self.order_process_success()

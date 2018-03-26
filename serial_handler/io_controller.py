@@ -1,27 +1,10 @@
-
-import settings
-
-if settings.mock_door:
-    from serial_handler.mock import DoorLockHandler
-else:
-    from serial_handler.door_lock import DoorLockHandler
-
-if settings.mock_speaker:
-    from serial_handler.mock import Speaker
-else:
-    from serial_handler.speaker import Speaker
-
-if settings.mock_scale:
-    from serial_handler.mock import WeightScale
-else:
-    from serial_handler.scale import WeightScale
-
-if settings.mock_screen:
-    from serial_handler.mock import Screen
-else:
-    from serial_handler.screen import Screen
-
+import common.settings as settings
+from serial_handler.door_lock import DoorLockHandler
+from serial_handler.speaker import Speaker
+from serial_handler.scale import WeightScale
+from serial_handler.screen import Screen
 import tornado.ioloop
+
 class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     def __init__(self, door_port,speaker_port,scale_port,screen_port ):
         self.blocking = False

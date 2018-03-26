@@ -1,14 +1,11 @@
 import tornado.web
 from serial_handler.door_lock import DoorLockHandler
 import json
-import settings
 import os
 import signal
-import settings
-from utils import Encrypter
+import common.settings
+from network.utils import Encrypter
 
-
-HTTP_PORT = 8888
 SECRET_KEY = "grtrgewfgvs"  #和原来代码一样，写死了先
 
 class MainHandler(tornado.web.RequestHandler):

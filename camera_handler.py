@@ -1,20 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import cv2
 import queue
 from threading import Thread
 import time
 import signal
-import settings
 from setproctitle import setproctitle
-import settings
-from closet import Closet
+import common.settings
 
 DEFAULT_WIDTH = 640
 DEFAULT_HEIGHT = 480
 DEFAULT_FPS = 25 # 视频文件的保存帧率，还需要和图像处理帧率进行比对
-
 
 class WebcamVideoStream:
     '''
@@ -182,4 +178,3 @@ class CameraHandler:
         except queue.Full:
             settings.logger.info('[FULL] input_q')
             pass
-

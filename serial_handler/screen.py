@@ -6,7 +6,7 @@ import struct
 import itertools
 import functools
 import tornado.ioloop
-import settings
+import common.settings as settings
 
 class Screen:
     CHANGE_PAGE_ADDRESS = 0

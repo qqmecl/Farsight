@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-
 import argparse
 from setproctitle import setproctitle
 import multiprocessing
-import settings
-import logging
+import common.settings
+import os
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -49,30 +48,16 @@ if __name__ == '__main__':
 
     parser.add_argument('--http-port', type=str, help='HTTP 监听端口')
     parser.set_defaults(http_port='5000')
-
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s")
-    #logger = logging.getLogger()
-
-    if args.verbose:
-        settings.logger.setLevel(logging.INFO)
-    else:
-        settings.logger.setLevel(logging.WARN)
+    if not os.path.exists('/home/votance/Projects/Output'):
+        os.makedirs('/home/votance/Projects/Output')
     
     setproctitle('[farsight] main process')
 
     # TODO: 使用 fork 方式似乎会导致信号捕获错乱的问题，待验证
     multiprocessing.set_start_method('spawn')#windows only spawn
     multiprocessing.log_to_stderr()
-
-    settings.mock_door = args.mock_door
-    settings.mock_speaker = args.mock_speaker
-    settings.mock_scale = args.mock_scale
-    settings.mock_screen = args.mock_screen
-
-    settings.scale_port = args.scale_port
-
 
     from closet import Closet
 

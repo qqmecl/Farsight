@@ -3,7 +3,7 @@ import struct
 from serial_handler.crc import crc16
 import functools
 import tornado.ioloop
-import settings
+import common.settings as settings
 
 class Speaker:#简单触发器
     '''

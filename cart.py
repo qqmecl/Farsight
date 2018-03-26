@@ -1,11 +1,6 @@
 import time
-import settings
-if settings.mock_screen:
-    from serial_handler.mock import Screen
-else:
-    from serial_handler.screen import Screen
-
-import settings
+from serial_handler.screen import Screen
+import common.settings
 
 class Cart:
     '''

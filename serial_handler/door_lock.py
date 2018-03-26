@@ -5,7 +5,6 @@ import threading
 import time
 import functools
 import tornado.ioloop
-import settings
 
 # 开某一边门之前要判断另一边锁是否打开，若打开，则不能开锁
 # 此处分门和智能锁，工控机接收到信号之后先开锁
@@ -23,7 +22,6 @@ class DoorLockHandler:
 
     def _read_status(self):
         data = self.com.read(6)[3]
-        # settings.logger.info(data)
         return data
 
     def _send_data(self, array):
@@ -126,10 +124,4 @@ if __name__ == '__main__':
 
     # handler.reset_lock(DoorLockHandler.LEFT_DOOR)
     # handler.reset_lock(DoorLockHandler.RIGHT_DOOR)
-
-
-    # settings.logger.info(handler.is_door_open(DoorLockHandler.LEFT_DOOR))
-
     settings.logger.info(handler.both_door_closed())
-    # settings.logger.info(handler.both_door_closed())
-    # settings.logger.info(handler.both_lock_locked())

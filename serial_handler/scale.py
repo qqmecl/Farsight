@@ -1,6 +1,5 @@
 import serial
 import struct
-import settings
 
 class WeightScale:
     '''
@@ -24,10 +23,7 @@ class WeightScale:
         # 按照 IEEE 754 Float 格式 unpack
         return struct.unpack('>f', raw)
 
-
-
 if __name__ == '__main__':
     scale = WeightScale()
-
-    settings.logger.info(''.format(scale.read()[0]))
+    print(scale.read()[0])
 

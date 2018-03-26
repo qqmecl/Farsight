@@ -1,40 +1,52 @@
 import time
-import logging
 
-class Logger(object):
-	def __init__(self, dev = False, time = time.localtime()):
-		self.log =  logging.getLogger('farsight')
-		self.log.setLevel(logging.INFO)
-		self.logger = logging.getLogger(path)
-		fmt1 = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s', '%Y-%m-%d %H:%M:%S')
-		fmt2 = logging.Formatter('%(levelname)s - %(message)s')
-   		#设置CMD日志
-   		sh = logging.StreamHandler()
-   		sh.setFormatter(fmt1)
-   		sh.setLevel(logging.INFO)
-   		#设置文件日志
-   		xx = time.strftime('%Y/%m/%d', time)
-   		yy = time.strftime('%H:%M:%S', time)
-   		self.fh = logging.FileHandler('Output/' + xx + '/' + yy + '/' + yy + '.log')
-   		self.fh.setFormatter(fmt2)
-   		self.fh.setLevel(logging.INFO)
-   		
-   		if dev:
-   			self.logger.addHandler(sh)
-   		else:
-   			self.logger.addHandler(fh)
+class Logger:
+  def __init__(self,mode="develop"):
+    self.logMode = mode
+
+    self.print_io_list=[]
+
+    self.openDoorTime = self.getTime()
+
+    self.io_prefix = "/home/votance/Projects/Output/"
+
+  def debug(self,message):
+    msg = self.getTime()+"--[DEBUG]--"+message
+    self.addInfo(msg)
   
-  	def debug(self,message):
-   		self.logger.debug(message)
-  
-  	def info(self,message):
-   		self.logger.info(message)
-  
-  	def war(self,message):
-   		self.logger.warn(message)
-  
-  	def error(self,message):
-   		self.logger.error(message)
-  
-  	def cri(self,message):
-   		self.logger.critical(message)
+  def info(self,message):
+    msg = self.getTime()+"--[INFO]--"+message
+    self.addInfo(msg)
+
+  # def warn(self,message):
+  #   self.logger.warn(message)
+
+  # def error(self,message):
+  #   self.logger.error(message)
+
+  def evokeDoorOpen(self):
+    self.print_io_list=[]
+    day = time.strftime('%Y-%m-%d/',time.time())
+    self.io_path = self.io_prefix + day
+    if not os.path.exists(self.io_path):
+        os.makedirs(self.io_path)
+
+  def evokeDoorClose(self):
+    if self.logMode == "produce":
+      hour = time.strftime('%H_%M_%S', time.time())
+      self.io_path += hour+".log"
+      with open(self.io_path,"w+") as file:
+        for log in self.print_io_list:
+          file.write(log+"\n")
+      file.close()
+      self.print_io_list=[]
+
+
+  def getTime(self):
+    return time.strftime('%Y/%m/%d--%H:%M:%S', time.localtime(time.time()))
+
+  def addInfo(self,message):
+    if self.logMode == "develop":
+      print(message)
+    else:
+      self.print_io_list.append(message)
