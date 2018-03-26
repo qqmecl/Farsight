@@ -6,7 +6,7 @@ from threading import Thread
 import time
 import signal
 from setproctitle import setproctitle
-import common.settings
+import common.settings as settings
 
 DEFAULT_WIDTH = 640
 DEFAULT_HEIGHT = 480
@@ -15,7 +15,6 @@ DEFAULT_FPS = 25 # 视频文件的保存帧率，还需要和图像处理帧率�
 class WebcamVideoStream:
     '''
         源自 https://github.com/datitran/object_detector_app
-
         在一个线程中不断获取摄像头的输出并且缓存下来，大幅提高帧率
     '''
     def __init__(self, src, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT):
@@ -28,7 +27,6 @@ class WebcamVideoStream:
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         # (self.grabbed, self.frame) = self.stream.read()
-
         # initialize the variable used to indicate if the thread should
         # be stopped
         self.stopped_caching = True
@@ -60,18 +58,14 @@ class WebcamVideoStream:
         # self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
         self.stopped_caching = False
 
-
 class CameraHandler:
     '''
         工作在一个单独进程中，通过 ctrl_q 接受控制命令，决定是否把摄像头产生的图像发送到输出队列中
     '''
-    IDLE_TIMEOUT = 1
-    BUSY_TIMEOUT = 0.01
-
     def __init__(self, ctrl_q, frames_queues, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT):
         self.ctrl_q = ctrl_q
         self.frames_queues = frames_queues
-        self.timeout = CameraHandler.BUSY_TIMEOUT
+        self.timeout = 0.01
         self.cameras = {}
         self.videoWriter = {}
         self.isSave=[]
@@ -102,7 +96,7 @@ class CameraHandler:
         while True:
             try:
                 ctrl_data = self.ctrl_q.get(timeout=self.timeout)
-                self._handle_command(ctrl_data['cmd'], ctrl_data['cameras'])
+                self._handle_command(ctrl_data['cmd'], ctrl_data['cameras'],ctrl_data['videoPath'])
             except queue.Empty:
                 # settings.logger.info('[EMPTY] ctrl_q')
                 pass
@@ -110,11 +104,10 @@ class CameraHandler:
             for src in self.cameras.keys():
                 self._sendframe(src)
 
-    def _handle_command(self, cmd, cameras):
+    def _handle_command(self, cmd, cameras,videoPath):
         '''
             cmd 参数是指令名称，cameras 是摄像头编号
             根据指令类型，让参数对应的摄像头进入相应的状态
-
             standby: 启动摄像头，进入待命状态
             start:   发送摄像头捕获的帧到队列中
             stop:    停止发送帧
@@ -124,34 +117,30 @@ class CameraHandler:
                 self.cameras[src] = WebcamVideoStream(src)
                 self.cameras[src].start()
         elif cmd == 'start':#打开门之后算法进程才有数据进行检测
-            # settings.logger.info("Cameras are:   ",cameras)
             for src in cameras:
                 self.cameras[src].resume_sending()
-                if settings.SAVE_VIDEO_OUTPUT:
-                    video_FileName =  Closet.video_FileName            
-                    self.videoWriter[src] = cv2.VideoWriter(video_FileName, cv2.VideoWriter_fourcc(*'XVID')
+
+                if settings.logger.checkSaveVideo():
+                    self.videoWriter[src] = cv2.VideoWriter(videoPath+str(src)+".avi", cv2.VideoWriter_fourcc(*'XVID')
                                         , DEFAULT_FPS, (DEFAULT_WIDTH,DEFAULT_HEIGHT))#每个启动的摄像头有一个保存类
         elif cmd == 'stop':
             for src in cameras:
                 self.cameras[src].pause_sending()
-                if settings.SAVE_VIDEO_OUTPUT:
+                if settings.logger.checkSaveVideo():
                     if not self.cameras[src].stopped_caching:
-                        del self.videoWriter[src]  # 摄像头停止活动后销毁视频保存类
+                        del self.videoWriter[src]  #摄像头停止活动后销毁视频保存类
             self.reset()
 
     def _sendframe(self, src):
         '''
             发送摄像头图像帧到对应的队列中
-
             TODO:
             当个别摄像头对应的 TensorFlow 处理进程处理较慢时，可能出现队列满的情况，
             此时可能导致其他队列的发送也被 block 住
             考虑调低 timeout 或者使用后台线程
         '''
         try:
-            data = self.cameras[src].read()#after fetching,
-            # settings.logger.info("send frame src is: ",src)
-            # self.frames_queues[src].put((data,src), timeout=1)
+            data = self.cameras[src].read()
             if data is not None:
                 self.frames_queues.put((data,src,time.time()), timeout=1)
 
@@ -163,16 +152,12 @@ class CameraHandler:
                 #     self.calc_cnt = 0
                 #     return
 
-                if settings.SAVE_VIDEO_OUTPUT:
+                if settings.logger.checkSaveVideo():
                     self.videoWriter[src].write(data)  # 将每一帧写入视频文件中
 
                 if settings.SAVE_DEBUG_OUTPUT and not self.isSave[src]:
                     self.isSave[src] = True
                     tiem = time.time()
-                    # cv2.imwrite("Output/"+str(src)+"_"+str(tiem)+".png",data)
-                      # 将每一帧写入视频文件中
-                    # slide = data[:,310:330]
-                    # cv2.imwrite("Output/slide"+str(src)+"_"+str(tiem)+".png",slide)
 
                 self.cameras[src].reset()
         except queue.Full:

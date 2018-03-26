@@ -1,6 +1,6 @@
 import sys
 import multiprocessing
-import common.settings
+import common.settings as settings
 
 class SignalHandler:
     def __init__(self, camera_process, object_detection_pools, ioloop):

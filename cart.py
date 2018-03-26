@@ -1,6 +1,6 @@
 import time
 from serial_handler.screen import Screen
-import common.settings
+import common.settings as settings
 
 class Cart:
     '''
@@ -53,23 +53,19 @@ class Cart:
             # TODO:
             # settings.logger.info('Try to clear an item which is not included in the closet!')
         self.last_remove_timestamp = time.time()
-        
         return False
-    # def isHaveItem(self,item_id):
-        # return self.items[item_id] > 0
-
 
     def as_order(self):
         '''
             转换成下单所需的格式
             TODO: 机器对应的 code 应该从配置中读取
         '''
-        import utils
+        from common.util import get_mac_address
         
         return dict(
             data=self.items,
             token=self.token,
-            code=settings.get_mac_address(),
+            code=get_mac_address(),
             weight=dict(start=self.start_weight, final=self.IO.get_scale_val())
         )
 

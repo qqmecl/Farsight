@@ -1,17 +1,16 @@
 import tornado.web
 from serial_handler.door_lock import DoorLockHandler
+import common.settings as settings
+from network.utils import Encrypter
 import json
 import os
 import signal
-import common.settings
-from network.utils import Encrypter
 
 SECRET_KEY = "grtrgewfgvs"  #和原来代码一样，写死了先
 
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.write("Hello, world")
-
 
 class AuthorizationHandler(tornado.web.RequestHandler):
 	'''

@@ -35,7 +35,7 @@ class Screen:
     LINE_MAX_LIMIT = 14  # 最大可允许行数
 
     def __init__(self, port="/dev/usb_screen"):
-        # port="/dev/ttyS5"
+        port="/dev/ttyS5"
         # rate = 115200  # 当前串口通信设备波特率
         rate = 9600  # 当前串口通信设备波特率
         self.com = serial.Serial(port, baudrate=rate, timeout=0.1)

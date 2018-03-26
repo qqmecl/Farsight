@@ -100,10 +100,7 @@ class Closet:
         self.http_port = config['http_port']
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
         self.initItemData()
-        self.dev = config['dev']
        
-        logging.getLogger('transitions').setLevel(logging.WARN)
-
     def initItemData(self):
         from common.util import get_mac_address
         id = {'uuid': get_mac_address()}
@@ -147,11 +144,6 @@ class Closet:
         pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue,self.run_mode))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
-
-
-        # 自检
-        # selfcheck()
-
         # 启动摄像头，创造Output文件夹
         self.camera_ctrl_queue = Queue(1)
         cam_handler = CameraHandler(self.camera_ctrl_queue, self.input_queues)
@@ -163,7 +155,7 @@ class Closet:
         camera_process.start()
 
         # 对所有的摄像头发送standby指令，启动摄像头并且进入待命状态
-        self.camera_ctrl_queue.put(dict(cmd='standby', cameras=self.left_cameras + self.right_cameras))
+        self.camera_ctrl_queue.put(dict(cmd='standby', cameras=self.left_cameras + self.right_cameras,videoPath=None))
         settings.logger.warning('camera standby')
 
 
@@ -197,17 +189,6 @@ class Closet:
         '''
             用户授权开启一边的门，会解锁对应的门，并且让各个子进程进入工作状态
         '''
-        
-        # log_time = time.localtime()
-        # xx = time.strftime('%Y/%m/%d', log_time)
-        # yy = time.strftime('%H:%M:%S', log_time)
-        # Closet.video_FileName =  'Output/' + xx + '/' + yy + '/' + yy + '.avi'
-        # if self.dev:
-        #     Closet.log = Logger(dev = True, time = log_time)
-        # else:
-        #     Closet.log = Logger(dev = False, time = log_time)
-
-
         try:
             if side == self.IO.doorLock.LEFT_DOOR:
                 self.authorization_left_success()
@@ -215,7 +196,7 @@ class Closet:
                 self.authorization_right_success()
         except transitions.core.MachineError:
             #settings.logger.info(self.state)
-            settings.logger.warn('State conversion error')
+            settings.logger.warning('State conversion error')
             return
 
         while True:#empty last detection queue
@@ -225,11 +206,11 @@ class Closet:
                 break
 
 
+        settings.logger.evokeDoorOpen()
+
         self.door_token = token      #chen
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
         self.cart = Cart(token, self.IO)
-
-        # self.logger.info(self.state)
 
         self.mode ="normal_mode"
 
@@ -470,12 +451,16 @@ class Closet:
         if req.status_code == 200:
             self.order_process_success()
             self.pollPeriod.stop()
+            settings.logger.evokeDoorClose()
 
     #检查门是否关闭，此时只是关上了门，并没有真正锁上门
     def _check_door_close(self):
         if not self.IO.is_door_open(self.curSide):
             self.check_door_close_callback.stop()
+            
             settings.logger.warning('Door Closed!')
+
+            
 
             if self.mode == "operator_mode":
                 self.restock_close_door_success()
@@ -492,13 +477,13 @@ class Closet:
     #发送摄像头工作指令消息
     def _start_imageprocessing(self):
         if self.curSide == self.IO.doorLock.LEFT_DOOR:
-            self.camera_ctrl_queue.put(dict(cmd='start', cameras=self.left_cameras))
+            self.camera_ctrl_queue.put(dict(cmd='start', cameras=self.left_cameras,videoPath=settings.logger.getSaveVideoPath()))
         else:
-            self.camera_ctrl_queue.put(dict(cmd='start', cameras=self.right_cameras))
+            self.camera_ctrl_queue.put(dict(cmd='start', cameras=self.right_cameras,videoPath=settings.logger.getSaveVideoPath()))
 
     #发送摄像头停止工作指令消息
     def _stop_imageprocessing(self):
         if self.curSide == self.IO.doorLock.LEFT_DOOR:
-            self.camera_ctrl_queue.put(dict(cmd='stop', cameras=self.left_cameras))
+            self.camera_ctrl_queue.put(dict(cmd='stop', cameras=self.left_cameras,videoPath=None))
         else:
-            self.camera_ctrl_queue.put(dict(cmd='stop', cameras=self.right_cameras))
+            self.camera_ctrl_queue.put(dict(cmd='stop', cameras=self.right_cameras,videoPath=None))

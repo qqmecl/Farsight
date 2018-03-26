@@ -20,11 +20,10 @@ items = {
     '6925303714857': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
 }
 http_port = 5000
-speaker_on = True
+
 welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,'D8:9E:F3:1D:EE:7C': 0x0D,'D8:9E:F3:1E:13:8A': 0x33}
 WELCOME_PAGE = welcome_page.get(get_mac_address(), 0x33)
 
-SAVE_VIDEO_OUTPUT = True
 SAVE_DEBUG_OUTPUT = False
 SAVE_DETECT_OUTPUT = False
 
@@ -39,5 +38,7 @@ for i in range(4):
     usb_cameras.append(content)
 content = config_parser.get("usb_cameras","index"+str(i))
 SAVE_VIDEO_OUTPUT = config_parser.getboolean("maintain_switch","save_video_output")
+
+speaker_on = config_parser.getboolean("maintain_switch","speaker_on")
 
 logger = Logger(config_parser.get("run_mode","client_mode"))
