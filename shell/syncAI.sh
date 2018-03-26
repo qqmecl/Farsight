@@ -1,2 +1,2 @@
-rm -r detect/
-cp -r ../Algorithm/detect detect
+rm -r ../detect/
+cp -r ../../Algorithm/detect ../detect
