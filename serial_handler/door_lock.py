@@ -22,10 +22,13 @@ class DoorLockHandler:
 
     def _read_status(self):
         data = self.com.read(6)[3]
+        print("read_status: ",data)
         return data
 
     def _send_data(self, array):
         cmd = crc16().createarray(array)
+        print("send cmd: ",cmd)
+        print("send cmd: ",str(len(cmd)))
         data = struct.pack(str(len(cmd)) + "B", *cmd)
         self.com.write(data)
 
@@ -62,10 +65,6 @@ class DoorLockHandler:
     def _send_door_statuscheck(self):
         array = [1, 2, 0, 0, 0, 4]
         self._send_data(array)
-
-
-
-
 
     #解开锁的状态，以开启门，并过2s之后重置电平信号
     def unlock(self, side):
@@ -124,4 +123,4 @@ if __name__ == '__main__':
 
     # handler.reset_lock(DoorLockHandler.LEFT_DOOR)
     # handler.reset_lock(DoorLockHandler.RIGHT_DOOR)
-    settings.logger.info(handler.both_door_closed())
+    # print(handler.both_door_closed())

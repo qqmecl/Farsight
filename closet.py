@@ -99,7 +99,7 @@ class Closet:
         self.screen_port = config['screen_port']
         self.http_port = config['http_port']
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
-        self.initItemData()
+        #self.initItemData()
        
     def initItemData(self):
         from common.util import get_mac_address

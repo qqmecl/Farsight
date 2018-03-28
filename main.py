@@ -44,7 +44,7 @@ if __name__ == '__main__':
     parser.set_defaults(scale_port="/dev/ttyS4")
 
     parser.add_argument('--screen-port', type=str, help='显示屏 COM 口')
-    parser.set_defaults(screen_port="/dev/ttyS5")
+    parser.set_defaults(screen_port="/dev/ttyS1")
 
     parser.add_argument('--http-port', type=str, help='HTTP 监听端口')
     parser.set_defaults(http_port='5000')

@@ -31,13 +31,13 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     def _check_weight_scale(self):
         import time
         # settings.logger.info("before time is:",time.time())
-        self.val_scale = self.scale.read()[0]
+        self.val_scale = 1.03
         # settings.logger.info("after time is:",time.time())
 
     
 
     def get_scale_val(self):
-        self.val_scale = self.scale.read()[0]
+        self.val_scale = 1.03
         return self.val_scale
 
     '''

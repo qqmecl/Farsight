@@ -34,8 +34,8 @@ class Screen:
 
     LINE_MAX_LIMIT = 14  # 最大可允许行数
 
-    def __init__(self, port="/dev/usb_screen"):
-        port="/dev/ttyS5"
+    def __init__(self, port="/dev/ttyS1"):
+        #port="/dev/ttyS1"
         # rate = 115200  # 当前串口通信设备波特率
         rate = 9600  # 当前串口通信设备波特率
         self.com = serial.Serial(port, baudrate=rate, timeout=0.1)
@@ -209,7 +209,7 @@ class Screen:
 if __name__ == '__main__':
     screen = Screen()
 
-    # screen.change_to_page(Screen.INVENTORY_PAGE)
+    #screen.change_to_page(Screen.INVENTORY_PAGE)
 
     # screen.do_protocol_6(Screen.CART_COUNT_ADDRESS,0)
     # screen.do_protocol_6(Screen.CART_TOTAL_ADDRESS,0)
@@ -219,8 +219,8 @@ if __name__ == '__main__':
     screen.change_to_page(Screen.WELCOME_PAGE)
     
 
-    # for i in range(7):
-    #     screen.clear_line_content(i)
+    for i in range(7):
+        screen.clear_line_content(i)
 
     # screen.update_static_info()
 
