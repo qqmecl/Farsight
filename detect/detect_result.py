@@ -28,14 +28,6 @@ class Queue:
         for i in range(len(self.items)):
             print(self.items[i])
 
-
-class UpDownNotMatchError(Exception):
-    pass
-
-
-#TODO:dynamic change reco display.
-
-
 #Theoritically,the ac
 #single pipeline check about detecting.
 class DetectResult:
@@ -55,15 +47,7 @@ class DetectResult:
                 settings.logger.info('check ,{0},{1},by time ,{2}'.format(index,settings.items[_id]["name"],_time))
                 count+=1
 
-            
-            if count >0:
-                self.window.enqueue(detects)
-
-            # if count >0:
-            #     print("begin")
-            #     self.window.print()
-            #     print("over")
-
+            self.window.enqueue(detects)
 
             # if motion is not "None":
             #     print("current motion is: ",motion)
@@ -82,8 +66,6 @@ class DetectResult:
 
                     # id,num,_time = self.getMaxNum()
                     # print("put back after check: ",id,num,_time)
-
-
                     detectId,num,t_ime = self.getCurrentDetection(True)
                     if detectId is not None:
                         self.detect.append({"direction":"IN","id":detectId,"num":num,"time":t_ime})
@@ -150,9 +132,11 @@ class DetectResult:
             # print(settings.items[id]["name"],num,_time)
         #     else:
         #         print(id,num,_time)
-
+        
         # threshold1,threshold2,threshold3 = 3,4,3
+        
         back_threshold,out_inTimethreshold,out_timeout_threshold = 0,1,2
+
         if id is not None:
             if isLast:#in item check
                 if num > back_threshold: # 原来是3
@@ -161,6 +145,7 @@ class DetectResult:
                     self.reset()
             else:#out item check
                 now_time = time.time()
+
                 if now_time-self.actionTime < 1:#25*0.7=17
                     if num > out_inTimethreshold: # 原来是4
                         # print("less time check: ",num)
@@ -172,6 +157,7 @@ class DetectResult:
                     else:
                         # print("out time out is: ",now_time)
                         self.reset()
+
         return None,None,None
 
 #Dynamic adjusting phase.

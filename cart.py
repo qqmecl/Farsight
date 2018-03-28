@@ -56,10 +56,6 @@ class Cart:
         return False
 
     def as_order(self):
-        '''
-            转换成下单所需的格式
-            TODO: 机器对应的 code 应该从配置中读取
-        '''
         from common.util import get_mac_address
         
         return dict(
