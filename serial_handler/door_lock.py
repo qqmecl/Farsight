@@ -113,6 +113,38 @@ class DoorLockHandler:
     def _send_lock_statuscheck(self):
         array = [1, 1, 0, 0, 0, 4]
         self._send_data(array)
+
+    #1.Y1 left door
+    #Y2 right door
+    #Y3 NULL
+    #Y4 WELCOME VOICE
+    #Y5 THANK YOU FOR COMMING
+    #Y6 NULL
+
+    
+    #1 right lock down
+    #2 right lock up
+    #3 right door open
+    #4 right door close
+    #5 left lock down
+    #6 left lock up
+    #7 left door open
+    #8 left door close
+
+    # 1010 0110
+
+    def checkAllState(self):
+        array = [1, 2, 0, 0, 0, 8]
+        self._send_data(array)
+        data = self.com.read(6)
+
+        print(data)
+
+        strdata = ''.join(map(lambda x:('/x' if len(hex(x))>=4 else '/x0')+hex(x)[2:],data))
+        print(strdata)
+
+        return data
+
     
 
 if __name__ == '__main__':
