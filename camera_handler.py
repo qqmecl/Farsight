@@ -8,8 +8,8 @@ import signal
 from setproctitle import setproctitle
 import common.settings as settings
 
-DEFAULT_WIDTH = 640
-DEFAULT_HEIGHT = 480
+DEFAULT_WIDTH = 1280
+DEFAULT_HEIGHT = 720
 DEFAULT_FPS = 25 # 视频文件的保存帧率，还需要和图像处理帧率进行比对
 
 class WebcamVideoStream:
@@ -24,8 +24,14 @@ class WebcamVideoStream:
         self.width = width
         self.height = height
         self.stream = cv2.VideoCapture(settings.usb_cameras[src])
-        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        #w,h = 1280, 720
+        # w,h = 640,480
+        # w,h =  640*1.2,480*1.2
+        # w,h =  w/2,h/2
+        #w,h = int(w),int(h)
+        self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
+        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
         # (self.grabbed, self.frame) = self.stream.read()
         # initialize the variable used to indicate if the thread should
         # be stopped

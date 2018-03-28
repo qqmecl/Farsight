@@ -81,11 +81,23 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     '''
     	Door的接口
     '''
-    def is_door_open(self,side):
-        return self.doorLock.is_door_open(side)
+    def is_door_open(self, curside):
+        return self.doorLock.is_door_open(curside)
 
-    def both_door_closed(self):
-        return self.doorLock.both_door_closed()
+    def is_door_lock(self):
+        return self.doorLock.is_door_lock()
+
+    # def both_door_closed(self, curside):
+    #     return self.doorLock.both_door_closed() #peihuo
+
+    def lock_up_door_close(self, curside):
+        return self.doorLock.lock_up_door_close(curside)
+
+    def lock_down_door_open(self, curside):
+        return self.doorLock.lock_down_door_open(curside)
+
+    def reset_lock(self, side):
+        self.doorLock.reset_lock(curside)
     '''
     	Door的接口
     '''
