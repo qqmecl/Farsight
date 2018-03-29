@@ -311,8 +311,8 @@ class Closet:
                 #self.calcTime1 = time.time()
                 #self.calc_cnt1 = 0
 
-                # self.calc_cnt = 0
-                # self.calcTime = time.time()
+                self.calc_cnt = 0
+                self.calcTime = time.time()
 
                 # later = functools.partial(self._start_imageprocessing)
                 # tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
@@ -324,11 +324,11 @@ class Closet:
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
                 try:
                     result = self._detection_queue.get_nowait()
-                    # self.calc_cnt +=1
-                    # if time.time() - self.calcTime > 1:
-                    #    settings.logger.info("{} calc every second".format(self.calc_cnt))
-                    #    self.calcTime = time.time()
-                    #    self.calc_cnt = 0
+                    self.calc_cnt +=1
+                    if time.time() - self.calcTime > 1:
+                       settings.logger.info("{} calc every second".format(self.calc_cnt))
+                       self.calcTime = time.time()
+                       self.calc_cnt = 0
 
                     index = result[0]
                     frame = result[1]
