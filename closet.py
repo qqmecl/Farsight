@@ -222,10 +222,16 @@ class Closet:
         self.IO.change_to_inventory_page()#进入购物车界面
 
         self.IO.unlock(side)#开对应门锁
+        
+        self.curSide = side
+
+        bug_time = time.time()
+    
+        while not self.IO.lock_up_door_close(self.curSide):
+            if time.time() - bug_time > 2:
+                settings.logger.warning('open lock have bug')
 
         settings.logger.warning('lock is opened by user')
-
-        self.curSide = side
 
         settings.logger.warning("curside is: {}".format(self.curSide))#default is left side
 
@@ -275,7 +281,7 @@ class Closet:
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
             #settings.logger.info("Checking time is: ",time.time()-self.debugTime)
 
-            if self.check_door_time_out == False and time.time()-self.debugTime > 7:
+            if self.IO.is_door_lock():
                 #now_time = time.time()
                 settings.logger.info("Time Out time is: {}".format(time.time()-self.debugTime))
 
@@ -305,8 +311,8 @@ class Closet:
                 #self.calcTime1 = time.time()
                 #self.calc_cnt1 = 0
 
-                # self.calc_cnt = 0
-                # self.calcTime = time.time()
+                self.calc_cnt = 0
+                self.calcTime = time.time()
 
                 # later = functools.partial(self._start_imageprocessing)
                 # tornado.ioloop.IOLoop.current().call_later(delay=1.0, callback=later)
@@ -318,11 +324,11 @@ class Closet:
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
                 try:
                     result = self._detection_queue.get_nowait()
-                    # self.calc_cnt +=1
-                    # if time.time() - self.calcTime > 1:
-                    #    settings.logger.info("{} calc every second".format(self.calc_cnt))
-                    #    self.calcTime = time.time()
-                    #    self.calc_cnt = 0
+                    self.calc_cnt +=1
+                    if time.time() - self.calcTime > 1:
+                       settings.logger.info("{} calc every second".format(self.calc_cnt))
+                       self.calcTime = time.time()
+                       self.calc_cnt = 0
 
                     index = result[0]
                     frame = result[1]
@@ -421,7 +427,7 @@ class Closet:
                 except queue.Empty:
                     # settings.logger.info()
                     pass
-
+        
     def _delay_do_order(self):
         self.close_door_success()
         self.updateScheduler.stop()

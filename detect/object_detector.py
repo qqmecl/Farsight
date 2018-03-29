@@ -62,7 +62,7 @@ class ObjectDetector:
 
             
 
-        rCenter=320
+        rCenter=640
         rcLen = 10
 
         while True:
@@ -71,7 +71,7 @@ class ObjectDetector:
                 if index > 1:
                     frame = cv.flip(frame,1)
 
-                frame_truncated = frame[:, 160: , :]
+                frame_truncated = frame[:, 320: , :]
 
                 last_time = time.time()
                 results = self.detect_objects(frame_truncated,index,frame_time,hardware_mode)

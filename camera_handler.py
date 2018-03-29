@@ -8,8 +8,8 @@ import common.settings as settings
 from detect.dynamic_track import DynamicTrack
 
 
-DEFAULT_WIDTH = 640
-DEFAULT_HEIGHT = 480
+DEFAULT_WIDTH = 1280
+DEFAULT_HEIGHT = 720
 DEFAULT_FPS = 25#视频文件的保存帧率，还需要和图像处理帧率进行比对
 
 class WebcamVideoStream:
@@ -18,8 +18,11 @@ class WebcamVideoStream:
         self.width = width
         self.height = height
         self.stream = cv2.VideoCapture(settings.usb_cameras[src])
+
+        self.stream.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc(*'MJPG'))
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
         self.stopped_caching = True
         self.reset()
 
@@ -53,6 +56,8 @@ class CameraHandler:
         self.cameras = {}
         self.videoWriter = {}
         self.dynamicTracker= {}
+        self.calc = 0
+        self.calc_time = time.time()
         for i in range(4):
             self.dynamicTracker[i] = DynamicTrack()
 
@@ -84,6 +89,7 @@ class CameraHandler:
             for src in cameras:
                 self.cameras[src] = WebcamVideoStream(src)
                 self.cameras[src].start()
+
         elif cmd == 'start':#打开门之后算法进程才有数据进行检测
             for src in cameras:
                 self.cameras[src].resume_sending()
@@ -102,8 +108,9 @@ class CameraHandler:
     def _sendframe(self, src):
         try:
             data = self.cameras[src].read()
-            data = self.dynamicTracker[src].check(data)
+
             if data is not None:
+                # data = self.dynamicTracker[src].check(data)
                 self.frames_queues.put((data,src,time.time()), timeout=1)
 
                 if settings.logger.checkSaveVideo():#将每一帧写入视频文件中
