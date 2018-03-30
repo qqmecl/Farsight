@@ -44,7 +44,7 @@ class DetectResult:
             for val in detects:
             #(confidence,itemId,cur_time) one
                 (_id,_time)=(val[1],val[2])
-                settings.logger.info('check ,{0},{1},by time ,{2}'.format(index,settings.items[_id]["name"],_time))
+                #settings.logger.info('check ,{0},{1},by time ,{2}'.format(index,settings.items[_id]["name"],_time))
                 count+=1
 
             self.window.enqueue(detects)

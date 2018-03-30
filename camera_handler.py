@@ -6,6 +6,7 @@ import signal
 from setproctitle import setproctitle
 import common.settings as settings
 from detect.dynamic_track import DynamicTrack
+# from multiprocessing import Process
 
 
 DEFAULT_WIDTH = 1280
@@ -15,6 +16,8 @@ DEFAULT_FPS = 25#视频文件的保存帧率，还需要和图像处理帧率进
 class WebcamVideoStream:
     def __init__(self, src, width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT):
         self.src = src
+        self.calc = 0
+        self.calc_time = time.time()
         self.width = width
         self.height = height
         self.stream = cv2.VideoCapture(settings.usb_cameras[src])
@@ -34,6 +37,11 @@ class WebcamVideoStream:
         while True:
             if not self.stopped_caching:
                 (self.grabbed, self.frame) = self.stream.read()
+                self.calc += 1
+                if time.time() - self.calc_time > 1:
+                    settings.logger.info('{} send already'.format(self.calc))
+                    self.calc = 0
+                    self.calc_time = time.time()
 
     def read(self):
         return self.frame
@@ -82,6 +90,11 @@ class CameraHandler:
 
             for src in self.cameras.keys():
                 self._sendframe(src)
+                # self.calc += 1
+                # if time.time() - self.calc_time > 1:
+                #     settings.logger.info('{} send already'.format(self.calc))
+                #     self.calc = 0
+                #     self.calc_time = time.time()
 
 
     def _handle_command(self, cmd, cameras,videoPath):
@@ -111,7 +124,12 @@ class CameraHandler:
 
             if data is not None:
                 # data = self.dynamicTracker[src].check(data)
-                self.frames_queues.put((data,src,time.time()), timeout=1)
+                #self.frames_queues.put((data,src,time.time()), timeout=1)
+                # self.calc += 1
+                # if time.time() - self.calc_time > 1:
+                #     settings.logger.info('{} send already'.format(self.calc))
+                #     self.calc = 0
+                #     self.calc_time = time.time()
 
                 if settings.logger.checkSaveVideo():#将每一帧写入视频文件中
                     self.videoWriter[src].write(data)
