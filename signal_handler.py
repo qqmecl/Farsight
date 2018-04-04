@@ -3,15 +3,13 @@ import multiprocessing
 import common.settings as settings
 
 class SignalHandler:
-    def __init__(self, camera_process, object_detection_pools, ioloop):
-        self.camera_process = camera_process
+    def __init__(self, object_detection_pools, ioloop):
         self.object_detection_pools = object_detection_pools
         self.ioloop = ioloop
         self.logger = multiprocessing.get_logger()
 
     def signal_handler(self, signal, frame):
         settings.logger.info('shutdown...')
-        self.camera_process.terminate()
 
         for pool in self.object_detection_pools:
             pool.terminate()

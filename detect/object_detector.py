@@ -68,12 +68,13 @@ class ObjectDetector:
         while True:
             try:
                 frame,index,frame_time = input_q.get(timeout=1)
-                if index > 1:
-                    frame = cv.flip(frame,1)
+                # if index > 1:
+                #     frame = cv.flip(frame,1)
 
                 frame_truncated = frame[:, 320: , :]
 
                 last_time = time.time()
+                # results = []
                 results = self.detect_objects(frame_truncated,index,frame_time,hardware_mode)
                     # print()
                 # print("consume ",time.time()-last_time," for every second!")

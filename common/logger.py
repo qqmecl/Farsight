@@ -44,11 +44,13 @@ class Logger:
     minutes = time.strftime('%H_%M_%S/',time.localtime(time.time()))
     self.io_path = self.io_prefix + day
     if not os.path.exists(self.io_path):
+        # print(self.io_path)
         os.makedirs(self.io_path)
 
     self.io_path += minutes
 
     if not os.path.exists(self.io_path):
+        # print(self.io_path)
         os.makedirs(self.io_path)
 
   def evokeDoorClose(self):

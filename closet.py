@@ -1,4 +1,4 @@
-from camera_handler import CameraHandler
+from camera_handler import CameraController
 from network.httpd import make_http_app
 from signal_handler import SignalHandler
 from cart import Cart
@@ -145,17 +145,17 @@ class Closet:
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
         # 启动摄像头，创造Output文件夹
-        self.camera_ctrl_queue = Queue(1)
-        cam_handler = CameraHandler(self.camera_ctrl_queue, self.input_queues)
+        # self.camera_ctrl_queue = Queue(1)
+        self.camera_control = CameraController(input_queue = self.input_queues)
 
 
         # TODO:
         # 使用 Process 需要处理可能存在的进程崩溃问题
-        camera_process = Process(target=cam_handler.start)
-        camera_process.start()
+        # camera_process = Process(target=cam_handler.start)
+        # camera_process.start()
 
         # 对所有的摄像头发送standby指令，启动摄像头并且进入待命状态
-        self.camera_ctrl_queue.put(dict(cmd='standby', cameras=self.left_cameras + self.right_cameras,videoPath=None))
+        # self.camera_ctrl_queue.put(dict(cmd='standby', cameras=self.left_cameras + self.right_cameras,videoPath=None))
         settings.logger.warning('camera standby')
 
 
@@ -171,7 +171,7 @@ class Closet:
 
 
         # 捕获 CTRL-C
-        handler = SignalHandler(camera_process, object_detection_pools, tornado.ioloop.IOLoop.current())
+        handler = SignalHandler(object_detection_pools, tornado.ioloop.IOLoop.current())
         signal.signal(signal.SIGINT, handler.signal_handler)
 
         # 启动 web 服务
@@ -241,6 +241,8 @@ class Closet:
 
         self.firstFrameInit0 = False
         self.firstFrameInit1 = False
+        # self.cc = 0
+        # self.cc_time = time.time()
 
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
         self.updateScheduler.start()
@@ -278,6 +280,11 @@ class Closet:
         self.check_door_close_callback.start()
 
     def update(self):
+        # self.cc += 1
+        # if time.time() - self.cc_time > 1:
+        #     print(self.cc, 'update')
+        #     self.cc = 0
+        #     self.cc_time = time.time()
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
             #settings.logger.info("Checking time is: ",time.time()-self.debugTime)
 
@@ -483,13 +490,10 @@ class Closet:
     #发送摄像头工作指令消息
     def _start_imageprocessing(self):
         if self.curSide == self.IO.doorLock.LEFT_DOOR:
-            self.camera_ctrl_queue.put(dict(cmd='start', cameras=self.left_cameras,videoPath=settings.logger.getSaveVideoPath()))
+            self.camera_control.startCameras(self.left_cameras)
         else:
-            self.camera_ctrl_queue.put(dict(cmd='start', cameras=self.right_cameras,videoPath=settings.logger.getSaveVideoPath()))
+            self.camera_control.startCameras(self.right_cameras)
 
     #发送摄像头停止工作指令消息
     def _stop_imageprocessing(self):
-        if self.curSide == self.IO.doorLock.LEFT_DOOR:
-            self.camera_ctrl_queue.put(dict(cmd='stop', cameras=self.left_cameras,videoPath=None))
-        else:
-            self.camera_ctrl_queue.put(dict(cmd='stop', cameras=self.right_cameras,videoPath=None))
+        self.camera_control.stopCameras()
