@@ -209,7 +209,7 @@ class Screen:
 if __name__ == '__main__':
     screen = Screen()
 
-    #screen.change_to_page(Screen.INVENTORY_PAGE)
+    # screen.change_to_page(Screen.INVENTORY_PAGE)
 
     # screen.do_protocol_6(Screen.CART_COUNT_ADDRESS,0)
     # screen.do_protocol_6(Screen.CART_TOTAL_ADDRESS,0)

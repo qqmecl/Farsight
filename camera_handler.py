@@ -3,6 +3,7 @@ from threading import Thread
 import time
 import common.settings as settings
 import queue
+from detect.motion import MotionDetect
 import tornado.ioloop
 # from multiprocessing import Queue, Process
 
@@ -28,12 +29,12 @@ class VideoStream:
 
     def update(self):
         if self.isSending:
-            self.cnt+=1
-            cur = time.time()
-            if cur-self.last >1.0:
-                print(self.cnt," update every second for ",self.src)
-                self.last = cur
-                self.cnt=0
+            # self.cnt+=1
+            # cur = time.time()
+            # if cur-self.last >1.0:
+            #     print(self.cnt," update every second for ",self.src)
+            #     self.last = cur
+            #     self.cnt=0
 
             ret,frame = self.stream.read()
             if ret:
@@ -51,6 +52,15 @@ class CameraController:
         self.lastTime = time.time()
         self.count = 0
         self.videoWriter = {}
+        self.motions = []
+        self.motion_result = "None"
+        self.push_time = None
+        self.pull_time = None
+        self.motion_sign = 0
+
+
+        for i in range(2):
+            self.motions.append(MotionDetect(i))
 
         for i in range(4):
             self.cameras[i] = VideoStream(i,self.sendFrame)
@@ -63,13 +73,19 @@ class CameraController:
                                         , DEFAULT_FPS, (DEFAULT_WIDTH,DEFAULT_HEIGHT))#每个启动的摄像头有一个保存类
 
             self.cameras[src].setSending(True)
+            self.motion_sign = 1
 
     def stopCameras(self):
         for src in self.curCameras:
             self.cameras[src].setSending(False)
 
+        for i in range(2):
+            self.motions[i].reset()
+
         if settings.logger.checkSaveVideo():
             self.videoWriter[src].release()
+
+        self.motion_sign = 0
 
     def sendFrame(self,src,frame):
         try:
@@ -82,15 +98,30 @@ class CameraController:
             #     self.cnt=0 
             #     self.lastTime = time.time()
 
-            # if self.count % 2 and self.count % 3 and self.count % 5:
-            if not self.count % 3:
-                # print(self.count)
-                self.frames_queues.put((frame, src % 2, time.time()))
+            checkIndex = src % 2
+            frame_time = time.time()
+
+            if self.motion_sign:
                 # self.cnt += 1
                 # if time.time() - self.lastTime > 1:
                 #     print("send ",self.cnt," frame cur second")
                 #     self.cnt=0 
                 #     self.lastTime = time.time()
+                motionType = self.motions[checkIndex].checkInput(frame[:, 630:650],frame_time)
+                # print(motionType)
+                if motionType:
+                    self.motion_result = motionType
+                    self.push_time = self.motions[checkIndex].getMotionTime("PUSH")
+                    self.pull_time = self.motions[checkIndex].getMotionTime("PULL")
+
+            # if self.count % 2 and self.count % 3 and self.count % 5:
+            if not self.count % 3:
+                # print(self.count)
+                self.frames_queues.put((frame, checkIndex, frame_time, self.motion_result, self.push_time, self.pull_time))
+                self.motion_result = "None"
+                # self.push_time = None
+                # self.pull_time = None
+                # self.cn`= time.time()
             
             if settings.logger.checkSaveVideo():
                 self.videoWriter[src].write(frame)

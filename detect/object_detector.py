@@ -67,7 +67,7 @@ class ObjectDetector:
 
         while True:
             try:
-                frame,index,frame_time = input_q.get(timeout=1)
+                frame,index,frame_time, motionType, push_time, pull_time = input_q.get(timeout=1)
                 # if index > 1:
                 #     frame = cv.flip(frame,1)
 
@@ -87,7 +87,7 @@ class ObjectDetector:
                     print("object delte detect")
                     waste = detection_queue.get_nowait()
                 try:
-                    detection_queue.put_nowait([index,frame[:,rCenter-rcLen:rCenter+rcLen],results,frame_time])#not a good structure
+                    detection_queue.put_nowait([index,frame[:,rCenter-rcLen:rCenter+rcLen],results,frame_time, motionType, push_time, pull_time])#not a good structure
                 except queue.Full:
                     print('[FULL]')
                     pass

@@ -171,6 +171,6 @@ if __name__ == '__main__':
     #分为锁和门
     # handler.unlock(DoorLockHandler.LEFT_DOOR)  # 开左边锁，以打开门
 
-    # handler.reset_lock(DoorLockHandler.LEFT_DOOR)
-    # handler.reset_lock(DoorLockHandler.RIGHT_DOOR)
+    handler.reset_lock(DoorLockHandler.LEFT_DOOR)
+    handler.reset_lock(DoorLockHandler.RIGHT_DOOR)
     # print(handler.both_door_closed())

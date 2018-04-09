@@ -134,10 +134,10 @@ class Closet:
         # 每个摄像头启动一个进程池
         # motions = [MotionDetect()]*2
 
-        self.motions = []
+        # self.motions = []
 
-        for i in range(2):
-            self.motions.append(MotionDetect(i))
+        # for i in range(2):
+        #     self.motions.append(MotionDetect(i))
 
         # for input_q, index in zip(self.input_queues, indexs):
             # pool = Pool(self.num_workers, ObjectDetector, (input_q,settings.items,self._detection_queue))
@@ -280,11 +280,11 @@ class Closet:
         self.check_door_close_callback.start()
 
     def update(self):
-        # self.cc += 1
-        # if time.time() - self.cc_time > 1:
-        #     print(self.cc, 'update')
-        #     self.cc = 0
-        #     self.cc_time = time.time()
+    #     self.cc += 1
+    #     if time.time() - self.cc_time > 1:
+    #         print(self.cc, 'update')
+    #         self.cc = 0
+    #         self.cc_time = time.time()
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
             #settings.logger.info("Checking time is: ",time.time()-self.debugTime)
 
@@ -331,15 +331,20 @@ class Closet:
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
                 try:
                     result = self._detection_queue.get_nowait()
-                    self.calc_cnt +=1
-                    if time.time() - self.calcTime > 1:
-                       settings.logger.info("{} calc every second".format(self.calc_cnt))
-                       self.calcTime = time.time()
-                       self.calc_cnt = 0
+                    # self.calc_cnt +=1
+                    # if time.time() - self.calcTime > 1:
+                    #    settings.logger.info("{} calc every second".format(self.calc_cnt))
+                    #    self.calcTime = time.time()
+                    #    self.calc_cnt = 0
 
                     index = result[0]
                     frame = result[1]
                     frame_time = result[3]
+                    motionType = result[4]
+                    # print(motionType)
+                    push_time = result[5]
+                    pull_time = result[6]
+
 
                     if frame_time < self.debugTime:
                         #settings.logger.info("Check cached frame: ",frame_time,self.debugTime)
@@ -375,7 +380,7 @@ class Closet:
                         # cv2.imwrite("Output/"+str(self.debugTime)+str(index)+"first.png",frame)
 
                     # last_time = time.time()
-                    motionType = self.motions[checkIndex].checkInput(frame,frame_time)
+                    # motionType = self.motions[checkIndex].checkInput(frame,frame_time)
 
                     # settings.logger.info("Check input use time: ",time.time()-last_time)
 
@@ -386,22 +391,24 @@ class Closet:
                         id = detect[0]["id"]
 
                         if direction == "IN":
-                            now_time = self.motions[checkIndex].getMotionTime("PUSH")
+                            now_time = push_time
                         else:
-                            now_time = self.motions[checkIndex].getMotionTime("PULL")
+                            now_time = pull_time
 
                         now_num = detect[0]["num"]
+
                         intervalTime = now_time - self.lastDetectTime
-                        settings.logger.info("action interval is: {}".format(intervalTime))
+                        # settings.logger.info("action interval is: {}".format(intervalTime))
 
                         if intervalTime > 0.3:
+                            print('interval tttttt')
                             self.detectCache = None
                             self.detectCache=[detect[0]["id"],detect[0]["num"]]
                             if direction == "IN":
-                                settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
+                                # settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                                 self.detectCache.append(self.cart.remove_item(id))
                             else:
-                                settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
+                                # settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                                 self.cart.add_item(id)
                                 self.detectCache.append(True)
                         else:
@@ -438,8 +445,8 @@ class Closet:
     def _delay_do_order(self):
         self.close_door_success()
         self.updateScheduler.stop()
-        for i in range(2):
-            self.motions[i].reset()
+        # for i in range(2):
+        #     self.motions[i].reset()
 
         self.IO.change_to_processing_page()
         now_scale = self.IO.get_scale_val()
@@ -453,7 +460,7 @@ class Closet:
 
         # self.logger.info(order)
         strData = json.dumps(order)
-        self.pollData = self.encrypter.aes_cbc_encrypt(strData)
+        self.pollData = self.encrypter.aes_cbc_encrypt(strData, key)
         self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
         self.pollPeriod.start()
 

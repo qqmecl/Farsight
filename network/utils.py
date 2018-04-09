@@ -6,6 +6,8 @@ from cryptography.hazmat.primitives import padding
 import base64
 import json
 import common.settings
+from cryptography.hazmat.primitives import serialization
+
 
 # 128bits block size
 class Encrypter():
@@ -59,6 +61,51 @@ class Encrypter():
         dec_content = decryptor.update(enc_content) + decryptor.finalize()
         real_content = unpadder.update(dec_content) + unpadder.finalize()
         return real_content.decode()
+
+    # 解密函数
+    def decrypt_rsa(data, private_key_file_name = "../local/chen.pem"):
+        """
+        对原始数据文件使用指定的私钥进行解密，并将结果输出到目标文件中
+        :param src_file_name: 原始数据文件
+        :param dst_file_name: 解密输出文件
+        :param private_key_file_name: 用于解密的私钥
+        :return: 解密结果的bytes数组
+        """
+        # 读取原始数据
+        # data_file = open(src_file_name, 'rb')
+        # data = data_file.read()
+        # data_file.close()
+
+        # data = b'ZJ2vODjQbf7lNRhxFH70i9lg+FrhTKTvXDTPsovYoJauK9YL8uXmblD8AjKqVuEcNl3IxBJn6U4IcjqzN7upvbs6Un4n3iy9J4ovSsecQpj8HYtAxEiWZDxFLHc8JvwlKCVwFxoi7m8CZsy+w+tammeXSaWBc80f4oeSHA/iUlS2K4Dgw2Bi37uS5rojFCyi4OEnEOxjsoL4ia40tsEGPI/DTqnk6PICgy/SUZPXsBOF3iG+k+yolVXp9Vi31U2oI3D4Q+efYzA1ruT7nXixyPHjcfU+RAO09+oU3nzu+KnQFq5fBl+0d3pYS/xlcZUIHVjE9VXAewh0uSeDvbrxvQ=='
+
+        # 读取私钥数据
+        key_file = open(private_key_file_name, 'rb')
+        key_data = key_file.read()
+        key_file.close()
+
+        # 从私钥数据中加载私钥
+        private_key = serialization.load_pem_private_key(
+            key_data,
+            password=None,
+            backend=default_backend()
+        )
+
+        data = base64.b64decode(data)
+
+        # 使用私钥对数据进行解密，使用PKCS#1 v1.5的填充方式
+        out_data = private_key.decrypt(
+            data,
+            padding.PKCS1v15()
+        )
+        print(out_data)
+
+        # 将解密结果输出到目标文件中
+        # out_data_file = open(dst_file_name, 'wb')
+        # out_data_file.write(out_data)
+        # out_data_file.close()
+
+        # 返回解密结果
+        return out_data
 
 
 

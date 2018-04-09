@@ -23,11 +23,16 @@ class MotionDetect:
         self.motionTime={"PULL":0,"PUSH":0}
         # Reference Line Settings
         self.refLine = None
+        self.sign = 0
         # self.rL_cenX = 310
         # self.rL_half_width = 10
 
 
     def checkInput(self,frame,frame_time):
+        if self.sign != 40:
+            self.sign += 1
+            return "sign full"
+
         if self.refLine is None:
             # 第一帧的时候切割下原始参考线
             # self.refLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width]
@@ -82,12 +87,13 @@ class MotionDetect:
                 # cv.imwrite(writePath + str(self.frameCount)+".png",frame)
                 motionType = self.motion_dict[motion]
                 self.motionTime[motionType]=frame_time
+                # settings.logger.info('motion detect ttttt {}'.format(motionType))
                 return motionType
                 #img show with detected motion blob
                 # cv.imwrite(outputpath+str(frameCount)+".png",frame)
             #self.hand_last = self.hand_present
         
-        return "None"
+        return False
 
     def reset(self):
         self.refLine = None
