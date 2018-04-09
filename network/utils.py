@@ -63,7 +63,8 @@ class Encrypter():
         return real_content.decode()
 
     # 解密函数
-    def decrypt_rsa(data, private_key_file_name = "../local/chen.pem"):
+    def decrypt_rsa(self, data, private_key_file_name = "local/chen.pem"):
+        from cryptography.hazmat.primitives.asymmetric import padding
         """
         对原始数据文件使用指定的私钥进行解密，并将结果输出到目标文件中
         :param src_file_name: 原始数据文件
@@ -97,7 +98,7 @@ class Encrypter():
             data,
             padding.PKCS1v15()
         )
-        print(out_data)
+        sea_key = out_data.decode()[1:-1]
 
         # 将解密结果输出到目标文件中
         # out_data_file = open(dst_file_name, 'wb')
@@ -105,7 +106,7 @@ class Encrypter():
         # out_data_file.close()
 
         # 返回解密结果
-        return out_data
+        return sea_key
 
 
 

@@ -460,7 +460,7 @@ class Closet:
 
         # self.logger.info(order)
         strData = json.dumps(order)
-        self.pollData = self.encrypter.aes_cbc_encrypt(strData, key)
+        self.pollData = self.encrypter.aes_cbc_encrypt(strData, key = settings.sea_key)
         self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
         self.pollPeriod.start()
 
