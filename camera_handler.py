@@ -26,6 +26,7 @@ class VideoStream:
 
         self.last = time.time()
         self.cnt = 0
+        self.motionChecker = MotionDetect()
 
     def update(self):
         if self.isSending:

@@ -90,7 +90,7 @@ class Closet:
         self.http_port = config['http_port']
 
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
-        #self.initItemData()
+        self.initItemData()
        
     def initItemData(self):
         from common.util import get_mac_address
@@ -171,7 +171,8 @@ class Closet:
         self.cart = Cart(token, self.IO)
 
         self.mode ="normal_mode"
-        self.isStopCamera = True
+        self.isStopCamera = False
+        self.emptyQueueKeepCnt=0
 
         self.beforeScaleVal = self.IO.get_scale_val()
 
@@ -376,12 +377,12 @@ class Closet:
     #检查门是否关闭，此时只是关上了门，并没有真正锁上门
     def _check_door_close(self):
         if self.mode == "operator_mode":
-            if not self.IO.is_door_open(self.curSide):
+            if self.IO.is_door_lock():
                 self.check_door_close_callback.stop()
                 settings.logger.warning('Door Closed!')
                 self.restock_close_door_success()
         else:
-            if not self.IO.is_door_open(self.curSide):
+            if self.IO.is_door_lock():
                 if not self.isStopCamera:
                     if settings.speaker_on:
                         self.IO.say_goodbye()

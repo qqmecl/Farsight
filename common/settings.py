@@ -6,19 +6,20 @@ from common.logger import Logger
 INIT_URL = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
 ORDER_URL = 'https://www.hihigo.shop/api/v1/order'
 items = {
-    '6921168509256': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
-    '6956416200067': dict(name='美汁源果粒橙', price=5.0, weight=487.0),
-    '6920202888883': dict(name='红牛', price=8.0, weight=298.0),
-    '6902538006100': dict(name='脉动', price=6.5, weight=546.0),
-    '6921581596048': dict(name='三得利乌龙茶', price=6.0, weight=528.0),
-    '6920459989463': dict(name='冰糖雪梨', price=6.0, weight=549.0),
-    '4891028705949': dict(name='维他柠檬茶', price=7.0, weight=552.0),
-    '6901939621271': dict(name='雪碧听装', price=3.5, weight=343.0),
-    '6901939621608': dict(name='可口可乐听装', price=3.5, weight=354.0),
-    '6925303730574': dict(name='统一阿萨姆奶茶', price=6.5, weight=550.0),
-    '6925303754952': dict(name='小茗同学黄色', price=6.5, weight=546.0),
-    '6925303714857': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
+    '6921168509256001': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
+    '6956416200067001': dict(name='美汁源果粒橙', price=5.0, weight=487.0),
+    '6920202888883001': dict(name='红牛', price=8.0, weight=298.0),
+    '6902538006100001': dict(name='脉动', price=6.5, weight=546.0),
+    '6921581596048001': dict(name='三得利乌龙茶', price=6.0, weight=528.0),
+    '6920459989463001': dict(name='冰糖雪梨', price=6.0, weight=549.0),
+    '4891028705949001': dict(name='维他柠檬茶', price=7.0, weight=552.0),
+    '6901939621271001': dict(name='雪碧听装', price=3.5, weight=343.0),
+    '6901939621608001': dict(name='可口可乐听装', price=3.5, weight=354.0),
+    '6925303730574001': dict(name='统一阿萨姆奶茶', price=6.5, weight=550.0),
+    '6925303754952001': dict(name='小茗同学黄色', price=6.5, weight=546.0),
+    '6925303714857001': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
 }
+
 http_port = 5000
 sea_key = None
 
