@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-
 # import time
 
 class DynamicTrack:
@@ -32,6 +31,7 @@ class DynamicTrack:
                 
         if MaxC is not None:
             (x, y, w, h) = cv2.boundingRect(MaxC)
-            imgROI = img[y:y + h, x:x + w]
+            imgROI = frame[y:y + h, x:x + w]
             return imgROI
+            
         return None

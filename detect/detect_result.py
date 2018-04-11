@@ -1,6 +1,6 @@
 import time
 import multiprocessing
-from common import settings
+import common.settings as settings
 
 class Queue:
     def __init__(self,limit):
@@ -28,30 +28,43 @@ class Queue:
         for i in range(len(self.items)):
             print(self.items[i])
 
-#Theoritically,the ac
-#single pipeline check about detecting.
+
 class DetectResult:
     def __init__(self):
-        self.window = Queue(30)
+        self.window = Queue(12)
         self.logger = multiprocessing.get_logger()
         self.reset()
         self.resetDetect()
         self.curMarkTime = time.time()
+        
+    def getMotionTime(self,_type):
+        return self.motionTime[_type]
 
-    def checkData(self,index,data):
+    def checkData(self,index,data,frame_time):
         for motion,detects in data.items():
-            count=0
-            for val in detects:
-            #(confidence,itemId,cur_time) one
-                (_id,_time)=(val[1],val[2])
-                #settings.logger.info('check ,{0},{1},by time ,{2}'.format(index,settings.items[_id]["name"],_time))
-                count+=1
+            
+            if motion is not "None":
+                self.motionTime[motion]=frame_time
 
+            # for val in detects:
+                # (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
+                # settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
+                
+
+            
+            # if count >0:
             self.window.enqueue(detects)
+
+            # if count >0:
+            #     print("begin")
+            #     self.window.print()
+            #     print("over")
+
 
             # if motion is not "None":
             #     print("current motion is: ",motion)
             if motion == "PUSH":#Action start or Action done.
+                # print("Got push back action!!!")
                 if self.detectState == "PULL_CHECKING":
                     # print("From push state detect pull checking last!!!!!")
                     self.takeOutCheck()
@@ -81,6 +94,7 @@ class DetectResult:
                 if self.lastMotion == "PUSH":
                     self.detectState = "PULL_CHECKING"
                     self.actionTime = time.time()
+                    # print("Got pull action!!!")
                     # print("action time is: ",self.actionTime)
 
                     limit=3#limit 
@@ -127,15 +141,7 @@ class DetectResult:
     def getCurrentDetection(self,isLast):#these parameters would significantly improve the performance of detect rate!
         id,num,_time = self.getMaxNum()
 
-        # if isLast:
-        # if id is not None:
-            # print(settings.items[id]["name"],num,_time)
-        #     else:
-        #         print(id,num,_time)
-        
-        # threshold1,threshold2,threshold3 = 3,4,3
-        
-        back_threshold,out_inTimethreshold,out_timeout_threshold = 0,1,2
+        back_threshold,out_inTimethreshold,out_timeout_threshold = 1,2,1
 
         if id is not None:
             if isLast:#in item check
@@ -145,7 +151,6 @@ class DetectResult:
                     self.reset()
             else:#out item check
                 now_time = time.time()
-
                 if now_time-self.actionTime < 1:#25*0.7=17
                     if num > out_inTimethreshold: # 原来是4
                         # print("less time check: ",num)
@@ -157,10 +162,7 @@ class DetectResult:
                     else:
                         # print("out time out is: ",now_time)
                         self.reset()
-
         return None,None,None
-
-#Dynamic adjusting phase.
 
     def loadData(self,detects):
         for val in detects:
@@ -178,7 +180,6 @@ class DetectResult:
         self.lastMotion = None
         for k,item in settings.items.items():
             self.processing[k]=dict(num=0,time=0)
-
 
     def setActionTime(self):
         self.curMarkTime = time.time()
@@ -200,6 +201,7 @@ class DetectResult:
 
     def resetDetect(self):
         self.detect=[]
+        self.motionTime={"PULL":0,"PUSH":0}
 
 
 
