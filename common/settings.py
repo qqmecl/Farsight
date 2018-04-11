@@ -20,6 +20,7 @@ items = {
     '6925303714857': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
 }
 http_port = 5000
+sea_key = None
 
 welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,'D8:9E:F3:1D:EE:7C': 0x0D,'D8:9E:F3:1E:13:8A': 0x33}
 WELCOME_PAGE = welcome_page.get(get_mac_address(), 0x33)

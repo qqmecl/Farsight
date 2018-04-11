@@ -23,8 +23,8 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 		self.closet = closet
 		self.encrypter=Encrypter()
 
-	def parseData(self, psData):
-		x = self.encrypter.aes_cbc_decrypt(psData)
+	def parseData(self, psData, sea_key):
+		x = self.encrypter.aes_cbc_decrypt(psData, key = sea_key)
 		params = x.split('&')
 		paramsDict = {}
 		for i in params:
@@ -53,9 +53,9 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 		psp = json.loads((self.request.body).decode())
 		settings.logger.info('{}'.format(psp))
 		#data = (self.request.body).decode()
-		# print(psp['aes_token'])
-		sea_key = self.encrypter.decrypt_rsa(psp['sea_key'])
-		paramsDict = self.parseData(psp['aes_token'], sea)
+		# print(psp['sea_key'].encode())
+		settings.sea_key = self.encrypter.decrypt_rsa(psp['sea_key'].encode())
+		paramsDict = self.parseData(psp['aes_token'], settings.sea_key)
 		settings.logger.info(''.format(paramsDict))
 		secret = paramsDict.get('secret')
 		side = paramsDict.get('side', 'left')
