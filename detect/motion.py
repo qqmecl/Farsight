@@ -37,8 +37,10 @@ class MotionDetect:
         if (self.hand_present != self.hand_last) and (abs(self.hand_present) == 6): 
             motion = self.hand_last - self.hand_present
             if motion!= 0:
-                motion = motion / abs(motion) # 将motion归一为 1 或 -1
-                self.hand_last = self.hand_present # 只在此处存储hand_last，保证它为 -6 或 6
+                motion = motion / abs(motion)
+                self.hand_last = self.hand_present
+
+                # print("check motion: ",self.motion_dict[motion])
                 return self.motion_dict[motion]
         
         return "None"
@@ -74,27 +76,3 @@ class MotionDetect:
             return 1
         else:
             return 0
-    
-if __name__ == "__main__":
-    motion = MotionDetect()
-    #This would check the success rate of Pull Push judge
-
-    # src_file_name = "../../data/input/left_up2018_01_24_12_13_140.avi"
-    src_file_name = "./data/input/left_up2018_01_25_14_52_420.avi"
-    # outputpath = "../../data/output/"
-    cap = cv.VideoCapture(src_file_name)
-
-    ret, frame = cap.read()
-    count = 0
-    import time
-    t1 = time.time()
-    while ret:
-        count += 1
-        # print("frame is: ",frame)
-
-        if count > 40:
-            motion.checkInput(frame)
-        ret, frame = cap.read()
-    t2 = time.time()
-    print ('time used: %.5fs' %(t2-t1))
-    cap.release()
