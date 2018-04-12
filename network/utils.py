@@ -63,7 +63,7 @@ class Encrypter():
         return real_content.decode()
 
     # 解密函数
-    def decrypt_rsa(self, data, private_key_file_name = "local/chen.pem"):
+    def decrypt_rsa(self, data, private_key_file_name = "local/farsight.pem"):
         from cryptography.hazmat.primitives.asymmetric import padding
         """
         对原始数据文件使用指定的私钥进行解密，并将结果输出到目标文件中

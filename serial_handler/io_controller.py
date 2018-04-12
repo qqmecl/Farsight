@@ -5,6 +5,7 @@ from serial_handler.scale import WeightScale
 from serial_handler.screen import Screen
 import common.settings as settings
 import tornado.ioloop
+import time
 
 class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     def __init__(self):
@@ -82,7 +83,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         if settings.machine_state == "new":
             return self.doorLock.is_door_open(curside)
         else:
-            return self.doorLock.old_is_door_open_(curside)
+            return self.doorLock.old_is_door_open(curside)
 
 
     def is_door_lock(self, debugTime):
