@@ -40,7 +40,7 @@ class DoorLockHandler:
     #Y5 THANK YOU FOR COMMING
     #Y6 NULL
 
-    
+
     #1 right lock down
     #2 right lock up
     #3 right door open
@@ -68,9 +68,9 @@ class DoorLockHandler:
             检测门是否打开
         '''
         # with synchronized(self.lock):
-        
+
         state = self.checkAllState()
-        
+
         if curside & 1:     #1 is right_door
             return not state ^ 105
         else:
@@ -82,7 +82,7 @@ class DoorLockHandler:
 
     def lock_up_door_close(self, curside):
         state = self.checkAllState()
-        
+
         if curside & 1:
             return not state ^ 89
         else:
@@ -90,13 +90,28 @@ class DoorLockHandler:
 
     def lock_down_door_open(self, curside):
         state = self.checkAllState()
-        
+
         if curside & 1:
             return not state ^ 169
         else:
             return not state ^ 154
 
+    def old_is_door_open(self, side):
+        '''
+            检测门是否打开
+        '''
+        # with synchronized(self.lock):
+        self._send_door_statuscheck()
+        data = self._read_status()
 
+        other_side = 1 - side  # 1 -> 0, 0 -> 1
+        if data & (other_side + 1) == 0:
+            # 另外一边门开了
+            # 后台报警
+            # raise DoorError('另外一边门怎么开了？？')TODO
+            pass
+
+        return data & (side + 1) == 0
 
 
     #解开锁的状态，以开启门，并过2s之后重置电平信号
@@ -132,9 +147,9 @@ class DoorLockHandler:
 
     #     return data & 3 == 3
 
-    # def _send_door_statuscheck(self):
-    #     array = [1, 2, 0, 0, 0, 4]
-    #     self._send_data(array)
+    def _send_door_statuscheck(self):
+        array = [1, 2, 0, 0, 0, 4]
+        self._send_data(array)
 
 
     # #检测某一边锁是否是高电平信号
@@ -162,9 +177,9 @@ class DoorLockHandler:
     #     array = [1, 1, 0, 0, 0, 4]
     #     self._send_data(array)
 
-    
 
-    
+
+
 
 if __name__ == '__main__':
     handler = DoorLockHandler()

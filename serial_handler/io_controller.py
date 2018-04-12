@@ -3,6 +3,7 @@ from serial_handler.door_lock import DoorLockHandler
 from serial_handler.speaker import Speaker
 from serial_handler.scale import WeightScale
 from serial_handler.screen import Screen
+import common.settings as settings
 import tornado.ioloop
 
 class IO_Controller:#统一管理所有IO设备，增加代码清晰度
@@ -77,17 +78,33 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     	Door的接口
     '''
     def is_door_open(self, curside):
-        return self.doorLock.is_door_open(curside)
 
-    def is_door_lock(self):
-        return self.doorLock.is_door_lock()
+        if settings.machine_state == "new":
+            return self.doorLock.is_door_open(curside)
+        else:
+            return self.doorLock.old_is_door_open_(curside)
+
+
+    def is_door_lock(self, debugTime):
+        # return self.doorLock.is_door_lock()
+        if settings.machine_state == "new":
+            return self.doorLock.is_door_lock()
+        else:
+            if time.time() - debugTime > 7:
+                return True
+            else:
+                return False
+
 
     # def both_door_closed(self, curside):
     #     return self.doorLock.both_door_closed() #peihuo
 
     def lock_up_door_close(self, curside):
-        return self.doorLock.lock_up_door_close(curside)
-
+        if settings.machine_state == "new":
+            return self.doorLock.lock_up_door_close(curside)
+        else:
+            return True
+            
     def lock_down_door_open(self, curside):
         return self.doorLock.lock_down_door_open(curside)
 

@@ -51,12 +51,12 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 
 	def post(self):
 		psp = json.loads((self.request.body).decode())
-		settings.logger.info('{}'.format(psp))
+		# settings.logger.info('{}'.format(psp))
 		#data = (self.request.body).decode()
 		# print(psp['sea_key'].encode())
 		settings.sea_key = self.encrypter.decrypt_rsa(psp['sea_key'].encode())
 		paramsDict = self.parseData(psp['aes_token'], settings.sea_key)
-		settings.logger.info(''.format(paramsDict))
+		# settings.logger.info(''.format(paramsDict))
 		secret = paramsDict.get('secret')
 		side = paramsDict.get('side', 'left')
 		token = paramsDict.get('token')
@@ -64,7 +64,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 		itemId = paramsDict.get('itemId', '000')
 		num = int(paramsDict.get('num', 0))
 
-		settings.logger.info('{0} {1} {2} {3} {4} {5}'.format(secret, side, token, role, itemId, num))
+		# settings.logger.info('{0} {1} {2} {3} {4} {5}'.format(secret, side, token, role, itemId, num))
 		# settings.logger.info(data)
 		# settings.logger.info(data.get('itemId','000'))
 		self._handle_door(secret, side, token,itemId,num, role)
