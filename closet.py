@@ -371,12 +371,12 @@ class Closet:
     #检查门是否关闭，此时只是关上了门，并没有真正锁上门
     def _check_door_close(self):
         if self.mode == "operator_mode":
-            if self.IO.is_door_lock(self.debugTime):
+            if self.IO.is_door_lock(curSide = self.curSide):
                 self.check_door_close_callback.stop()
                 settings.logger.warning('Door Closed!')
                 self.restock_close_door_success()
         else:
-            if self.IO.is_door_lock(self.debugTime):
+            if self.IO.is_door_lock(curSide = self.curSide):
                 if not self.isStopCamera:
                     if settings.speaker_on:
                         self.IO.say_goodbye()
@@ -389,6 +389,8 @@ class Closet:
                         self.emptyQueueKeepCnt +=1
                     if self.emptyQueueKeepCnt == 4:
                         settings.logger.warning('Door Closed!')
+                        for i in range(2):
+                            self.detectResults[i].reset()
                         self.check_door_close_callback.stop()
                         self._delay_do_order()
 

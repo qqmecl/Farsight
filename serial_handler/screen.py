@@ -210,7 +210,7 @@ class Screen:
 
 
 if __name__ == '__main__':
-    screen = Screen(port="/dev/ttyS1")
+    screen = Screen(port="/dev/ttyS5")
 
     # screen.change_to_page(Screen.INVENTORY_PAGE)
 
@@ -222,8 +222,8 @@ if __name__ == '__main__':
     screen.change_to_page(Screen.WELCOME_PAGE)
     
 
-    for i in range(7):
-        screen.clear_line_content(i)
+    # for i in range(7):
+    #     screen.clear_line_content(i)
 
     # screen.update_static_info()
 

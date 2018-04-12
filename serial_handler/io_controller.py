@@ -86,15 +86,15 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
             return self.doorLock.old_is_door_open(curside)
 
 
-    def is_door_lock(self, debugTime):
+    def is_door_lock(self, debugTime = None, curSide = None):
         # return self.doorLock.is_door_lock()
         if settings.machine_state == "new":
             return self.doorLock.is_door_lock()
         else:
-            if time.time() - debugTime > 7:
-                return True
+            if debugTime:
+                return True if time.time() - debugTime > 7 else False
             else:
-                return False
+                return not self.is_door_open(curSide)
 
 
     # def both_door_closed(self, curside):
