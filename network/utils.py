@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives import serialization
 
 # 128bits block size
 class Encrypter():
-    def aes_cbc_encrypt(self, message, key = '20607etgrttplant'):
+    def aes_cbc_encrypt(self, message, key):
         '''
         use AES CBC to encrypt message, using key and init vector
         :param message: the message to encrypt
@@ -36,7 +36,7 @@ class Encrypter():
         b64 = base64.b64encode(enc_content)
         return b64.decode()
 
-    def aes_cbc_decrypt(self, content, key = '20607etgrttplant'):
+    def aes_cbc_decrypt(self, content, key):
         '''
         use AES CBC to decrypt message, using key
         :param content: the encrypted content using the above protocol

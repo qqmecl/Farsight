@@ -43,4 +43,6 @@ SAVE_VIDEO_OUTPUT = config_parser.getboolean("maintain_switch","save_video_outpu
 
 speaker_on = config_parser.getboolean("maintain_switch","speaker_on")
 
+machine_state = config_parser.get("run_mode","hardware")
+
 logger = Logger(config_parser.get("run_mode","client_mode"))

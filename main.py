@@ -27,12 +27,8 @@ if __name__ == '__main__':
     parser.add_argument('--mock-screen', action='store_true', help='是否 MOCK 显示屏')
     parser.set_defaults(mock_screen=False)
 
-    parser.add_argument('--run-mode', type=str, help='set running mode')
-    parser.set_defaults(run_mode="CPU")
-
     parser.add_argument('--sell-mode', type=str, help='set running mode')
     parser.set_defaults(run_mode="develop")
-
 
     parser.add_argument('--speaker-port', type=str, help='扬声器 COM 口')
     parser.set_defaults(speaker_port="/dev/ttyS0")

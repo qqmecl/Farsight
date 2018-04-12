@@ -32,7 +32,7 @@ class Cart:
         else:
             self.items[item_id] = 1
 
-        settings.logger.info("Cart add action!!!!!!!!!!!!!")
+        # settings.logger.info("Cart add action!!!!!!!!!!!!!")
         # if self.items[item_id] > 0:
         self.IO.update_screen_item(True,item_id)
 
@@ -43,7 +43,7 @@ class Cart:
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
 
-            settings.logger.info("Trully remove item!!")
+            # settings.logger.info("Trully remove item!!")
 
             self.IO.update_screen_item(False,item_id)
 

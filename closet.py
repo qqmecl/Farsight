@@ -1,4 +1,4 @@
-from camera_handler import CameraController
+from cameraController import CameraController
 from network.httpd import make_http_app
 from signal_handler import SignalHandler
 from cart import Cart
@@ -82,7 +82,6 @@ class Closet:
         self.num_workers = config['num_workers']
         self.left_cameras = config['left_cameras']
         self.right_cameras = config['right_cameras']
-        self.run_mode = config['run_mode']
         self.door_port = config['door_port']
         self.speaker_port = config['speaker_port']
         self.scale_port = config['scale_port']
@@ -108,6 +107,7 @@ class Closet:
             result[res['goods_code']] = c
         settings.items = result
         settings.items["0000000000000001"] = dict(name='empty_hand', price=0, weight=184.0)
+        #print(settings.items)
 
 
     def start(self):
@@ -116,7 +116,7 @@ class Closet:
         object_detection_pools = []
         indexs = self.left_cameras + self.right_cameras
 
-        pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue,self.run_mode))
+        pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
         # 启动摄像头，创造Output文件夹
@@ -162,7 +162,6 @@ class Closet:
                 result = self._detection_queue.get_nowait()
             except queue.Empty:
                 break
-
 
         settings.logger.evokeDoorOpen()
 
