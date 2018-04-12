@@ -6,7 +6,7 @@ import queue
 from detect.motion import MotionDetect
 import tornado.ioloop
 
-if settings.machine_state == "newMachine":
+if settings.machine_state == "new":
     DEFAULT_WIDTH = 1280
     DEFAULT_HEIGHT = 720
 else:
@@ -20,7 +20,7 @@ class VideoStream:
         self.src = src
         self.stream = cv2.VideoCapture(settings.usb_cameras[src])
 
-        if settings.machine_state == "newMachine":
+        if settings.machine_state == "new":
             self.stream.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc(*'MJPG'))
 
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH,DEFAULT_WIDTH)
@@ -51,6 +51,8 @@ class VideoStream:
 
     def setSending(self,state):
         self.isSending = state
+        if not state:
+            self.motionChecker.reset()
 
 
 class CameraController:

@@ -151,7 +151,7 @@ class Closet:
 
         settings.logger.evokeDoorOpen()
 
-        self.door_token = token      #chen
+        self.door_token = token
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
         self.cart = Cart(token, self.IO)
 
@@ -221,15 +221,12 @@ class Closet:
 
     def update(self):
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
-            #settings.logger.info("Checking time is: ",time.time()-self.debugTime)
 
             if self.IO.is_door_lock(self.debugTime):
                 #now_time = time.time()
                 settings.logger.info("Time Out time is: {}".format(time.time()-self.debugTime))
 
-                #已经检查足够多次，重置状态机，并且直接返回
                 settings.logger.warning('open door timeout')
-                # settings.logger.info(self.state)
                 self.IO.change_to_welcome_page()
                 self.updateScheduler.stop()
                 self.door_open_timed_out()
@@ -242,15 +239,17 @@ class Closet:
                     self.open_leftdoor_success()
                 else:
                     self.open_rightdoor_success()
-                settings.logger.warning('door is opened by user')
+                # settings.logger.warning('door is opened by user')
                 self.debugTime = time.time()
                 settings.logger.info("OpenDoor time is {}".format(self.debugTime))
 
-               
                 self._start_imageprocessing()
 
-                self.lastActionScale = self.IO.get_scale_val()
+                for i in range(2):
+                    self.detectResults[i].reset()
+                    self.detectResults[i].resetDetect()
 
+                self.lastActionScale = self.IO.get_scale_val()
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
@@ -290,7 +289,7 @@ class Closet:
 
             now_num = detect[0]["num"]
             intervalTime = now_time - self.lastDetectTime
-            settings.logger.info("action interval is: {}".format(intervalTime))
+            # settings.logger.info("action interval is: {}".format(intervalTime))
 
             if intervalTime > 0.5:
                 self.detectCache = None
@@ -299,17 +298,17 @@ class Closet:
                     settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                     self.detectCache.append(self.cart.remove_item(id))
 
-                    now_scale = self.IO.get_scale_val()
-                    print("put in scale change is: ",now_scale-self.lastActionScale)
-                    self.lastActionScale = now_scale
+                    # now_scale = self.IO.get_scale_val()
+                    # print("put in scale change is: ",now_scale-self.lastActionScale)
+                    # self.lastActionScale = now_scale
                 else:
                     settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                     self.cart.add_item(id)
                     self.detectCache.append(True)
 
-                    now_scale = self.IO.get_scale_val()
-                    print("take out scale change is: ",now_scale-self.lastActionScale)
-                    self.lastActionScale = now_scale
+                    # now_scale = self.IO.get_scale_val()
+                    # print("take out scale change is: ",now_scale-self.lastActionScale)
+                    # self.lastActionScale = now_scale
             else:
                 if self.detectCache is not None:
                     #fix camera result
