@@ -44,7 +44,6 @@ class ObjectDetector:
             if tensor_name in all_tensor_names:
                 self.tensor_dict[key] = tf.get_default_graph().get_tensor_by_name(tensor_name)
 
-
         self.frameCount = 0
         self.confidenceThreshold=0.9
         self.items = items
@@ -77,12 +76,14 @@ class ObjectDetector:
                         frame_truncated = np.concatenate((frame_truncated,fill),0)
 
                     results = self.detect_objects(frame_truncated,index,frame_time)
-                    if len(results) > 1:
-                        print(results)
+                    # if len(results) > 0:
+                        # print(results)
+                        # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
+
                     # if results:
                         # settings.logger.info('{}'.format(results[0][1]))
                 # if len(results) >0:
-                    # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
+                     # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
 
                     if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
                         print("object delte detect")
@@ -97,12 +98,12 @@ class ObjectDetector:
                 pass
 
     ##当前只考虑单帧的判断
-    def detect_objects(self,frame,index,frame_time):
+    def detect_objects(self,originalFrame,index,frame_time):
         self.frameCount += 1
         results=[]
-
-        rows = frame.shape[0]
-        cols = frame.shape[1]
+        rows = originalFrame.shape[0]
+        cols = originalFrame.shape[1]
+        frame = originalFrame.copy()
         frame = cv.resize(frame, (300, 300))
         frame = frame[:, :, [2, 1, 0]]
 
@@ -115,8 +116,10 @@ class ObjectDetector:
         for i in range(out['num_detections']):
             confidence = out['detection_scores'][i]
             if confidence > self.confidenceThreshold:
-                # bbox = out['detection_boxes'][i]
-                # XAxis = (bbox[1]+bbox[3])/2*cols
+                bbox = out['detection_boxes'][i]
+                # cv.rectangle(originalFrame,
+                    # (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
+                        # (0,0,255))
                 itemId = self.classNames[out['detection_classes'][i]]
                 results.append((confidence,itemId,frame_time))
       

@@ -11,24 +11,11 @@ if __name__ == '__main__':
     parser.add_argument('-num-w', '--num-workers', type=int, default=1, help='每个摄像头对应的后台进行图像识别的进程数')
 
     parser.add_argument('--left-cameras', nargs='+', type=int, help='设置左边摄像头编号列表，-1 为空')
-    #parser.set_defaults(left_cameras=[0])#Maybe adjustable
-    parser.set_defaults(left_cameras=[0,1])#Maybe adjustable
+    parser.set_defaults(left_cameras=[0,1])
 
     parser.add_argument('--right-cameras', nargs='+', type=int, help='设置右边摄像头编号列表，-1 为空')
     parser.set_defaults(right_cameras=[2, 3])
-    #parser.set_defaults(right_cameras=[2])
 
-    parser.add_argument('--mock-door', action='store_true', help='是否 MOCK 门和锁')
-    parser.set_defaults(mock_door=False)
-    parser.add_argument('--mock-speaker', action='store_true', help='是否 MOCK 扬声器')
-    parser.set_defaults(mock_speaker=False)
-    parser.add_argument('--mock-scale', action='store_true', help='是否 MOCK 重量计')
-    parser.set_defaults(mock_scale=False)
-    parser.add_argument('--mock-screen', action='store_true', help='是否 MOCK 显示屏')
-    parser.set_defaults(mock_screen=False)
-
-    parser.add_argument('--sell-mode', type=str, help='set running mode')
-    parser.set_defaults(run_mode="develop")
 
     parser.add_argument('--speaker-port', type=str, help='扬声器 COM 口')
     parser.set_defaults(speaker_port="/dev/ttyS0")
@@ -42,8 +29,6 @@ if __name__ == '__main__':
     parser.add_argument('--screen-port', type=str, help='显示屏 COM 口')
     parser.set_defaults(screen_port="/dev/ttyS1")
 
-    parser.add_argument('--http-port', type=str, help='HTTP 监听端口')
-    parser.set_defaults(http_port='5000')
     args = parser.parse_args()
 
     if not os.path.exists('/home/votance/Projects/Output'):

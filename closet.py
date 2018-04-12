@@ -86,7 +86,6 @@ class Closet:
         self.speaker_port = config['speaker_port']
         self.scale_port = config['scale_port']
         self.screen_port = config['screen_port']
-        self.http_port = config['http_port']
 
         self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
         self.initItemData()
@@ -94,11 +93,8 @@ class Closet:
     def initItemData(self):
         from common.util import get_mac_address
         id = {'uuid': get_mac_address()}
-
         response = requests.get(settings.INIT_URL,params=id)
-        #settings.logger.info('{}'.format(response))
         data = response.json()
-        #settings.logger.info('{}'.format(data))
         result = {}
         for res in data:
             a = float(res['price'])
@@ -107,8 +103,6 @@ class Closet:
             result[res['goods_code']] = c
         settings.items = result
         settings.items["0000000000000001"] = dict(name='empty_hand', price=0, weight=184.0)
-        #print(settings.items)
-
 
     def start(self):
         self.lastDetectTime = time.time()
@@ -119,8 +113,6 @@ class Closet:
         pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue))
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
-        # 启动摄像头，创造Output文件夹
-        # self.camera_ctrl_queue = Queue(1)
         self.camera_control = CameraController(input_queue = self.input_queues)
 
         settings.logger.warning('camera standby')
@@ -132,14 +124,12 @@ class Closet:
         handler = SignalHandler(object_detection_pools, tornado.ioloop.IOLoop.current())
         signal.signal(signal.SIGINT, handler.signal_handler)
 
-        # 启动 web 服务
-        app = make_http_app(self)
-        app.listen(self.http_port)
+        make_http_app(self).listen(5000)
 
         self.init_success()
+
         print("Start success")
 
-        # 最后：启动 tornado ioloop
         tornado.ioloop.IOLoop.current().start()
 
 
@@ -263,6 +253,8 @@ class Closet:
                
                 self._start_imageprocessing()
 
+                self.lastActionScale = self.IO.get_scale_val()
+
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
@@ -310,10 +302,18 @@ class Closet:
                 if direction == "IN":
                     settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                     self.detectCache.append(self.cart.remove_item(id))
+
+                    now_scale = self.IO.get_scale_val()
+                    print("put in scale change is: ",now_scale-self.lastActionScale)
+                    self.lastActionScale = now_scale
                 else:
                     settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                     self.cart.add_item(id)
                     self.detectCache.append(True)
+
+                    now_scale = self.IO.get_scale_val()
+                    print("take out scale change is: ",now_scale-self.lastActionScale)
+                    self.lastActionScale = now_scale
             else:
                 if self.detectCache is not None:
                     #fix camera result
