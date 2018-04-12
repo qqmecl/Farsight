@@ -9,7 +9,7 @@ class Speaker:#简单触发器
     '''
         控制扬声器发声
     '''
-    def __init__(self,port="/dev/ttyS0"):
+    def __init__(self,port=settings.speaker_port):
         rate = 9600
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
 

@@ -17,18 +17,6 @@ if __name__ == '__main__':
     parser.set_defaults(right_cameras=[2, 3])
 
 
-    parser.add_argument('--speaker-port', type=str, help='扬声器 COM 口')
-    parser.set_defaults(speaker_port="/dev/ttyS0")
-
-    parser.add_argument('--door-port', type=str, help='门和锁的 COM 口')
-    parser.set_defaults(door_port="/dev/ttyS0")
-
-    parser.add_argument('--scale-port', type=str, help='重量计 COM 口')
-    parser.set_defaults(scale_port="/dev/ttyS4")
-
-    parser.add_argument('--screen-port', type=str, help='显示屏 COM 口')
-    parser.set_defaults(screen_port="/dev/ttyS1")
-
     args = parser.parse_args()
 
     if not os.path.exists('/home/votance/Projects/Output'):

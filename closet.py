@@ -82,12 +82,8 @@ class Closet:
         self.num_workers = config['num_workers']
         self.left_cameras = config['left_cameras']
         self.right_cameras = config['right_cameras']
-        self.door_port = config['door_port']
-        self.speaker_port = config['speaker_port']
-        self.scale_port = config['scale_port']
-        self.screen_port = config['screen_port']
 
-        self.IO = IO_Controller(self.door_port,self.speaker_port,self.scale_port,self.screen_port)
+        self.IO = IO_Controller()
         self.initItemData()
        
     def initItemData(self):

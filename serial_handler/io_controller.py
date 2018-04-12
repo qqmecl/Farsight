@@ -6,23 +6,17 @@ from serial_handler.screen import Screen
 import tornado.ioloop
 
 class IO_Controller:#统一管理所有IO设备，增加代码清晰度
-    def __init__(self, door_port,speaker_port,scale_port,screen_port ):
+    def __init__(self):
         self.blocking = False
 
-        # 连接各个串口
-        self.speaker = Speaker(port=speaker_port)
-        self.scale = WeightScale(port=scale_port)
-        self.screen = Screen(port=screen_port)
-
-        print("speaker port {} scale port {} screen port {}".format(speaker_port,scale_port,screen_port))
-
+        #连接各个串口
+        self.speaker = Speaker()
+        self.scale = WeightScale()
+        self.screen = Screen()
         #门和锁
-        self.doorLock = DoorLockHandler(port=door_port)
-
+        self.doorLock = DoorLockHandler()
         self.val_scale = self._check_weight_scale()
         # self.envoked = False
-
-
 
     def start(self):
         # scaleUpdate = tornado.ioloop.PeriodicCallback(self._check_weight_scale,50)

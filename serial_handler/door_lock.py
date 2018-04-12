@@ -5,6 +5,7 @@ import threading
 import time
 import functools
 import tornado.ioloop
+import common.settings as settings
 
 # 开某一边门之前要判断另一边锁是否打开，若打开，则不能开锁
 # 此处分门和智能锁，工控机接收到信号之后先开锁
@@ -15,7 +16,7 @@ class DoorLockHandler:
     RIGHT_DOOR = 1
 
     #串口地址可配置
-    def __init__(self, port="/dev/ttyS0"):
+    def __init__(self, port=settings.door_port):
         rate = 9600
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
         # self.lock = threading.Lock()
