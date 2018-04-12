@@ -51,6 +51,8 @@ class VideoStream:
 
     def setSending(self,state):
         self.isSending = state
+        if not state:
+            self.motionChecker.reset()
 
 
 class CameraController:

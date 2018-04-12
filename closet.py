@@ -227,9 +227,7 @@ class Closet:
                 #now_time = time.time()
                 settings.logger.info("Time Out time is: {}".format(time.time()-self.debugTime))
 
-                #已经检查足够多次，重置状态机，并且直接返回
                 settings.logger.warning('open door timeout')
-                # settings.logger.info(self.state)
                 self.IO.change_to_welcome_page()
                 self.updateScheduler.stop()
                 self.door_open_timed_out()
@@ -246,11 +244,13 @@ class Closet:
                 self.debugTime = time.time()
                 settings.logger.info("OpenDoor time is {}".format(self.debugTime))
 
-               
                 self._start_imageprocessing()
+                
+                for i in range(2):
+                    self.detectResults[i].reset()
+                    self.detectResults[i].resetDetect()
 
                 self.lastActionScale = self.IO.get_scale_val()
-
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
