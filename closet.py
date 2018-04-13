@@ -296,25 +296,26 @@ class Closet:
                 self.detectCache=[detect[0]["id"],detect[0]["num"]]
                 if direction == "IN":
                     settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
-                    self.detectCache.append(self.cart.remove_item(id))
+                    
+                    for i in range(detect[0]["fetch_num"]):
+                        self.detectCache.append(self.cart.remove_item(id))
 
-                    now_scale = self.IO.get_scale_val()
-                    print("put in scale change is: ",now_scale-self.lastActionScale)
-                    self.lastActionScale = now_scale
+                    # now_scale = self.IO.get_scale_val()
+                    # print("put in scale change is: ",now_scale-self.lastActionScale)
+                    # self.lastActionScale = now_scale
                 else:
-                    now_scale = self.IO.get_scale_val()
-
-                    changeVal = abs(now_scale-self.lastActionScale)*1000
-
-                    print("take out scale change is: ",now_scale-self.lastActionScale)
-
-                    self.lastActionScale = now_scale
+                    # now_scale = self.IO.get_scale_val()
+                    # changeVal = abs(now_scale-self.lastActionScale)*1000
+                    # print("take out scale change is: ",now_scale-self.lastActionScale)
+                    # self.lastActionScale = now_scale
                     settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                     
-                    self.cart.add_item(id)
-                    print(settings.items[id]["weight"])
-                    if changeVal > settings.items[id]["weight"]:
+                    for i in range(detect[0]["fetch_num"]):
                         self.cart.add_item(id)
+
+                    # print(settings.items[id]["weight"])
+                    # if changeVal > settings.items[id]["weight"]:
+                    #     self.cart.add_item(id)
 
                     self.detectCache.append(True)
             else:

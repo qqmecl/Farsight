@@ -47,8 +47,8 @@ class DetectResult:
                 self.motionTime[motion]=frame_time
 
             # for val in detects:
-                # (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
-                # settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
+            #     (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
+            #     settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
                 
 
             
@@ -79,9 +79,9 @@ class DetectResult:
 
                     # id,num,_time = self.getMaxNum()
                     # print("put back after check: ",id,num,_time)
-                    detectId,num,t_ime = self.getCurrentDetection(True)
+                    detectId,num,t_ime,fetch_num = self.getCurrentDetection(True)
                     if detectId is not None:
-                        self.detect.append({"direction":"IN","id":detectId,"num":num,"time":t_ime})
+                        self.detect.append({"direction":"IN","id":detectId,"num":num,"time":t_ime,"fetch_num":fetch_num})
                     else:#empty push
                         self.window.empty()#清空window
 
@@ -130,23 +130,23 @@ class DetectResult:
             # else:
                 # print("not load data")
 
-        detectId,num,t_ime = self.getCurrentDetection(False)
+        detectId,num,t_ime,fetch_num = self.getCurrentDetection(False)
         if detectId is not None:
             # print("TAKE OUT: ",settings.items[detectId])
-            result = {"direction":"OUT","id":detectId,"num":num,"time":t_ime}
+            result = {"direction":"OUT","id":detectId,"num":num,"time":t_ime,"fetch_num":fetch_num}
             # self.callback(self.closet,result)
             self.detect.append(result)
             self.reset()
 
     def getCurrentDetection(self,isLast):#these parameters would significantly improve the performance of detect rate!
-        id,num,_time = self.getMaxNum()
+        id,num,_time,fetch_num = self.getMaxNum()
 
         back_threshold,out_inTimethreshold,out_timeout_threshold = 1,2,1
 
         if id is not None:
             if isLast:#in item check
                 if num > back_threshold: # 原来是3
-                    return id,num,_time
+                    return id,num,_time,fetch_num
                 else:
                     self.reset()
             else:#out item check
@@ -154,24 +154,33 @@ class DetectResult:
                 if now_time-self.actionTime < 1:#25*0.7=17
                     if num > out_inTimethreshold: # 原来是4
                         # print("less time check: ",num)
-                        return id,num,_time
+                        return id,num,_time,fetch_num
                 else:
                     if num > out_timeout_threshold: # 原来是3 bigger than 0.5 second and
                         # print("more time check: ",num) 
-                        return id,num,_time
+                        return id,num,_time,fetch_num
                     else:
                         # print("out time out is: ",now_time)
                         self.reset()
-        return None,None,None
+        return None,None,None,None
 
     def loadData(self,detects):
+        count={}
+        for val in detects:
+            _id = val[1]
+            count[_id]=0
+
         for val in detects:
             #(confidence,itemId,cur_time) one
             (_id,time)=(val[1],val[2])
+            count[_id]+=1
+
             # print("check ",settings.items[_id]["name"],"by time ",time)
             new_num = self.processing[_id]["num"] + 1
             self.processing[_id]["time"] = ((self.processing[_id]["time"]*self.processing[_id]["num"])+time)/new_num
             self.processing[_id]["num"] = new_num
+            self.processing[_id]["fetch_num"] = max(self.processing[_id]["fetch_num"],count[_id])
+
             
     def reset(self):
         self.detectState = "NORMAL"
@@ -179,7 +188,7 @@ class DetectResult:
         self.processing = {}
         self.lastMotion = None
         for k,item in settings.items.items():
-            self.processing[k]=dict(num=0,time=0)
+            self.processing[k]=dict(num=0,time=0,fetch_num=0)
 
     def setActionTime(self):
         self.curMarkTime = time.time()
@@ -192,9 +201,9 @@ class DetectResult:
                 maxId=k
 
         if count >0:
-            return (maxId,count,self.processing[maxId]["time"])
+            return (maxId,count,self.processing[maxId]["time"],self.processing[maxId]["fetch_num"])
         else:
-            return (None,None,None)
+            return (None,None,None,None)
 
     def getDetect(self):
         return self.detect
