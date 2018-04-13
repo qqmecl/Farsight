@@ -8,7 +8,7 @@ class WeightScale:
     '''
     def __init__(self, port=settings.scale_port):
         rate = 9600
-
+        
         if settings.scale_port != "none":
             self.com = serial.Serial(port, baudrate=rate, timeout=1)
 

@@ -4,6 +4,8 @@ from serial_handler.speaker import Speaker
 from serial_handler.scale import WeightScale
 from serial_handler.screen import Screen
 import common.settings as settings
+import common.queue
+
 import tornado.ioloop
 import time
 
@@ -17,26 +19,44 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         self.screen = Screen()
         #门和锁
         self.doorLock = DoorLockHandler()
+
+        self.scale_vals = Queue(6)
+        self.stable_scale_val = 0
+
         # self.val_scale = self._check_weight_scale()
         # self.envoked = False
 
     def start(self):
-        # scaleUpdate = tornado.ioloop.PeriodicCallback(self._check_weight_scale,50)
-        # scaleUpdate.start()
+        scaleUpdate = tornado.ioloop.PeriodicCallback(self._check_weight_scale,50)
+        scaleUpdate.start()
         pass
 
-    # def _check_weight_scale(self):
+    def _check_weight_scale(self):
         # import time
         # settings.logger.info("before time is:",time.time())
-        # self.val_scale = 1.03
+        self.scale_vals.enqueue(self.scale.read()*1000)
+
+        mean_val = .0
+
+        cnt=0
+        for val in self.scale_vals.getAll():
+            mean_val += val
+            cnt+=1
+
+        mean_val /= cnt
+
+        isStable = True
+        for val in self.scale_vals.getAll():
+            if abs(val-mean_val) > 10:
+                isStable=False
+                break
+        
+        if isStable:
+            self.stable_scale_val = mean_val
         # settings.logger.info("after time is:",time.time())
 
-    
-
-    def get_scale_val(self):
-        # self.val_scale = 1.03
-        # self.val_scale = self.scale.read()
-        return self.scale.read()
+    def get_stable_scale(self):
+        return self.stable_scale_val
 
     '''
     	speaker部分接口

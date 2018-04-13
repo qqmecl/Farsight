@@ -249,7 +249,8 @@ class Closet:
                     self.detectResults[i].reset()
                     self.detectResults[i].resetDetect()
 
-                self.lastActionScale = self.IO.get_scale_val()
+                self.lastActionScale = self.IO.get_stable_scale()
+                
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
@@ -300,14 +301,15 @@ class Closet:
                     for i in range(detect[0]["fetch_num"]):
                         self.detectCache.append(self.cart.remove_item(id))
 
-                    # now_scale = self.IO.get_scale_val()
+                    # now_scale = self.IO.get_stable_scale()
                     # print("put in scale change is: ",now_scale-self.lastActionScale)
                     # self.lastActionScale = now_scale
                 else:
-                    # now_scale = self.IO.get_scale_val()
-                    # changeVal = abs(now_scale-self.lastActionScale)*1000
-                    # print("take out scale change is: ",now_scale-self.lastActionScale)
-                    # self.lastActionScale = now_scale
+                    now_scale = self.IO.get_stable_scale()
+                    changeVal = abs(now_scale-self.lastActionScale)
+                    print("take out scale change is: ",now_scale-self.lastActionScale)
+                    self.lastActionScale = now_scale
+
                     settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                     
                     for i in range(detect[0]["fetch_num"]):
