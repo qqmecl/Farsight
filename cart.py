@@ -14,7 +14,7 @@ class Cart:
 
         self.IO = io
 
-        self.start_weight = self.IO.get_scale_val()
+        self.start_weight = self.IO.get_stable_scale()
         self.items = {}
         self.screen = io.screen
         self.last_add_timestamp = time.time()
@@ -62,7 +62,7 @@ class Cart:
             data=self.items,
             token=self.token,
             code=get_mac_address(),
-            weight=dict(start=self.start_weight, final=self.IO.get_scale_val())
+            weight=dict(start=self.start_weight, final=self.IO.get_stable_scale())
         )
 
 

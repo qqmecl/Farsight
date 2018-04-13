@@ -1,7 +1,7 @@
 import time
 import multiprocessing
 import common.settings as settings
-import common.queue
+from common.queue import Queue
 # class Queue:
 #     def __init__(self,limit):
 #         self.items = []
