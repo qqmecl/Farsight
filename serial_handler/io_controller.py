@@ -17,7 +17,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         self.screen = Screen()
         #门和锁
         self.doorLock = DoorLockHandler()
-        self.val_scale = self._check_weight_scale()
+        # self.val_scale = self._check_weight_scale()
         # self.envoked = False
 
     def start(self):
@@ -25,17 +25,18 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         # scaleUpdate.start()
         pass
 
-    def _check_weight_scale(self):
-        import time
+    # def _check_weight_scale(self):
+        # import time
         # settings.logger.info("before time is:",time.time())
-        self.val_scale = 1.03
+        # self.val_scale = 1.03
         # settings.logger.info("after time is:",time.time())
 
     
 
     def get_scale_val(self):
-        self.val_scale = 1.03
-        return self.val_scale
+        # self.val_scale = 1.03
+        # self.val_scale = self.scale.read()
+        return self.scale.read()
 
     '''
     	speaker部分接口

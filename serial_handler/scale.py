@@ -21,7 +21,7 @@ class WeightScale:
             self.com.write(data)
             raw = self.com.read(9)[slice(3, 7)]
             # 按照 IEEE 754 Float 格式 unpack
-            return struct.unpack('>f', raw)
+            return struct.unpack('>f', raw)[0]
         else:
             return 1.0
 

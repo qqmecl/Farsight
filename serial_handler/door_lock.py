@@ -23,7 +23,7 @@ class DoorLockHandler:
 
     def _read_status(self):
         data = self.com.read(6)[3]
-        print("read_status: ",data)
+        # print("read_status: ",data)
         return data
 
     def _send_data(self, array):

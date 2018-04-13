@@ -99,6 +99,7 @@ class Closet:
             result[res['goods_code']] = c
         settings.items = result
         settings.items["0000000000000001"] = dict(name='empty_hand', price=0, weight=184.0)
+        # print(settings.items)
 
     def start(self):
         self.lastDetectTime = time.time()
@@ -203,7 +204,6 @@ class Closet:
         self.check_door_close_callback = tornado.ioloop.PeriodicCallback(door_check, 300)
         self.check_door_close_callback.start()
 
-
     def adjust_items(self,tup):
         settings.logger.error("tup is: {}".format(tup))
         if self.cart:
@@ -298,17 +298,25 @@ class Closet:
                     settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                     self.detectCache.append(self.cart.remove_item(id))
 
-                    # now_scale = self.IO.get_scale_val()
-                    # print("put in scale change is: ",now_scale-self.lastActionScale)
-                    # self.lastActionScale = now_scale
+                    now_scale = self.IO.get_scale_val()
+                    print("put in scale change is: ",now_scale-self.lastActionScale)
+                    self.lastActionScale = now_scale
                 else:
-                    settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
-                    self.cart.add_item(id)
-                    self.detectCache.append(True)
+                    now_scale = self.IO.get_scale_val()
 
-                    # now_scale = self.IO.get_scale_val()
-                    # print("take out scale change is: ",now_scale-self.lastActionScale)
-                    # self.lastActionScale = now_scale
+                    changeVal = abs(now_scale-self.lastActionScale)*1000
+
+                    print("take out scale change is: ",now_scale-self.lastActionScale)
+
+                    self.lastActionScale = now_scale
+                    settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
+                    
+                    self.cart.add_item(id)
+                    print(settings.items[id]["weight"])
+                    if changeVal > settings.items[id]["weight"]:
+                        self.cart.add_item(id)
+
+                    self.detectCache.append(True)
             else:
                 if self.detectCache is not None:
                     #fix camera result

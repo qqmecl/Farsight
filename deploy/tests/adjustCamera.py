@@ -19,7 +19,7 @@ else:
     "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
     ]
 
-index = 1
+index = 2
 cap = cv2.VideoCapture(usb_cameras[index])
 # cap = cv2.VideoCapture(0)
 ret=True
@@ -28,7 +28,7 @@ while(ret):
     ret, frame = cap.read()
     if ret:
         if index > 1:
-            frame = cv.flip(frame,1)
+            frame = cv2.flip(frame,1)
         
         # frame=frame[20:200,10:100,]
         cv2.imshow('frame',frame)
