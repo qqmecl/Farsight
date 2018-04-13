@@ -22,61 +22,29 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         self.scale_vals = Queue(6)
         self.stable_scale_val = 0
 
-        # self.val_scale = self._check_weight_scale()
-        # self.envoked = False
-
         scaleUpdate = tornado.ioloop.PeriodicCallback(self._check_weight_scale,100)
         scaleUpdate.start()
 
-    # def start(self):
-    #     scaleUpdate = tornado.ioloop.PeriodicCallback(self._check_weight_scale,50)
-    #     scaleUpdate.start()
-    #     pass
-
     def _check_weight_scale(self):
-        # import time
-        # settings.logger.info("before time is:",time.time())
         self.scale_vals.enqueue(self.scale.read()*1000)
-
-        # mean_val = .0
-
-        # cnt=0
-        # for val in self.scale_vals.getAll():
-        #     mean_val += val
-        #     cnt+=1
-
-        # mean_val /= cnt
 
         _min,_max=10000000,0
 
-        # isStable = True
         for val in self.scale_vals.getAll():
             if val < _min:
                 _min = val
             if val > _max:
                 _max = val
-            # if abs(val-mean_val) > 50:
-                # isStable=False
-                # print("couldn't generate stable scale value ",val,mean_val)
-                # break
 
-        meanVal = .0
+        meanVal=0
         cnt=0
         for val in self.scale_vals.getAll():
             if val > _min and val < _max:
                 cnt+=1
                 meanVal+=val
         
-        # if isStable:
         if cnt != 0:
             self.stable_scale_val = meanVal/cnt
-            # print("stable is: ",self.stable_scale_val)
-        # else:
-            # for val in self.scale_vals.getAll():
-            #     print(val)
-            # print("            ")
-            # pass
-        # settings.logger.info("after time is:",time.time())
 
     def get_stable_scale(self):
         return self.stable_scale_val
