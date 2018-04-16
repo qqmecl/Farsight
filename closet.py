@@ -291,6 +291,7 @@ class Closet:
 
         if len(detect) > 0:
             now_scale = self.IO.get_stable_scale()
+
             changeVal = now_scale-self.lastActionScale
 
             direction = detect[0]["direction"]
@@ -302,10 +303,10 @@ class Closet:
                 self.detectResults[checkIndex].resetDetect()
                 return
 
-            if direction == "OUT" and changeVal > -50:
-                print("scale chane val not enough, so return check!!!",changeVal)
-                self.detectResults[checkIndex].resetDetect()
-                return
+            # if direction == "OUT" and changeVal > -50:
+            #     print("scale chane val not enough, so return check!!!",changeVal)
+            #     self.detectResults[checkIndex].resetDetect()
+            #     return
 
             if direction == "IN":
                 now_time = self.detectResults[checkIndex].getMotionTime("PUSH")
@@ -325,22 +326,11 @@ class Closet:
                     for i in range(detect[0]["fetch_num"]):
                         self.detectCache.append(self.cart.remove_item(id))
 
-                    # now_scale = self.IO.get_stable_scale()
-                    # print("put in scale change is: ",now_scale-self.lastActionScale)
-                    # self.lastActionScale = now_scale
                 else:
-                    
-                    # print("take out scale change is: ",now_scale-self.lastActionScale)
-                    # self.lastActionScale = now_scale
-
                     settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                     
                     for i in range(detect[0]["fetch_num"]):
                         self.cart.add_item(id)
-
-                    # print(settings.items[id]["weight"])
-                    # if changeVal > settings.items[id]["weight"]:
-                    #     self.cart.add_item(id)
 
                     self.detectCache.append(True)
             else:

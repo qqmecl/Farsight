@@ -23,6 +23,6 @@ class ScaleDetector:
 		if self.firstPushVal == 0:
 			self.firstPushVal = val
 
-
+			
 		self.curVal = val
 
