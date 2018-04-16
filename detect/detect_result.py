@@ -46,9 +46,9 @@ class DetectResult:
             if motion is not "None":
                 self.motionTime[motion]=frame_time
 
-            # for val in detects:
-            #     (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
-            #     settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
+            for val in detects:
+                (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
+                settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
                 
 
             

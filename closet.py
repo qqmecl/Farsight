@@ -25,6 +25,7 @@ from serial_handler.io_controller import IO_Controller
 from detect.detect_result import DetectResult
 from detect.motion import MotionDetect
 from detect.object_detector import ObjectDetector
+from detect.scaleDetector import ScaleDetector
 import cv2
 
 class Closet:
@@ -84,6 +85,11 @@ class Closet:
         self.right_cameras = config['right_cameras']
 
         self.IO = IO_Controller()
+        # 一定要在开门之前读数，不然开门动作可能会让读数抖动
+        self.cart = Cart(self.IO)
+
+        self.scaleDetector = ScaleDetector(self.IO,self.cart)
+
         self.initItemData()
        
     def initItemData(self):
@@ -121,6 +127,7 @@ class Closet:
         handler = SignalHandler(object_detection_pools, tornado.ioloop.IOLoop.current())
         signal.signal(signal.SIGINT, handler.signal_handler)
 
+
         make_http_app(self).listen(5000)
 
         self.init_success()
@@ -153,14 +160,14 @@ class Closet:
         settings.logger.evokeDoorOpen()
 
         self.door_token = token
-        # 一定要在开门之前读数，不然开门动作可能会让读数抖动
-        self.cart = Cart(token, self.IO)
 
+        
         self.mode ="normal_mode"
         self.isStopCamera = False
         self.emptyQueueKeepCnt=0
 
-        self.beforeScaleVal = self.IO.get_stable_scale()
+
+
 
         if settings.speaker_on:
             self.IO.say_welcome()#发声
@@ -264,11 +271,13 @@ class Closet:
                         #settings.logger.info("Check cached frame: ",frame_time,self.debugTime)
                         return
 
-                    if motionType == "PUSH":
-                        self.lastActionScale = self.IO.get_stable_scale()
-                        print("push current scale val is: ",self.lastActionScale)
                     
+                    self.scaleDetector.check(motionType,self.IO.get_stable_scale())
 
+
+                    # if motionType == "PUSH":
+                    #     self.lastActionScale = self.IO.get_stable_scale()
+                    #     print("push current scale val is: ",self.lastActionScale)
 
                     checkIndex = index%2
                     self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
@@ -289,6 +298,7 @@ class Closet:
 
             #if checking with empty hand,just return 
             if settings.items[id]['name'] == "empty_hand":
+                print("check empty hand")
                 self.detectResults[checkIndex].resetDetect()
                 return
 
@@ -320,7 +330,7 @@ class Closet:
                     # self.lastActionScale = now_scale
                 else:
                     
-                    print("take out scale change is: ",now_scale-self.lastActionScale)
+                    # print("take out scale change is: ",now_scale-self.lastActionScale)
                     # self.lastActionScale = now_scale
 
                     settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
@@ -361,6 +371,7 @@ class Closet:
             self.lastDetectTime = now_time
             self.detectResults[checkIndex].setActionTime()
 
+
     def _delay_do_order(self):
         self.close_door_success()
         self.updateScheduler.stop()
@@ -370,7 +381,11 @@ class Closet:
         self.IO.change_to_processing_page()
         now_scale = self.IO.get_stable_scale()
         delta = now_scale - self.beforeScaleVal
+
         order = self.cart.as_order()
+        order["token"] = self.door_token
+        order["weight"] = self.scaleDetector.getOrderDict()
+
         if  delta < -100:
             settings.logger.warning("Evoke weight change")
         else:

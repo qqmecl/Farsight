@@ -9,8 +9,8 @@ class Cart:
     MIN_ADD_THRESHOLD = 2
     MIN_REMOVE_THRESHOLD = 2
 
-    def __init__(self, user_token, io):
-        self.token = user_token
+    def __init__(self, io):
+        # self.token = user_token
 
         self.IO = io
 
@@ -55,14 +55,17 @@ class Cart:
         self.last_remove_timestamp = time.time()
         return False
 
+    def clear_cart(self):
+        pass
+
     def as_order(self):
         from common.util import get_mac_address
         
         return dict(
             data=self.items,
-            token=self.token,
+            # token=self.token,
             code=get_mac_address(),
-            weight=dict(start=self.start_weight, final=self.IO.get_stable_scale())
+            # weight=dict(start=self.start_weight, final=self.IO.get_stable_scale())
         )
 
 
