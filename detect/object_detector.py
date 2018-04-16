@@ -13,8 +13,8 @@ import tensorflow as tf
 CWD_PATH = os.getcwd()
 
 if CWD_PATH != '/':
-    MODEL_PATH = os.path.join(CWD_PATH + '/data/' + 'frozen_inference_graph.pb')
-    LABEL_PATH = os.path.join(CWD_PATH + '/data/' + 'pascal_label_map.pbtxt')
+    MODEL_PATH = os.path.join(CWD_PATH + '/data/old12_withhand/' + 'frozen_inference_graph.pb')
+    LABEL_PATH = os.path.join(CWD_PATH + '/data/old12_withhand/' + 'pascal_label_map.pbtxt')
 else:
     MODEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'frozen_inference_graph.pb')
     LABEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'pascal_label_map.pbtxt')
@@ -61,23 +61,6 @@ class ObjectDetector:
         for i in range(2):
             self.dynamicTracker.append(DynamicTrack())
 
-        #Temporary
-        # self.classNames = {0: 'background',
-        #           1: '6921168509256001', 2: '6956416200067001', 3: '6920202888883001', 4: '6902538006100001', 5: '6921581596048001', 6: '6920459989463001',
-        #           7: '4891028705949001', 8: '6901939621271001', 9: '6901939621608001', 10: '6925303730574001', 11: '6925303754952001',
-        #           12: '6925303714857001',13: '0000000000000001'}
-
-
-        # self.classNames = {0: 'background',
-        #           1: '4891028705949001', 2: '6901939621271001', 3: '6901939621608001', 4: '6902538006100001', 5: '6920202888883001', 6: '6920459989463001',
-        #           7: '6921168509256001', 8: '6921581596048001', 9: '6925303714857001', 10: '6925303730574001', 11: '6925303754952001',
-        #           12: '6956416200067001',13: '0000000000000001'}
-
-        # self.classNames = {0: 'background',
-        #           1: '6921168509256', 2: '6956416200067', 3: '6920202888883', 4: '6902538006100', 5: '6921581596048', 6: '6920459989463',
-        #           7: '4891028705949', 8: '6901939621271', 9: '6901939621608', 10: '6925303730574', 11: '6925303754952',
-        #           12: '6925303714857',13: '0000000000000'}
-
         while True:
             try:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
@@ -123,7 +106,6 @@ class ObjectDetector:
                 line = line.strip()
                 splits = line.split(":")
                 if len(splits) == 2:
-                    print(line)
                     for s in splits:
                         s = s.strip()
                     if splits[0] == "id":
@@ -131,7 +113,8 @@ class ObjectDetector:
                     elif splits[0] == "name":
                         name = splits[1].strip()
                         name = name.strip("\'")
-                        self.classNames[_id] = name
+                        self.classNames[_id] = name+'001'
+                        # self.classNames[_id] = name
         f.close()
 
     ##当前只考虑单帧的判断

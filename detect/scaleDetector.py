@@ -3,16 +3,16 @@ class ScaleDetector:
 		self.IO = io
 		self.cart = cart
 
-	    self.firstPushVal = 0
-	    self.lastPullVal = 0
+		self.firstPushVal = 0
+		self.lastPullVal = 0
 
-	    self.curVal=0
+		self.curVal=0
 
-	    self.curOut0 = 0
-	    self.curOut1 = 0
+		self.curOut0 = 0
+		self.curOut1 = 0
 
-	    self.curIn0 = 0
-	    self.curIn1 = 0
+		self.curIn0 = 0
+		self.curIn1 = 0
 
 
 	def getOrderDict(self):

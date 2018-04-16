@@ -292,7 +292,7 @@ class Closet:
         if len(detect) > 0:
             now_scale = self.IO.get_stable_scale()
 
-            changeVal = now_scale-self.lastActionScale
+            # changeVal = now_scale-self.lastActionScale
 
             direction = detect[0]["direction"]
             id = detect[0]["id"]
