@@ -22,9 +22,9 @@ class DetectResult:
             if motion is not "None":
                 self.motionTime[motion]=frame_time
 
-            for val in detects:
-                (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
-                settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
+            # for val in detects:
+            #     (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
+            #     settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
             
             self.window.enqueue(detects)
 
@@ -62,8 +62,6 @@ class DetectResult:
                 if self.lastMotion == "PUSH":
                     self.detectState = "PULL_CHECKING"
                     self.actionTime = time.time()
-                    # print("Got pull action!!!")
-                    # print("action time is: ",self.actionTime)
 
                     limit=3#limit 
                     while(not self.window.isEmpty() and limit >0):
@@ -118,17 +116,23 @@ class DetectResult:
                     self.reset()
             else:#out item check
                 now_time = time.time()
-                if now_time-self.actionTime < 1:#25*0.7=17
-                    if num > out_inTimethreshold: # 原来是4
-                        # print("less time check: ",num)
-                        return id,num,_time,fetch_num
-                else:
-                    if num > out_timeout_threshold: # 原来是3 bigger than 0.5 second and
-                        # print("more time check: ",num) 
+
+                # if now_time-self.actionTime < 1:
+                #     if num > out_inTimethreshold:
+                #         return id,num,_time,fetch_num
+                # else:
+                #     if num > out_timeout_threshold:
+                #         return id,num,_time,fetch_num
+                #     else:
+                #         self.reset()
+
+                if now_time-self.actionTime > 0.8:
+                    if num > 1:
                         return id,num,_time,fetch_num
                     else:
-                        # print("out time out is: ",now_time)
                         self.reset()
+
+
         return None,None,None,None
 
     def loadData(self,detects):
