@@ -61,23 +61,6 @@ class ObjectDetector:
         for i in range(2):
             self.dynamicTracker.append(DynamicTrack())
 
-        #Temporary
-        # self.classNames = {0: 'background',
-        #           1: '6921168509256001', 2: '6956416200067001', 3: '6920202888883001', 4: '6902538006100001', 5: '6921581596048001', 6: '6920459989463001',
-        #           7: '4891028705949001', 8: '6901939621271001', 9: '6901939621608001', 10: '6925303730574001', 11: '6925303754952001',
-        #           12: '6925303714857001',13: '0000000000000001'}
-
-
-        # self.classNames = {0: 'background',
-        #           1: '4891028705949001', 2: '6901939621271001', 3: '6901939621608001', 4: '6902538006100001', 5: '6920202888883001', 6: '6920459989463001',
-        #           7: '6921168509256001', 8: '6921581596048001', 9: '6925303714857001', 10: '6925303730574001', 11: '6925303754952001',
-        #           12: '6956416200067001',13: '0000000000000001'}
-
-        # self.classNames = {0: 'background',
-        #           1: '6921168509256', 2: '6956416200067', 3: '6920202888883', 4: '6902538006100', 5: '6921581596048', 6: '6920459989463',
-        #           7: '4891028705949', 8: '6901939621271', 9: '6901939621608', 10: '6925303730574', 11: '6925303754952',
-        #           12: '6925303714857',13: '0000000000000'}
-
         while True:
             try:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
@@ -95,9 +78,6 @@ class ObjectDetector:
                         frame_truncated = np.concatenate((frame_truncated,fill),0)
 
                     results = self.detect_objects(frame_truncated,index,frame_time)
-                    # if len(results) > 0:
-                        # print(results)
-                        # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
 
                     # if results:
                         # settings.logger.info('{}'.format(results[0][1]))

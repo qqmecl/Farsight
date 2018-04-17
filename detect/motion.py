@@ -8,24 +8,20 @@ class MotionDetect:
         self.hand_last = 0
         self.hand_present = 0
         self.motion_dict = {-1:'PUSH',0:'None',1:'PULL'}
-        import time
-        self.timeStamp = time.strftime('%Y_%m_%d_%H_%M_%S_',time.localtime(time.time()))
-
         self.refLine = None
 
     def checkInput(self,frame,frame_time):
         if self.refLine is None:
-            # 第一帧的时候切割下原始参考线
-            # self.refLine = frame[:, self.rL_cenX-self.rL_half_width : self.rL_cenX+self.rL_half_width]
-            self.refLine = frame
+            self.refLine = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             self.hand_last = -6     # -6 = 手在外面， 6 = 手在里面, 其余为中间状态
             self.hand_present = -6
             return "None"
 
         curLine = frame# 当前帧的参考线
 
-        isCover = self.CoverCheck(curLine, self.refLine) # 判断是否参考线是否被手覆盖
-        if isCover == 1:
+        isCover = self.CoverCheck(curLine) # 判断是否参考线是否被手覆盖
+
+        if isCover:
             self.hand_present += 2 #被覆盖的话就将加状态
         else:
             self.hand_present -= 3 #不被覆盖就减状态
@@ -40,20 +36,17 @@ class MotionDetect:
                 motion = motion / abs(motion)
                 self.hand_last = self.hand_present
 
-                # print("check motion: ",self.motion_dict[motion])
-                return self.motion_dict[motion]
+                # print("check motion",self.motion_dict[motion]," by : ",time.time())
+                
+                return (self.motion_dict[motion],isCover)
         
-        return "None"
+        return ("None",isCover)
 
     def reset(self):
         self.refLine = None
 
-    def CoverCheck(self, curLine, refLine):
-
+    def CoverCheck(self, curLine):
         present_gray = cv.cvtColor(curLine, cv.COLOR_BGR2GRAY)
-        # present_gray = cv.GaussianBlur(present_gray, (21, 21), 0) # 还需要检查是否需要高斯模糊
-        ref_gray = cv.cvtColor(refLine, cv.COLOR_BGR2GRAY)
-  
 
         SIMI = []
         r = curLine.shape[0]/10.0
@@ -61,11 +54,11 @@ class MotionDetect:
         for k in range(10):
             s = int(k * r)
             e = int((k+1) * r)
-            sigX = np.var(ref_gray[s:e,:]) * (r*c) / (r*c-1)
+            sigX = np.var(self.refLine[s:e,:]) * (r*c) / (r*c-1)
             sigY = np.var(present_gray[s:e,:]) * (r*c) / (r*c-1)
-            miuX = np.average(ref_gray[s:e,:])
+            miuX = np.average(self.refLine[s:e,:])
             miuY = np.average(present_gray[s:e,:])
-            sigXY = np.sum(np.multiply(ref_gray[s:e,:]-miuX, present_gray[s:e,:]-miuY))
+            sigXY = np.sum(np.multiply(self.refLine[s:e,:]-miuX, present_gray[s:e,:]-miuY))
             sigXY /= (r*c-1)
             C3 = (0.03*255.0)**2 / 2.0
             SIMI.append((sigXY+C3) / ((sigX*sigY)**0.5+C3))
@@ -73,6 +66,6 @@ class MotionDetect:
         
         if min(SIMI) < 0.5: # 该阈值需要深入测试
             # print ("isCover",SIMI)
-            return 1
+            return True
         else:
-            return 0
+            return False

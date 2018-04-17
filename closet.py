@@ -88,7 +88,8 @@ class Closet:
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
         self.cart = Cart(self.IO)
 
-        self.scaleDetector = ScaleDetector(self.IO,self.cart)
+        if settings.has_scale:
+            self.scaleDetector = ScaleDetector(self.IO,self.cart)
 
         self.initItemData()
        
@@ -256,8 +257,6 @@ class Closet:
                     self.detectResults[i].reset()
                     self.detectResults[i].resetDetect()
 
-                # self.lastActionScale = self.IO.get_stable_scale()
-                
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
@@ -268,61 +267,43 @@ class Closet:
                     frame_time = result[3]#frame time maybe wrong
 
                     if frame_time < self.debugTime:
-                        #settings.logger.info("Check cached frame: ",frame_time,self.debugTime)
                         return
 
-                    
-                    self.scaleDetector.check(motionType,self.IO.get_stable_scale())
-
-
-                    # if motionType == "PUSH":
-                    #     self.lastActionScale = self.IO.get_stable_scale()
-                    #     print("push current scale val is: ",self.lastActionScale)
 
                     checkIndex = index%2
                     self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
-                    self.detect_check(checkIndex)
+
+                    if settings.has_scale:
+                        self.scaleDetector.check(motionType)
+                        self.scaleDetector.detect_check(self.detectResults[checkIndex])
+                    else:
+                        self.detect_check(checkIndex)
                 except queue.Empty:
                     # settings.logger.info()
                     pass
 
-    def detect_check(self,checkIndex):
+    def detect_check(self,checkIndex):#pure vision detect
         detect = self.detectResults[checkIndex].getDetect()
 
         if len(detect) > 0:
-            now_scale = self.IO.get_stable_scale()
-
-            changeVal = now_scale-self.lastActionScale
-
             direction = detect[0]["direction"]
             id = detect[0]["id"]
 
-            #if checking with empty hand,just return 
             if settings.items[id]['name'] == "empty_hand":
                 print("check empty hand")
                 self.detectResults[checkIndex].resetDetect()
                 return
 
-            # if direction == "OUT" and changeVal > -50:
-            #     print("scale chane val not enough, so return check!!!",changeVal)
-            #     self.detectResults[checkIndex].resetDetect()
-            #     return
-
-            if direction == "IN":
-                now_time = self.detectResults[checkIndex].getMotionTime("PUSH")
-            else:
-                now_time = self.detectResults[checkIndex].getMotionTime("PULL")
-
+            now_time = self.detectResults[checkIndex].getMotionTime("PUSH" if direction is "IN" else "PULL")
             now_num = detect[0]["num"]
             intervalTime = now_time - self.lastDetectTime
-            # settings.logger.info("action interval is: {}".format(intervalTime))
 
             if intervalTime > 0.5:
                 self.detectCache = None
                 self.detectCache=[detect[0]["id"],detect[0]["num"]]
                 if direction == "IN":
                     settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
-                    
+
                     for i in range(detect[0]["fetch_num"]):
                         self.detectCache.append(self.cart.remove_item(id))
 

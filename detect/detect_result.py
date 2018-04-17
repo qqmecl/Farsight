@@ -2,32 +2,6 @@ import time
 import multiprocessing
 import common.settings as settings
 from common.queue import Queue
-# class Queue:
-#     def __init__(self,limit):
-#         self.items = []
-#         self.maxLimit = limit
-
-#     def isEmpty(self):
-#         return self.items == []
-
-#     def empty(self):
-#         self.items=[]
-
-#     def enqueue(self, item):
-#         if self.size() == self.maxLimit:
-#             self.dequeue()
-#         self.items.insert(0,item)
-
-#     def dequeue(self):
-#         return self.items.pop()
-
-#     def size(self):
-#         return len(self.items)
-
-#     def print(self):
-#         for i in range(len(self.items)):
-#             print(self.items[i])
-
 
 class DetectResult:
     def __init__(self):
@@ -43,22 +17,16 @@ class DetectResult:
     def checkData(self,index,data,frame_time):
         for motion,detects in data.items():
             
+            motion = motion[0]
+
             if motion is not "None":
                 self.motionTime[motion]=frame_time
 
             for val in detects:
                 (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
                 settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
-                
-
             
-            # if count >0:
             self.window.enqueue(detects)
-
-            # if count >0:
-            #     print("begin")
-            #     self.window.print()
-            #     print("over")
 
 
             # if motion is not "None":
@@ -112,8 +80,7 @@ class DetectResult:
                     #filter time less situation.
 
                     self.takeOutCheck(timeCheck=True)
-                    #TODO
-                    #Check action ending state.
+
 
 
     def takeOutCheck(self,timeCheck=False):
