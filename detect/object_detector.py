@@ -13,8 +13,8 @@ import tensorflow as tf
 CWD_PATH = os.getcwd()
 
 if CWD_PATH != '/':
-    MODEL_PATH = os.path.join(CWD_PATH + '/data/' + 'frozen_inference_graph.pb')
-    LABEL_PATH = os.path.join(CWD_PATH + '/data/' + 'pascal_label_map.pbtxt')
+    MODEL_PATH = os.path.join(CWD_PATH + '/data/old12_withhand/' + 'frozen_inference_graph.pb')
+    LABEL_PATH = os.path.join(CWD_PATH + '/data/old12_withhand/' + 'pascal_label_map.pbtxt')
 else:
     MODEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'frozen_inference_graph.pb')
     LABEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'pascal_label_map.pbtxt')
@@ -103,7 +103,6 @@ class ObjectDetector:
                 line = line.strip()
                 splits = line.split(":")
                 if len(splits) == 2:
-                    print(line)
                     for s in splits:
                         s = s.strip()
                     if splits[0] == "id":
@@ -111,7 +110,8 @@ class ObjectDetector:
                     elif splits[0] == "name":
                         name = splits[1].strip()
                         name = name.strip("\'")
-                        self.classNames[_id] = name
+                        self.classNames[_id] = name+'001'
+                        # self.classNames[_id] = name
         f.close()
 
     ##当前只考虑单帧的判断

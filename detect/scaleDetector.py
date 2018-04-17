@@ -14,8 +14,8 @@ class ScaleDetector:
 	    self.handInVal = 0
 
 
-	    self.curIn0 = 0
-	    self.curIn1 = 0
+		self.curIn0 = 0
+		self.curIn1 = 0
 
 	    self.lastDetectTime = 0
 	    self.detectState = "NORMAL"

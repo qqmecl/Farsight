@@ -286,6 +286,13 @@ class Closet:
         detect = self.detectResults[checkIndex].getDetect()
 
         if len(detect) > 0:
+<<<<<<< HEAD
+=======
+            now_scale = self.IO.get_stable_scale()
+
+            # changeVal = now_scale-self.lastActionScale
+
+>>>>>>> 07485b2aa960efcb3d89eadea69eac935b0dee75
             direction = detect[0]["direction"]
             id = detect[0]["id"]
 

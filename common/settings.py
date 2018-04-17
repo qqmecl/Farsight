@@ -20,6 +20,17 @@ items = {
     '6925303714857001': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
 }
 
+# items = {
+#     '6901347884138': dict(name='椰树牌椰汁', price=2.0, weight=575.0),
+#     '6924743920538': dict(name='多力多滋玉米片', price=5.0, weight=487.0),
+#     '6925303714086': dict(name='统一红烧牛肉面', price=8.0, weight=298.0),
+#     '6925303773106': dict(name='统一老坛酸菜牛肉面', price=6.5, weight=546.0),
+#     '6925668475288': dict(name='顶牛素牛筋', price=6.0, weight=528.0),
+#     '6941760904372': dict(name='美好小火锅特辣', price=6.0, weight=549.0),
+#     '6952032902088': dict(name='蛙稻米大米', price=7.0, weight=552.0),
+#     '0000000000001': dict(name='empty_hand', price=3.5, weight=343.0)
+# }
+
 http_port = 5000
 sea_key = None
 
