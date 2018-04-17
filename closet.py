@@ -139,9 +139,6 @@ class Closet:
 
 
     def authorize(self, token, side):
-        '''
-            用户授权开启一边的门，会解锁对应的门，并且让各个子进程进入工作状态
-        '''
         try:
             if side == self.IO.doorLock.LEFT_DOOR:
                 self.authorization_left_success()
@@ -166,8 +163,6 @@ class Closet:
         self.mode ="normal_mode"
         self.isStopCamera = False
         self.emptyQueueKeepCnt=0
-
-
 
 
         if settings.speaker_on:
@@ -257,10 +252,13 @@ class Closet:
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
-                try:
+                while(not self._detection_queue.empty()):
                     result = self._detection_queue.get_nowait()
+                    
                     index = result[0]
+
                     motionType = result[1]
+
                     frame_time = result[3]#frame time maybe wrong
 
                     if frame_time < self.debugTime:
@@ -274,9 +272,9 @@ class Closet:
                         self.scaleDetector.detect_check(self.detectResults[checkIndex],checkIndex)
                     else:
                         self.detect_check(checkIndex)
-                except queue.Empty:
-                    # settings.logger.info()
-                    pass
+                # except queue.Empty:
+                #     # settings.logger.info()
+                #     pass
 
 
     def detect_check(self,checkIndex):#pure vision detect

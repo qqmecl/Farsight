@@ -20,6 +20,7 @@ else:
     LABEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'pascal_label_map.pbtxt')
 
 
+
 class ObjectDetector:
     def __init__(self,input_q,items,detection_queue):
         setproctitle('[farsight] model_inferencing_processor')
@@ -52,6 +53,7 @@ class ObjectDetector:
             if tensor_name in all_tensor_names:
                 self.tensor_dict[key] = tf.get_default_graph().get_tensor_by_name(tensor_name)
 
+
         self.frameCount = 0
         self.confidenceThreshold=0.9
         self.items = items
@@ -64,7 +66,9 @@ class ObjectDetector:
         while True:
             try:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
+
                 frame_truncated = self.dynamicTracker[index].check(frame_truncated)#get dynamic tracked location
+
                 results = []
 
                 if frame_truncated is not None:
@@ -84,14 +88,16 @@ class ObjectDetector:
                 # if len(results) >0:
                      # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
 
-                    if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
-                        print("object delte detect")
-                        waste = detection_queue.get_nowait()
-                    try:
-                        detection_queue.put_nowait([index,motionType,results,frame_time])#not a good structure
-                    except queue.Full:
-                        print('[FULL]')
-                        pass
+                if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
+                    print("object delte detect")
+                    waste = detection_queue.get_nowait()
+                try:
+                    detection_queue.put_nowait([index,motionType,results,frame_time])#not a good structure
+                    
+                except queue.Full:
+                    print('[FULL]')
+                    pass
+
             except queue.Empty:#不进行识别判断的时候帧会变空
                 # print('[EMPTY] input_q is: ')
                 pass
