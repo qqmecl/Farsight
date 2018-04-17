@@ -35,9 +35,6 @@ class MotionDetect:
             if motion!= 0:
                 motion = motion / abs(motion)
                 self.hand_last = self.hand_present
-
-                # print("check motion",self.motion_dict[motion]," by : ",time.time())
-                
                 return (self.motion_dict[motion],isCover)
         
         return ("None",isCover)

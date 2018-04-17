@@ -231,10 +231,7 @@ class Closet:
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
 
             if self.IO.is_door_lock(self.debugTime):
-                #now_time = time.time()
                 settings.logger.info("Time Out time is: {}".format(time.time()-self.debugTime))
-
-                settings.logger.warning('open door timeout')
                 self.IO.change_to_welcome_page()
                 self.updateScheduler.stop()
                 self.door_open_timed_out()
@@ -247,7 +244,7 @@ class Closet:
                     self.open_leftdoor_success()
                 else:
                     self.open_rightdoor_success()
-                # settings.logger.warning('door is opened by user')
+
                 self.debugTime = time.time()
                 settings.logger.info("OpenDoor time is {}".format(self.debugTime))
 
@@ -269,30 +266,23 @@ class Closet:
                     if frame_time < self.debugTime:
                         return
 
-
                     checkIndex = index%2
                     self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
 
                     if settings.has_scale:
                         self.scaleDetector.check(motionType)
-                        self.scaleDetector.detect_check(self.detectResults[checkIndex])
+                        self.scaleDetector.detect_check(self.detectResults[checkIndex],checkIndex)
                     else:
                         self.detect_check(checkIndex)
                 except queue.Empty:
                     # settings.logger.info()
                     pass
 
+
     def detect_check(self,checkIndex):#pure vision detect
         detect = self.detectResults[checkIndex].getDetect()
 
         if len(detect) > 0:
-<<<<<<< HEAD
-=======
-            now_scale = self.IO.get_stable_scale()
-
-            # changeVal = now_scale-self.lastActionScale
-
->>>>>>> 07485b2aa960efcb3d89eadea69eac935b0dee75
             direction = detect[0]["direction"]
             id = detect[0]["id"]
 
@@ -323,12 +313,9 @@ class Closet:
                     self.detectCache.append(True)
             else:
                 if self.detectCache is not None:
-                    #fix camera result
-                    # settings.logger.info("Enter cache result fixing phase!")
                     cacheId = self.detectCache[0]
                     cacheNum = self.detectCache[1]
                     actionSuccess = self.detectCache[2]
-
                     if now_num > cacheNum and id != cacheId:
                         if direction == "OUT":
                             self.cart.remove_item(cacheId)
@@ -337,14 +324,13 @@ class Closet:
                             settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
                             settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
                         elif direction == "IN":
-                            # if self.cart.isHaveItem(cacheId):
                             if actionSuccess:
                                 self.cart.add_item(cacheId)
                                 settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
 
                             self.cart.remove_item(id)
                             settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
-            #settings.logger.error('chen_time is {}'.format(time.time() - chen_time))
+
             self.detectResults[checkIndex].resetDetect()
             self.lastDetectTime = now_time
             self.detectResults[checkIndex].setActionTime()
@@ -353,32 +339,18 @@ class Closet:
     def _delay_do_order(self):
         self.close_door_success()
         self.updateScheduler.stop()
-        # for i in range(2):
-        #     self.motions[i].reset()
-
         self.IO.change_to_processing_page()
-        now_scale = self.IO.get_stable_scale()
-        delta = now_scale - self.beforeScaleVal
 
         order = self.cart.as_order()
         order["token"] = self.door_token
-        order["weight"] = self.scaleDetector.getOrderDict()
-
-        if  delta < -100:
-            settings.logger.warning("Evoke weight change")
-        else:
-            order["data"]={}
-            settings.logger.warning("Can't Evoke weight change")
 
         order["data"]={}
 
-        # self.logger.info(order)
         strData = json.dumps(order)
         self.pollData = self.encrypter.aes_cbc_encrypt(strData, key = settings.sea_key)
         self.pollPeriod = tornado.ioloop.PeriodicCallback(self.polling, 50)
         self.pollPeriod.start()
 
-    #chen chen chen
     def polling(self):
         req = requests.post(settings.ORDER_URL, data=self.pollData)
         #settings.logger.info(req.status_code)

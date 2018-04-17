@@ -61,6 +61,6 @@ scale_port = config_parser.get("serial_ports","scale_port")
 screen_port = config_parser.get("serial_ports","screen_port")
 
 machine_state = config_parser.get("run_mode","hardware")
-has_scale = config_parser.get("run_mode","withscale")
+has_scale = config_parser.getboolean("run_mode","withscale")
 
 logger = Logger(config_parser.get("run_mode","client_mode"))
