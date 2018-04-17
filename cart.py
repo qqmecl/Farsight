@@ -14,18 +14,34 @@ class Cart:
         self.start_weight = self.IO.get_stable_scale()
         self.items = {}
         self.screen = io.screen
+        self.lastActionTime = None
 
-    def add_item(self, item_id):  # TODO: update screen display
+    def timeCheck(self,actionTime):
+        if self.lastActionTime is None:
+            self.lastActionTime = actionTime
+
+        delta = abs(actionTime - self.lastActionTime)
+
+        if delta > 0 && delta < 0.2:
+            return True
+
+        return False
+
+    def add_item(self, item_id,actionTime):  # TODO: update screen display
+        if self.timeCheck(actionTime):
+            return
+
         if item_id in self.items:
             self.items[item_id] += 1
         else:
             self.items[item_id] = 1
 
-        # settings.logger.info("Cart add action!!!!!!!!!!!!!")
-        # if self.items[item_id] > 0:
         self.IO.update_screen_item(True,item_id)
 
-    def remove_item(self, item_id):
+    def remove_item(self, item_id,actionTime):
+        if self.timeCheck(actionTime):
+            return
+
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
             self.IO.update_screen_item(False,item_id)

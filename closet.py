@@ -89,7 +89,9 @@ class Closet:
         self.cart = Cart(self.IO)
 
         if settings.has_scale:
-            self.scaleDetector = ScaleDetector(self.IO,self.cart)
+            self.scaleDetector = []
+            for i in range(2):
+                self.scaleDetector.append(ScaleDetector(self.IO,self.cart))
 
         self.initItemData()
        
@@ -254,7 +256,7 @@ class Closet:
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
                 while(not self._detection_queue.empty()):
                     result = self._detection_queue.get_nowait()
-                    
+
                     index = result[0]
 
                     motionType = result[1]
@@ -268,14 +270,10 @@ class Closet:
                     self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
 
                     if settings.has_scale:
-                        self.scaleDetector.check(motionType)
-                        self.scaleDetector.detect_check(self.detectResults[checkIndex],checkIndex)
+                        self.scaleDetector[checkIndex].check(motionType)
+                        self.scaleDetector[checkIndex].detect_check(self.detectResults[checkIndex])
                     else:
                         self.detect_check(checkIndex)
-                # except queue.Empty:
-                #     # settings.logger.info()
-                #     pass
-
 
     def detect_check(self,checkIndex):#pure vision detect
         detect = self.detectResults[checkIndex].getDetect()
