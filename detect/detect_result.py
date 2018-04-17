@@ -117,20 +117,20 @@ class DetectResult:
             else:#out item check
                 now_time = time.time()
 
-                # if now_time-self.actionTime < 1:
-                #     if num > out_inTimethreshold:
-                #         return id,num,_time,fetch_num
-                # else:
-                #     if num > out_timeout_threshold:
-                #         return id,num,_time,fetch_num
-                #     else:
-                #         self.reset()
-
-                if now_time-self.actionTime > 0.8:
-                    if num > 1:
+                if now_time-self.actionTime < 1:
+                    if num > out_inTimethreshold:
+                        return id,num,_time,fetch_num
+                else:
+                    if num > out_timeout_threshold:
                         return id,num,_time,fetch_num
                     else:
                         self.reset()
+
+                # if now_time-self.actionTime > 0.8:
+                #     if num > 1:
+                #         return id,num,_time,fetch_num
+                #     else:
+                #         self.reset()
 
 
         return None,None,None,None

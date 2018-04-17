@@ -4,7 +4,10 @@ class ScaleDetector:
 	def __init__(self,io,cart,index):
 		self.IO = io
 		self.cart = cart
+		self.index = index
+		self.reset()
 
+	def reset(self):
 		self.curOut0 = 0
 
 		self.handOutVal = 0
@@ -17,16 +20,14 @@ class ScaleDetector:
 		self.detectState = "NORMAL"
 		self.detectCache = None
 
-		self.index = index
-
 	def check(self,motions):
 		motion,isCover = motions[0],motions[1]
 		# print(motion,isCover)
 		if motion == "PUSH":
 			self.curOut0 = self.IO.get_stable_scale()
 
-			if self.index == 0:
-				print("this push scale is: ",self.curOut0)
+			# if self.index == 0:
+				# print("this push scale is: ",self.curOut0)
 
 		elif motion == "PULL":
 			self.lastPullVal = self.IO.get_stable_scale()
@@ -34,15 +35,19 @@ class ScaleDetector:
 			if not isCover:
 				self.handOutVal = self.IO.get_stable_scale()
 
-				if self.index == 0:
-					print("this handout val is: ",self.handOutVal)
+				# if self.index == 0:
+				# 	print("this handout val is: ",self.handOutVal,self.curOut0)
 				
 				if self.detectState == "PULL_CHECKING":
+					# print("pull_checking state")
+
 					delta = self.handOutVal-self.curOut0
 					if delta < -50:
 						# settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
+						_id = self.detectCache[0]["id"]
+						
 						for i in range(self.detectCache[0]["fetch_num"]):
-							self.cart.add_item(id,self.lastDetectTime)
+							self.cart.add_item(_id,self.lastDetectTime)
 
 						self.detectState = "NORMAL"
 					else:
@@ -69,6 +74,9 @@ class ScaleDetector:
 			direction = detect[0]["direction"]
 
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
+
+			print(detect)
+			print("action time is: ",self.lastDetectTime)
 
 			id = detect[0]["id"]
 			if settings.items[id]['name'] == "empty_hand":

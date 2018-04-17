@@ -22,7 +22,9 @@ class Cart:
 
         delta = abs(actionTime - self.lastActionTime)
 
-        if delta > 0 && delta < 0.2:
+        print("cart: ",delta,actionTime,self.lastActionTime)
+
+        if delta > 0 and delta < 0.2:
             return True
 
         return False
@@ -38,6 +40,8 @@ class Cart:
 
         self.IO.update_screen_item(True,item_id)
 
+        self.lastActionTime = actionTime
+
     def remove_item(self, item_id,actionTime):
         if self.timeCheck(actionTime):
             return
@@ -45,6 +49,8 @@ class Cart:
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
             self.IO.update_screen_item(False,item_id)
+
+            self.lastActionTime = actionTime
 
             return True
         else:

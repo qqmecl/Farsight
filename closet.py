@@ -91,7 +91,7 @@ class Closet:
         if settings.has_scale:
             self.scaleDetector = []
             for i in range(2):
-                self.scaleDetector.append(ScaleDetector(self.IO,self.cart))
+                self.scaleDetector.append(ScaleDetector(self.IO,self.cart,i))
 
         self.initItemData()
        
@@ -250,6 +250,8 @@ class Closet:
                 for i in range(2):
                     self.detectResults[i].reset()
                     self.detectResults[i].resetDetect()
+                    if settings.has_scale:
+                        self.scaleDetector[i].reset()
 
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
