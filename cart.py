@@ -1,6 +1,9 @@
 import time
 from serial_handler.screen import Screen
 import common.settings as settings
+from common.queue import Queue
+import numpy as np
+import tornado.ioloop
 
 class Cart:
     '''
@@ -11,19 +14,26 @@ class Cart:
 
     def __init__(self, io):
         self.IO = io
-        self.start_weight = self.IO.get_stable_scale()
+
+        self.start_weight = None
+        self.scale_vals = Queue(6)
+
+        self.theoryWeight = 0
+        self.realWeight = 0
+
         self.items = {}
         self.screen = io.screen
         self.lastActionTime = None
+
+        cartCheck = tornado.ioloop.PeriodicCallback(self.cart_check,150)
+        cartCheck.start()
+        
 
     def timeCheck(self,actionTime):
         if self.lastActionTime is None:
             self.lastActionTime = actionTime
 
         delta = abs(actionTime - self.lastActionTime)
-
-        print("cart delta ",delta)
-
         if delta > 0 and delta < 0.2:
             return True
 
@@ -38,6 +48,8 @@ class Cart:
         else:
             self.items[item_id] = 1
 
+        self.theoryWeight += settings[item_id]["weight"]
+
         self.IO.update_screen_item(True,item_id)
 
         self.lastActionTime = actionTime
@@ -48,18 +60,37 @@ class Cart:
 
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
+
+            self.theoryWeight -= settings[item_id]["weight"]
+
             self.IO.update_screen_item(False,item_id)
-
             self.lastActionTime = actionTime
-
             return True
-        else:
-            pass
 
         return False
 
-    def clear_cart(self):
-        pass
+    def cart_check(self):
+        weight = self.IO.get_stable_scale()
+
+        if self.start_weight is None:
+            self.start_weight = weight
+            return
+
+        self.scale_vals.enqueue(weight)
+        vals = self.scale_vals.getAll()
+        _mean = np.mean(vals)
+        for val in vals:
+            if abs(_mean-val) >20:
+                return
+
+        self.realWeight = self.start_weight - _mean
+        #empty current cart
+        if abs(self.realWeight - self.theoryWeight) < 50:
+            for _id,num in self.items:
+                for i in range(num):
+                    self.IO.update_screen_item(False,_id)
+            self.items={}
+
 
     def as_order(self):
         from common.util import get_mac_address
