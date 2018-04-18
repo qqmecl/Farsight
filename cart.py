@@ -69,24 +69,36 @@ class Cart:
 
         return False
 
+    def getStartWeight(self):
+        return self.start_weight
+
+
+    def setStartWeight(self,weight):
+        self.start_weight = weight
+
+
     def cart_check(self):
         weight = self.IO.get_stable_scale()
 
         if self.start_weight is None:
-            self.start_weight = weight
             return
 
         self.scale_vals.enqueue(weight)
         vals = self.scale_vals.getAll()
-        _mean = np.mean(vals)
+        _mean = int(np.mean(vals))
         for val in vals:
             if abs(_mean-val) >20:
                 return
 
-        self.realWeight = self.start_weight - _mean
+        # print("enter cart empty check:")
+        # print("start_weight: ",self.start_weight," current is: ",_mean)
+
+
+        delta = self.start_weight - _mean
         #empty current cart
-        if abs(self.realWeight - self.theoryWeight) < 50:
-            for _id,num in self.items:
+        # if abs(self.realWeight - self.theoryWeight) < 50:
+        if abs(delta) < 50:
+            for _id,num in self.items.items():
                 for i in range(num):
                     self.IO.update_screen_item(False,_id)
             self.items={}

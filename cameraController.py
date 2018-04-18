@@ -5,6 +5,8 @@ import common.settings as settings
 import queue
 from detect.motion import MotionDetect
 import tornado.ioloop
+from detect.scaleDetector import ScaleDetector
+
 
 if settings.machine_state == "new":
     DEFAULT_WIDTH = 1280
@@ -46,7 +48,6 @@ class VideoStream:
 
                 motionType = self.motionChecker.checkInput(frame[:,int(DEFAULT_WIDTH/2)-10:int(DEFAULT_WIDTH/2)+10],time.time())
                 if self.cnt %3 == 0 or motionType != "None":
-
                     self.call_back(self.src,frame,motionType)
 
     def setSending(self,state):

@@ -11,7 +11,6 @@ import functools
 import transitions
 from transitions import Machine
 import queue
-import os  # 为视频输出文件创造新的Output文件夹
 
 import requests
 import json
@@ -25,8 +24,6 @@ from serial_handler.io_controller import IO_Controller
 from detect.detect_result import DetectResult
 from detect.motion import MotionDetect
 from detect.object_detector import ObjectDetector
-from detect.scaleDetector import ScaleDetector
-import cv2
 
 class Closet:
     '''
