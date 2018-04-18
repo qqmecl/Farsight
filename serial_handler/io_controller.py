@@ -7,6 +7,7 @@ import common.settings as settings
 from common.queue import Queue
 import tornado.ioloop
 import time
+import numpy as np
 
 class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     def __init__(self):
@@ -32,8 +33,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         _min = min(vals)
         _max = max(vals)
 
-        for val in vals:
-            meanVal+=val
+        meanVal=np.sum(vals)
 
         meanVal -= _min
         meanVal -= _max
@@ -42,6 +42,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
 
         if _len > 0:
             self.stable_scale_val = int(meanVal/_len)
+
 
     def get_stable_scale(self):
         return self.stable_scale_val

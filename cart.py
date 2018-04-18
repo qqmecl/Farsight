@@ -48,7 +48,7 @@ class Cart:
         else:
             self.items[item_id] = 1
 
-        self.theoryWeight += settings[item_id]["weight"]
+        self.theoryWeight += settings.items[item_id]["weight"]
 
         self.IO.update_screen_item(True,item_id)
 
@@ -61,7 +61,7 @@ class Cart:
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
 
-            self.theoryWeight -= settings[item_id]["weight"]
+            self.theoryWeight -= settings.items[item_id]["weight"]
 
             self.IO.update_screen_item(False,item_id)
             self.lastActionTime = actionTime

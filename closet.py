@@ -260,9 +260,7 @@ class Closet:
                     result = self._detection_queue.get_nowait()
 
                     index = result[0]
-
                     motionType = result[1]
-
                     frame_time = result[3]#frame time maybe wrong
 
                     if frame_time < self.debugTime:

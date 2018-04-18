@@ -29,8 +29,9 @@ class ScaleDetector:
 
 			if self.detectState == "PULL_CHECKING":
 				self.detectState = "NORMAL"
-			# if self.index == 0:
-				# print("this push scale is: ",self.curOut0)
+
+			if self.index == 0:
+				print("this push scale is: ",self.lastScale)
 
 		elif motion == "PULL":
 			self.lastPullVal = self.IO.get_stable_scale()
@@ -44,7 +45,7 @@ class ScaleDetector:
 				if self.detectState == "PULL_CHECKING":
 					# print("pull_checking state")
 
-					delta = self.handOutVal-self.lastScale
+					delta = self.handOutVal - self.lastScale
 
 					if delta < -(self.curActionDelta/2):
 
@@ -55,9 +56,11 @@ class ScaleDetector:
 						self.cart.add_item(_id,self.lastDetectTime)
 
 						self.detectState = "NORMAL"
-					# else:
-						# if self.index == 0:
-							# print("scale chane val not enough, so return check!!!",delta)
+					else:
+						if self.index == 0:
+							print("current handOutVal: ",self.handOutVal)
+							print("last scale is: ",self.lastScale)
+							print("                                              ")
 			else:
 				self.handInVal = self.IO.get_stable_scale()
 
@@ -82,12 +85,12 @@ class ScaleDetector:
 
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
 
-			# print(detect)
+			print(detect)
 			# print("action time is: ",self.lastDetectTime)
 
 			_id = detect[0]["id"]
 
-			if settings.items[id]['name'] == "empty_hand":
+			if settings.items[_id]['name'] == "empty_hand":
 				print("check empty hand take out")
 				detectResults.resetDetect()
 				return
@@ -98,6 +101,8 @@ class ScaleDetector:
 				self.detectState = "PUSH_CHECKING"
 
 			self.curActionDelta = settings.items[_id]['weight']
+
+			print("curActionDelta is: ",self.curActionDelta)
 			
 			self.detectCache = detect
 			detectResults.resetDetect()
