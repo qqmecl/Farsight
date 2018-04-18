@@ -17,7 +17,7 @@ class ScaleDetector:
 		self.lastScale = 0
 
 		self.handOutVal = 0
-		# self.handInVal = 0
+		self.handInVal = 0
 
 		self.curActionDelta = 0
 		self.lastDetectTime = 0
@@ -33,7 +33,7 @@ class ScaleDetector:
 
 			if self.cart.getStartWeight() is None:
 				self.cart.setStartWeight(self.lastScale)
-
+				
 			if self.detectState == "PULL_CHECKING":
 				self.detectState = "NORMAL"
 
@@ -43,28 +43,47 @@ class ScaleDetector:
 		elif motion == "PULL":
 			self.lastPullVal = self.IO.get_stable_scale()
 		else:
-			current = self.IO.get_stable_scale()
-			delta = current - self.lastScale
-			
-			if self.detectState == "PULL_CHECKING":
-				if delta < -(self.curActionDelta/2):
-					_id = self.detectCache[0]["id"]
-					# for i in range(self.detectCache[0]["fetch_num"]):
-						# self.cart.add_item(_id,self.lastDetectTime)
-					self.cart.add_item(_id,self.lastDetectTime)
-					self.detectState = "NORMAL"
+			if not isCover:
+				self.handOutVal = self.IO.get_stable_scale()
+
+				# if self.index == 0:
+				# 	print("this handout val is: ",self.handOutVal,self.curOut0)
 				
-			if self.detectState == "PUSH_CHECKING":
-				if delta > (self.curActionDelta/2):
-					print("push_checking in back success!!")
-					_id = self.detectCache[0]["id"]
+				if self.detectState == "PULL_CHECKING":
+					# print("pull_checking state")
 
-					# for i in range(self.detectCache[0]["fetch_num"]):
-						# self.cart.remove_item(_id,self.lastDetectTime)
-					self.cart.remove_item(_id,self.lastDetectTime)
-					self.detectState = "NORMAL"
-					self.lastScale = current+ self.curActionDelta
+					delta = self.handOutVal - self.lastScale
 
+					if delta < -(self.curActionDelta/2):
+						_id = self.detectCache[0]["id"]
+						
+						# for i in range(self.detectCache[0]["fetch_num"]):
+							# self.cart.add_item(_id,self.lastDetectTime)
+
+						self.cart.add_item(_id,self.lastDetectTime)
+
+						self.detectState = "NORMAL"
+					else:
+						if self.index == 0:
+							print("current handOutVal: ",self.handOutVal)
+							print("last scale is: ",self.lastScale)
+							print("                                              ")
+			else:
+				self.handInVal = self.IO.get_stable_scale()
+
+				if self.detectState == "PUSH_CHECKING":
+					if self.handInVal - self.handOutVal > (self.curActionDelta/2):
+						print("push_checking in back success!!")
+						_id = self.detectCache[0]["id"]
+
+						# for i in range(self.detectCache[0]["fetch_num"]):
+							# self.cart.remove_item(_id,self.lastDetectTime)
+
+						self.cart.remove_item(_id,self.lastDetectTime)
+
+						self.detectState = "NORMAL"
+
+						self.lastScale = self.handOutVal+ self.curActionDelta
 
 	#two judge will not interfere with each other
 	def detect_check(self,detectResults):
@@ -75,7 +94,7 @@ class ScaleDetector:
 
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
 
-			# print(detect)
+			print(detect)
 			# print("action time is: ",self.lastDetectTime)
 
 			_id = detect[0]["id"]
