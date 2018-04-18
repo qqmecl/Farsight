@@ -88,10 +88,6 @@ class Closet:
         # 一定要在开门之前读数，不然开门动作可能会让读数抖动
         self.cart = Cart(self.IO)
 
-        if settings.has_scale:
-            self.scaleDetector = []
-            for i in range(2):
-                self.scaleDetector.append(ScaleDetector(self.IO,self.cart,i))
 
         self.initItemData()
        
@@ -120,6 +116,15 @@ class Closet:
 
         self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
         self.camera_control = CameraController(input_queue = self.input_queues)
+
+        if settings.has_scale:
+            self.scaleDetector = []
+            for i in range(2):
+                scaleDetector = self.camera_control.getScaleDetector(i)
+                scaleDetector.setIo(self.IO)
+                scaleDetector.setCart(self.cart)
+                self.scaleDetector.append(scaleDetector)
+
 
         settings.logger.warning('camera standby')
 
@@ -267,10 +272,10 @@ class Closet:
                         return
 
                     checkIndex = index%2
+                    
                     self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
 
                     if settings.has_scale:
-                        self.scaleDetector[checkIndex].check(motionType)
                         self.scaleDetector[checkIndex].detect_check(self.detectResults[checkIndex])
                     else:
                         self.detect_check(checkIndex)

@@ -66,6 +66,15 @@ class CameraController:
             self.cameras[i] = VideoStream(i,self.sendFrame)
 
 
+        if settings.has_scale:
+            self.scaleDetector = []
+            for i in range(2):
+                self.scaleDetector.append(ScaleDetector(i))
+
+
+    def getScaleDetector(self,src):
+        return self.scaleDetector[src]
+
     def startCameras(self,cameras):
         self.curCameras = cameras
         for src in cameras:
@@ -74,13 +83,18 @@ class CameraController:
                 self.videoWriter[src] = cv2.VideoWriter(settings.logger.getSaveVideoPath()+str(src)+".avi", 
                     cv2.VideoWriter_fourcc(*'XVID'),DEFAULT_FPS, (DEFAULT_WIDTH,DEFAULT_HEIGHT))
 
+
     def stopCameras(self):
         for src in self.curCameras:
             self.cameras[src].setSending(False)
             if settings.logger.checkSaveVideo():
                 self.videoWriter[src].release()
 
+
     def sendFrame(self,src,frame,motionType):
+        if settings.has_scale:
+            self.scaleDetector[src%2].check(motionType)
+
         try:
             # cur=time.time()
             # if cur - self.lastTime>1.0:

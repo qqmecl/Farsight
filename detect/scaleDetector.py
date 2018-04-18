@@ -1,12 +1,18 @@
 import common.settings as settings
 
 class ScaleDetector:
-	def __init__(self,io,cart,index):
-		self.IO = io
-		self.cart = cart
+	def __init__(self,index):
+		self.IO = None
+		self.cart = None
 		self.index = index
 		self.reset()
 
+	def setIo(self,io):
+		self.IO = io
+
+	def setCart(self,cart):
+		self.cart = cart
+	
 	def reset(self):
 		self.lastScale = 0
 
@@ -85,7 +91,7 @@ class ScaleDetector:
 
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
 
-			print(detect)
+			# print(detect)
 			# print("action time is: ",self.lastDetectTime)
 
 			_id = detect[0]["id"]
@@ -102,8 +108,6 @@ class ScaleDetector:
 
 			self.curActionDelta = settings.items[_id]['weight']
 
-			print("curActionDelta is: ",self.curActionDelta)
-			
 			self.detectCache = detect
 			detectResults.resetDetect()
 			detectResults.setActionTime()
