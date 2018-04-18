@@ -5,11 +5,12 @@ from common.logger import Logger
 
 INIT_URL = "https://www.hihigo.shop/api/v1/updateGoodsInfo"
 ORDER_URL = 'https://www.hihigo.shop/api/v1/order'
+
 items = {
     '6921168509256001': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
     '6956416200067001': dict(name='美汁源果粒橙', price=5.0, weight=487.0),
     '6920202888883001': dict(name='红牛', price=8.0, weight=298.0),
-    '6902538006100001': dict(name='脉动', price=6.5, weight=546.0),
+    '6902538006100001': dict(name='脉动', price=6.5, weight=650.0),
     '6921581596048001': dict(name='三得利乌龙茶', price=6.0, weight=528.0),
     '6920459989463001': dict(name='冰糖雪梨', price=6.0, weight=549.0),
     '4891028705949001': dict(name='维他柠檬茶', price=7.0, weight=552.0),
