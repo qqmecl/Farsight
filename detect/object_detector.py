@@ -63,7 +63,6 @@ class ObjectDetector:
             self.dynamicTracker.append(DynamicTrack())
 
         while True:
-            self.left_box_pixel = None
             try:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
                 frame_truncated = self.dynamicTracker[index].check(frame_truncated)#get dynamic tracked location
@@ -78,24 +77,63 @@ class ObjectDetector:
                         x = frame_truncated.shape[0] - self.frame_merge_left.shape[0]
                         if x == 0:
                             frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
-                            self.left_box_pixel = self.frame_merge_left.shape[1]
+                            left_box_pixel = self.frame_merge_left.shape[1]
                         else:
                             y = abs(x)
                             if y - x:
                                 fill = np.zeros((y, frame_truncated.shape[1], 3), np.uint8)
                                 frame_truncated = np.concatenate((frame_truncated, fill), axis = 0)
-                                self.left_box_pixel = self.frame_merge_left.shape[1]
+                                left_box_pixel = self.frame_merge_left.shape[1]
                                 frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
                             else:
                                 fill = np.zeros((y, self.frame_merge_left.shape[1], 3), np.uint8)
                                 self.frame_merge_left = np.concatenate((self.frame_merge_left, fill), axis = 0)
-                                self.left_box_pixel = self.frame_merge_left.shape[1]
+                                left_box_pixel = self.frame_merge_left.shape[1]
                                 frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
 
+                        # cv.imwrite(writePath + str(x) + '.jpg', frame_merge)
+
+
+                # if frame_truncated is not None:
+                #     row = frame_truncated.shape[0]
+                #     col = frame_truncated.shape[1]
+                #     if row>col:
+                #         fill = np.zeros((row,row-col,3),np.uint8)
+                #         frame_truncated = np.concatenate((frame_truncated,fill),1)
+                #     else:
+                #         fill = np.zeros((col-row,col,3),np.uint8)
+                #         frame_truncated = np.concatenate((frame_truncated,fill),0)
+
+                #     x += 1
+                #     if x % 2:
+                #         self.frame_merge_left = frame_truncated
+                #     else:
+                #         y = frame_truncated.shape[0] - self.frame_merge_left.shape[0]
+                #         if y > 0:
+                #             z = y % 2
+                #             y = y // 2
+                #             frame_x = cv.copyMakeBorder(self.frame_merge_left, y, y + z, y, y, cv.BORDER_CONSTANT, value=[0,0,0])
+                #             frame_merge = np.concatenate((frame_x, frame_truncated), axis = 1)
+                #         elif y == 0:
+                #             frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                #         elif y < 0:
+                #             z = abs(y) % 2
+                #             y = abs(y) // 2
+                #             frame_x = cv.copyMakeBorder(frame_truncated, y, y + z, y, y, cv.BORDER_CONSTANT, value=[0,0,0])
+                #             frame_merge = np.concatenate((self.frame_merge_left, frame_x), axis = 1)
+                        # cv.imwrite(writePath + str(x) + '.jpg', frame_merge)
+                        # cv.imshow('frame', frame_merge)
 
                         enlarge_num = frame_merge.shape[1] / 300
-                        results = self.detect_objects(frame_merge,frame_time, enlarge_num)
-                   
+                        results = self.detect_objects(frame_merge,frame_time, enlarge_num, left_box_pixel)
+                    # if len(results) > 0:
+                        # print(results)
+                        # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
+
+                    # if results:
+                        # settings.logger.info('{}'.format(results[0][1]))
+                # if len(results) >0:
+                     # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
 
                 if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
                     print("object delte detect")
@@ -108,6 +146,44 @@ class ObjectDetector:
             except queue.Empty:#不进行识别判断的时候帧会变空
                 # print('[EMPTY] input_q is: ')
                 pass
+
+    ##当前只考虑单帧的判断
+    def detect_objects(self,frame,frame_time, enlarge_num, left_box_pixel):
+        self.frameCount += 1
+        results=[]
+        rows = frame.shape[0]
+        cols = frame.shape[1]
+
+        # frame = originalFrame.copy()
+        frame = cv.resize(frame, (300, 300))
+
+        frame = frame[:, :, [2, 1, 0]]
+
+        out = self.tf_sess.run(self.tensor_dict,feed_dict={self.image_tensor: frame.reshape(1, frame.shape[0], frame.shape[1], 3)})
+        out['num_detections'] = int(out['num_detections'][0])
+        out['detection_classes'] = out['detection_classes'][0].astype(np.uint8)
+        out['detection_boxes'] = out['detection_boxes'][0]
+        out['detection_scores'] = out['detection_scores'][0]
+
+        for i in range(out['num_detections']):
+            confidence = out['detection_scores'][i]
+            if confidence > self.confidenceThreshold:
+                bbox = out['detection_boxes'][i]
+                # cv.imwrite(self.writePath + time.strftime('%Y_%m_%d_%H_%M_%S_',time.localtime(time.time())) + '.jpg', bbox)
+                # cv.rectangle(originalFrame,
+                #     (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
+                #         (0,0,255))
+                box_left_cols = int(bbox[1] + cols)
+                box_right_cols = int(bbox[3] + cols)
+                frame_left_cols = self.frame_merge_left.shape[1]
+                left_box_pixel = int(left_box_pixel / enlarge_num)
+                if box_left_cols > left_box_pixel and box_left_cols < frame_left_cols + 1 and box_right_cols > frame_left_cols:
+                    continue
+                itemId = self.classNames[out['detection_classes'][i]]
+                results.append((confidence,itemId,frame_time))
+      
+        return results#默认返回空值
+
 
     def readPbCfg(self,path):
         _id = None
@@ -128,29 +204,4 @@ class ObjectDetector:
         f.close()
 
 
-    def detect_objects(self,originalFrame,frame_time, enlarge_num):
-        self.frameCount += 1
-        results=[]
-        rows = originalFrame.shape[0]
-        cols = originalFrame.shape[1]
-        frame = originalFrame.copy()
-        frame = cv.resize(frame, (300, 300))
-        frame = frame[:, :, [2, 1, 0]]
-
-        out = self.tf_sess.run(self.tensor_dict,feed_dict={self.image_tensor: frame.reshape(1, frame.shape[0], frame.shape[1], 3)})
-        out['num_detections'] = int(out['num_detections'][0])
-        out['detection_classes'] = out['detection_classes'][0].astype(np.uint8)
-        out['detection_boxes'] = out['detection_boxes'][0]
-        out['detection_scores'] = out['detection_scores'][0]
-
-        for i in range(out['num_detections']):
-            confidence = out['detection_scores'][i]
-            if confidence > self.confidenceThreshold:
-                bbox = out['detection_boxes'][i]
-                left_box_pixel = int(self.left_box_pixel / enlarge_num)
-                if int(bbox[1] * cols) > left_box_pixel and int(bbox[1] * cols) < self.frame_merge_left.shape[1] + 1 and int(bbox[3] * cols) > self.frame_merge_left.shape[1]:
-                    continue
-                itemId = self.classNames[out['detection_classes'][i]]
-                results.append((confidence,itemId,frame_time))
-      
-        return results
+    
