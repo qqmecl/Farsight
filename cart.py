@@ -97,7 +97,7 @@ class Cart:
         delta = self.start_weight - _mean
         #empty current cart
         # if abs(self.realWeight - self.theoryWeight) < 50:
-        if abs(delta) < 50:
+        if abs(delta) < 100:
             for _id,num in self.items.items():
                 for i in range(num):
                     self.IO.update_screen_item(False,_id)
