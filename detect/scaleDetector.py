@@ -26,6 +26,8 @@ class ScaleDetector:
 		if motion == "PUSH":
 			self.curOut0 = self.IO.get_stable_scale()
 
+			if self.detectState == "PULL_CHECKING":
+				self.detectState = "NORMAL"
 			# if self.index == 0:
 				# print("this push scale is: ",self.curOut0)
 
@@ -46,13 +48,14 @@ class ScaleDetector:
 						# settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
 						_id = self.detectCache[0]["id"]
 						
-						for i in range(self.detectCache[0]["fetch_num"]):
-							self.cart.add_item(_id,self.lastDetectTime)
+						# for i in range(self.detectCache[0]["fetch_num"]):
+							# self.cart.add_item(_id,self.lastDetectTime)
+						self.cart.add_item(_id,self.lastDetectTime)
 
 						self.detectState = "NORMAL"
-					else:
-						if self.index == 0:
-							print("scale chane val not enough, so return check!!!",delta)
+					# else:
+						# if self.index == 0:
+							# print("scale chane val not enough, so return check!!!",delta)
 			else:
 				self.handInVal = self.IO.get_stable_scale()
 
@@ -60,8 +63,9 @@ class ScaleDetector:
 					if self.handInVal - self.handOutVal > 50:
 						print("push_checking in back success!!")
 						_id = self.detectCache[0]["id"]
-						for i in range(self.detectCache[0]["fetch_num"]):
-							self.cart.remove_item(_id,self.lastDetectTime)
+						# for i in range(self.detectCache[0]["fetch_num"]):
+							# self.cart.remove_item(_id,self.lastDetectTime)
+						self.cart.remove_item(_id,self.lastDetectTime)
 
 						self.detectState = "NORMAL"
 						self.curOut0 = self.handInVal
@@ -76,7 +80,7 @@ class ScaleDetector:
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
 
 			print(detect)
-			print("action time is: ",self.lastDetectTime)
+			# print("action time is: ",self.lastDetectTime)
 
 			id = detect[0]["id"]
 			if settings.items[id]['name'] == "empty_hand":

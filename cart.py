@@ -22,7 +22,7 @@ class Cart:
 
         delta = abs(actionTime - self.lastActionTime)
 
-        print("cart: ",delta,actionTime,self.lastActionTime)
+        print("cart delta ",delta)
 
         if delta > 0 and delta < 0.2:
             return True
