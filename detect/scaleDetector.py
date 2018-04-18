@@ -17,7 +17,7 @@ class ScaleDetector:
 		self.lastScale = 0
 
 		self.handOutVal = 0
-		self.handInVal = 0
+		# self.handInVal = 0
 
 		self.curActionDelta = 0
 		self.lastDetectTime = 0
@@ -34,7 +34,6 @@ class ScaleDetector:
 			if self.cart.getStartWeight() is None:
 				self.cart.setStartWeight(self.lastScale)
 
-			
 			if self.detectState == "PULL_CHECKING":
 				self.detectState = "NORMAL"
 
@@ -44,47 +43,63 @@ class ScaleDetector:
 		elif motion == "PULL":
 			self.lastPullVal = self.IO.get_stable_scale()
 		else:
-			if not isCover:
-				self.handOutVal = self.IO.get_stable_scale()
+			# if not isCover:
+			# 	self.handOutVal = self.IO.get_stable_scale()
+			# 	if self.detectState == "PULL_CHECKING":
+			# 		delta = self.handOutVal - self.lastScale
+			# 		if delta < -(self.curActionDelta/2):
+			# 			_id = self.detectCache[0]["id"]
+			# 			# for i in range(self.detectCache[0]["fetch_num"]):
+			# 				# self.cart.add_item(_id,self.lastDetectTime)
+			# 			self.cart.add_item(_id,self.lastDetectTime)
+			# 			self.detectState = "NORMAL"
+			# 		else:
+			# 			if self.index == 0:
+			# 				print("current handOutVal: ",self.handOutVal)
+			# 				print("last scale is: ",self.lastScale)
+			# 				print("                                              ")
+			# else:
+			# 	current = self.IO.get_stable_scale()
+			# 	if self.detectState == "PUSH_CHECKING":
+			# 		if self.handInVal - self.handOutVal > (self.curActionDelta/2):
+			# 			print("push_checking in back success!!")
+			# 			_id = self.detectCache[0]["id"]
 
-				# if self.index == 0:
-				# 	print("this handout val is: ",self.handOutVal,self.curOut0)
+			# 			# for i in range(self.detectCache[0]["fetch_num"]):
+			# 				# self.cart.remove_item(_id,self.lastDetectTime)
+			# 			self.cart.remove_item(_id,self.lastDetectTime)
+			# 			self.detectState = "NORMAL"
+			# 			self.lastScale = self.handOutVal+ self.curActionDelta
+
+			current = self.IO.get_stable_scale()
+
+			delta = current - self.lastScale
+			
+			if self.detectState == "PULL_CHECKING":
 				
-				if self.detectState == "PULL_CHECKING":
-					# print("pull_checking state")
+				if delta < -(self.curActionDelta/2):
+					_id = self.detectCache[0]["id"]
+					# for i in range(self.detectCache[0]["fetch_num"]):
+						# self.cart.add_item(_id,self.lastDetectTime)
+					self.cart.add_item(_id,self.lastDetectTime)
+					self.detectState = "NORMAL"
+				# else:
+				# 	if self.index == 0:
+				# 		print("current handOutVal: ",self.handOutVal)
+				# 		print("last scale is: ",self.lastScale)
+				# 		print("                                              ")
+			
+			if self.detectState == "PUSH_CHECKING":
+				if delta > (self.curActionDelta/2):
+					print("push_checking in back success!!")
+					_id = self.detectCache[0]["id"]
 
-					delta = self.handOutVal - self.lastScale
+					# for i in range(self.detectCache[0]["fetch_num"]):
+						# self.cart.remove_item(_id,self.lastDetectTime)
+					self.cart.remove_item(_id,self.lastDetectTime)
+					self.detectState = "NORMAL"
+					self.lastScale = current+ self.curActionDelta
 
-					if delta < -(self.curActionDelta/2):
-						_id = self.detectCache[0]["id"]
-						
-						# for i in range(self.detectCache[0]["fetch_num"]):
-							# self.cart.add_item(_id,self.lastDetectTime)
-
-						self.cart.add_item(_id,self.lastDetectTime)
-
-						self.detectState = "NORMAL"
-					else:
-						if self.index == 0:
-							print("current handOutVal: ",self.handOutVal)
-							print("last scale is: ",self.lastScale)
-							print("                                              ")
-			else:
-				self.handInVal = self.IO.get_stable_scale()
-
-				if self.detectState == "PUSH_CHECKING":
-					if self.handInVal - self.handOutVal > (self.curActionDelta/2):
-						print("push_checking in back success!!")
-						_id = self.detectCache[0]["id"]
-
-						# for i in range(self.detectCache[0]["fetch_num"]):
-							# self.cart.remove_item(_id,self.lastDetectTime)
-
-						self.cart.remove_item(_id,self.lastDetectTime)
-
-						self.detectState = "NORMAL"
-
-						self.lastScale = self.handOutVal+ self.curActionDelta
 
 	#two judge will not interfere with each other
 	def detect_check(self,detectResults):
