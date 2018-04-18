@@ -20,7 +20,6 @@ else:
     LABEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'pascal_label_map.pbtxt')
 
 
-
 class ObjectDetector:
     def __init__(self,input_q,items,detection_queue):
         setproctitle('[farsight] model_inferencing_processor')
@@ -64,40 +63,48 @@ class ObjectDetector:
             self.dynamicTracker.append(DynamicTrack())
 
         while True:
+            self.left_box_pixel = None
             try:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
-
                 frame_truncated = self.dynamicTracker[index].check(frame_truncated)#get dynamic tracked location
-
                 results = []
+                sign %= 99
 
                 if frame_truncated is not None:
-                    row = frame_truncated.shape[0]
-                    col = frame_truncated.shape[1]
-                    if row>col:
-                        fill = np.zeros((row,row-col,3),np.uint8)
-                        frame_truncated = np.concatenate((frame_truncated,fill),1)
+                    sign += 1
+                    if sign % 2:
+                        self.frame_merge_left = frame_truncated
                     else:
-                        fill = np.zeros((col-row,col,3),np.uint8)
-                        frame_truncated = np.concatenate((frame_truncated,fill),0)
+                        x = frame_truncated.shape[0] - self.frame_merge_left.shape[0]
+                        if x == 0:
+                            frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                            self.left_box_pixel = self.frame_merge_left.shape[1]
+                        else:
+                            y = abs(x)
+                            if y - x:
+                                fill = np.zeros((y, frame_truncated.shape[1], 3), np.uint8)
+                                frame_truncated = np.concatenate((frame_truncated, fill), axis = 0)
+                                self.left_box_pixel = self.frame_merge_left.shape[1]
+                                frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                            else:
+                                fill = np.zeros((y, self.frame_merge_left.shape[1], 3), np.uint8)
+                                self.frame_merge_left = np.concatenate((self.frame_merge_left, fill), axis = 0)
+                                self.left_box_pixel = self.frame_merge_left.shape[1]
+                                frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
 
-                    results = self.detect_objects(frame_truncated,index,frame_time)
 
-                    # if results:
-                        # settings.logger.info('{}'.format(results[0][1]))
-                # if len(results) >0:
-                     # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
+                        enlarge_num = frame_merge.shape[1] / 300
+                        results = self.detect_objects(frame_merge,frame_time, enlarge_num)
+                   
 
                 if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
                     print("object delte detect")
                     waste = detection_queue.get_nowait()
                 try:
                     detection_queue.put_nowait([index,motionType,results,frame_time])#not a good structure
-                    
                 except queue.Full:
                     print('[FULL]')
                     pass
-
             except queue.Empty:#不进行识别判断的时候帧会变空
                 # print('[EMPTY] input_q is: ')
                 pass
@@ -120,8 +127,8 @@ class ObjectDetector:
                         # self.classNames[_id] = name
         f.close()
 
-    ##当前只考虑单帧的判断
-    def detect_objects(self,originalFrame,index,frame_time):
+
+    def detect_objects(self,originalFrame,frame_time, enlarge_num):
         self.frameCount += 1
         results=[]
         rows = originalFrame.shape[0]
@@ -140,10 +147,10 @@ class ObjectDetector:
             confidence = out['detection_scores'][i]
             if confidence > self.confidenceThreshold:
                 bbox = out['detection_boxes'][i]
-                # cv.rectangle(originalFrame,
-                    # (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
-                        # (0,0,255))
+                left_box_pixel = int(self.left_box_pixel / enlarge_num)
+                if int(bbox[1] * cols) > left_box_pixel and int(bbox[1] * cols) < self.frame_merge_left.shape[1] + 1 and int(bbox[3] * cols) > self.frame_merge_left.shape[1]:
+                    continue
                 itemId = self.classNames[out['detection_classes'][i]]
                 results.append((confidence,itemId,frame_time))
       
-        return results#默认返回空值
+        return results

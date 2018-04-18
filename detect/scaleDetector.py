@@ -43,52 +43,17 @@ class ScaleDetector:
 		elif motion == "PULL":
 			self.lastPullVal = self.IO.get_stable_scale()
 		else:
-			# if not isCover:
-			# 	self.handOutVal = self.IO.get_stable_scale()
-			# 	if self.detectState == "PULL_CHECKING":
-			# 		delta = self.handOutVal - self.lastScale
-			# 		if delta < -(self.curActionDelta/2):
-			# 			_id = self.detectCache[0]["id"]
-			# 			# for i in range(self.detectCache[0]["fetch_num"]):
-			# 				# self.cart.add_item(_id,self.lastDetectTime)
-			# 			self.cart.add_item(_id,self.lastDetectTime)
-			# 			self.detectState = "NORMAL"
-			# 		else:
-			# 			if self.index == 0:
-			# 				print("current handOutVal: ",self.handOutVal)
-			# 				print("last scale is: ",self.lastScale)
-			# 				print("                                              ")
-			# else:
-			# 	current = self.IO.get_stable_scale()
-			# 	if self.detectState == "PUSH_CHECKING":
-			# 		if self.handInVal - self.handOutVal > (self.curActionDelta/2):
-			# 			print("push_checking in back success!!")
-			# 			_id = self.detectCache[0]["id"]
-
-			# 			# for i in range(self.detectCache[0]["fetch_num"]):
-			# 				# self.cart.remove_item(_id,self.lastDetectTime)
-			# 			self.cart.remove_item(_id,self.lastDetectTime)
-			# 			self.detectState = "NORMAL"
-			# 			self.lastScale = self.handOutVal+ self.curActionDelta
-
 			current = self.IO.get_stable_scale()
-
 			delta = current - self.lastScale
 			
 			if self.detectState == "PULL_CHECKING":
-				
 				if delta < -(self.curActionDelta/2):
 					_id = self.detectCache[0]["id"]
 					# for i in range(self.detectCache[0]["fetch_num"]):
 						# self.cart.add_item(_id,self.lastDetectTime)
 					self.cart.add_item(_id,self.lastDetectTime)
 					self.detectState = "NORMAL"
-				# else:
-				# 	if self.index == 0:
-				# 		print("current handOutVal: ",self.handOutVal)
-				# 		print("last scale is: ",self.lastScale)
-				# 		print("                                              ")
-			
+				
 			if self.detectState == "PUSH_CHECKING":
 				if delta > (self.curActionDelta/2):
 					print("push_checking in back success!!")

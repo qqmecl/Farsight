@@ -47,8 +47,8 @@ class VideoStream:
                     self.cnt = 0
 
                 motionType = self.motionChecker.checkInput(frame[:,int(DEFAULT_WIDTH/2)-10:int(DEFAULT_WIDTH/2)+10],time.time())
-                if self.cnt %3 == 0 or motionType != "None":
-                    self.call_back(self.src,frame,motionType)
+                # if self.cnt %3 == 0 or motionType != "None":
+                self.call_back(self.src,frame,motionType)
 
     def setSending(self,state):
         self.isSending = state
