@@ -39,9 +39,9 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         meanVal -= _max
 
         _len = len(vals) - 2
-        
+
         if _len > 0:
-            self.stable_scale_val = meanVal/_len
+            self.stable_scale_val = int(meanVal/_len)
 
     def get_stable_scale(self):
         return self.stable_scale_val
@@ -57,7 +57,6 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     '''
     	speaker部分接口
     '''
-
 
 
 

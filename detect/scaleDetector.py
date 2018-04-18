@@ -8,23 +8,24 @@ class ScaleDetector:
 		self.reset()
 
 	def reset(self):
-		self.curOut0 = 0
+		self.lastScale = 0
 
 		self.handOutVal = 0
 		self.handInVal = 0
 
-		self.curIn0 = 0
-		self.curIn1 = 0
+		self.curActionDelta = 0
+		
 
 		self.lastDetectTime = 0
 		self.detectState = "NORMAL"
 		self.detectCache = None
 
+
 	def check(self,motions):
 		motion,isCover = motions[0],motions[1]
 		# print(motion,isCover)
 		if motion == "PUSH":
-			self.curOut0 = self.IO.get_stable_scale()
+			self.lastScale = self.IO.get_stable_scale()
 
 			if self.detectState == "PULL_CHECKING":
 				self.detectState = "NORMAL"
@@ -43,9 +44,10 @@ class ScaleDetector:
 				if self.detectState == "PULL_CHECKING":
 					# print("pull_checking state")
 
-					delta = self.handOutVal-self.curOut0
-					if delta < -50:
-						# settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
+					delta = self.handOutVal-self.lastScale
+
+					if delta < -(self.curActionDelta/2):
+
 						_id = self.detectCache[0]["id"]
 						
 						# for i in range(self.detectCache[0]["fetch_num"]):
@@ -60,7 +62,7 @@ class ScaleDetector:
 				self.handInVal = self.IO.get_stable_scale()
 
 				if self.detectState == "PUSH_CHECKING":
-					if self.handInVal - self.handOutVal > 50:
+					if self.handInVal - self.handOutVal > (self.curActionDelta/2):
 						print("push_checking in back success!!")
 						_id = self.detectCache[0]["id"]
 						# for i in range(self.detectCache[0]["fetch_num"]):
@@ -68,7 +70,8 @@ class ScaleDetector:
 						self.cart.remove_item(_id,self.lastDetectTime)
 
 						self.detectState = "NORMAL"
-						self.curOut0 = self.handInVal
+
+						self.lastScale = self.handOutVal+ self.curActionDelta
 
 	#two judge will not interfere with each other
 	def detect_check(self,detectResults):
@@ -79,10 +82,11 @@ class ScaleDetector:
 
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
 
-			print(detect)
+			# print(detect)
 			# print("action time is: ",self.lastDetectTime)
 
-			id = detect[0]["id"]
+			_id = detect[0]["id"]
+
 			if settings.items[id]['name'] == "empty_hand":
 				print("check empty hand take out")
 				detectResults.resetDetect()
@@ -92,9 +96,10 @@ class ScaleDetector:
 				self.detectState = "PULL_CHECKING"
 			else:
 				self.detectState = "PUSH_CHECKING"
+
+			self.curActionDelta = settings.items[_id]['weight']
 			
 			self.detectCache = detect
-
 			detectResults.resetDetect()
 			detectResults.setActionTime()
 
