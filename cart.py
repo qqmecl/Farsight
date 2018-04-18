@@ -25,8 +25,9 @@ class Cart:
         self.screen = io.screen
         self.lastActionTime = None
 
-        cartCheck = tornado.ioloop.PeriodicCallback(self.cart_check,150)
-        cartCheck.start()
+        if settings.has_scale:
+            cartCheck = tornado.ioloop.PeriodicCallback(self.cart_check,150)
+            cartCheck.start()
         
 
     def timeCheck(self,actionTime):
@@ -68,6 +69,7 @@ class Cart:
             return True
 
         return False
+
 
     def getStartWeight(self):
         return self.start_weight

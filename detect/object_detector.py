@@ -19,7 +19,6 @@ else:
     MODEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'frozen_inference_graph.pb')
     LABEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'pascal_label_map.pbtxt')
 
-
 class ObjectDetector:
     def __init__(self,input_q,items,detection_queue):
         setproctitle('[farsight] model_inferencing_processor')
@@ -61,6 +60,8 @@ class ObjectDetector:
 
         for i in range(2):
             self.dynamicTracker.append(DynamicTrack())
+
+        sign = 0
 
         while True:
             try:
