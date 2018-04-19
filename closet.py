@@ -342,9 +342,14 @@ class Closet:
 
         order = self.cart.as_order()
         order["token"] = self.door_token
-
         self.cart.reset()
-        # order["data"]={}
+
+        order_data = order["data"]
+        for k,v in order_data.items():
+            print("final order is: ",settings.items[k]["name"],v)
+
+
+        order["data"]={}
 
         strData = json.dumps(order)
         self.pollData = self.encrypter.aes_cbc_encrypt(strData, key = settings.sea_key)

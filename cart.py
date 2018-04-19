@@ -16,8 +16,9 @@ class Cart:
         self.IO = io
 
         self.start_weight = None
+        self.init_weight = None
         # self.theoryWeight = None
-        self.realWeight = None
+        # self.realWeight = None
 
         self.lastActionItem = None
         # self.lastPutBack = None
@@ -92,7 +93,10 @@ class Cart:
     def setStartWeight(self,weight):
         self.start_weight = weight
         # self.theoryWeight = weight
-        # print("theory weight is: ",weight)
+        print("start weight is: ",weight)
+
+        if self.init_weight is None:
+            self.init_weight = weight
 
 
     def cart_check(self):
@@ -113,9 +117,9 @@ class Cart:
         # print("start_weight: ",self.start_weight," current is: ",_mean)
 
 
-        delta = self.start_weight - _mean
+        delta = self.init_weight - _mean
 
-        self.realWeight = _mean
+        # self.realWeight = _mean
 
         #empty current cart
         # if abs(self.realWeight - self.theoryWeight) < 50:
@@ -136,11 +140,12 @@ class Cart:
                 theoryWeight -= settings.items[_id]["weight"]
 
 
-        delta2 = theoryWeight - self.realWeight
+        delta2 = theoryWeight - _mean
 
-        print("theoryWeight is: ",theoryWeight)
-        print("realWeight is: ",self.realWeight)
-        print("delta2 is: ",delta2)
+        # print("start_weight is: ",self.start_weight)
+        # print("theoryWeight is: ",theoryWeight)
+        # print("realWeight is: ",_mean)
+        # print("delta2 is: ",delta2)
 
         if delta2 > 100:
             if self.lastActionItem != None:
