@@ -30,6 +30,7 @@ class Cart:
             cartCheck.start()
         
 
+    # def 
     def timeCheck(self,actionTime):
         if self.lastActionTime is None:
             self.lastActionTime = actionTime
@@ -51,6 +52,8 @@ class Cart:
 
         self.theoryWeight += settings.items[item_id]["weight"]
 
+        settings.logger.warning('camera shot Take out {0}'.format(settings.items[item_id]["name"]))
+
         self.IO.update_screen_item(True,item_id)
 
         self.lastActionTime = actionTime
@@ -63,6 +66,8 @@ class Cart:
             self.items[item_id] -= 1
 
             self.theoryWeight -= settings.items[item_id]["weight"]
+
+            settings.logger.warning('camera shot Put back {0}'.format(settings.items[item_id]["name"]))
 
             self.IO.update_screen_item(False,item_id)
             self.lastActionTime = actionTime
@@ -108,4 +113,8 @@ class Cart:
 
     def as_order(self):
         from common.util import get_mac_address
+
         return dict(data=self.items,code=get_mac_address())
+
+    def reset(self):
+        self.items={}
