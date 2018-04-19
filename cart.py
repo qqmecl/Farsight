@@ -117,7 +117,7 @@ class Cart:
 
         #empty current cart
         # if abs(self.realWeight - self.theoryWeight) < 50:
-        if abs(delta) < 100:
+        if abs(delta) < 70:
             for _id,num in self.items.items():
                 for i in range(num):
                     self.IO.update_screen_item(False,_id)
@@ -128,11 +128,13 @@ class Cart:
 
 
         delta2 = self.theoryWeight - self.realWeight
-        if delta2 > 150:
+
+        print("delta2 is: ",delta2)
+        if delta2 > 100:
             if self.lastTakeOut != None:
                 self.add_item(self.lastTakeOut,self.lastActionTime)
                 self.lastTakeOut = None
-        elif delta2 < -150:
+        elif delta2 < -100:
             if self.lastPutBack != None:
                 self.remove_item(self.lastPutBack,self.lastActionTime)
                 self.lastTakeOut = None
