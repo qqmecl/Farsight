@@ -33,8 +33,8 @@ class ScaleDetector:
 			if self.detectState == "PULL_CHECKING":
 				self.detectState = "NORMAL"
 
-			if self.index == 0:
-				print("this push scale is: ",self.lastScale)
+			# if self.index == 0:
+				# print("this push scale is: ",self.lastScale)
 
 		elif motion == "PULL":
 			self.lastPullVal = self.IO.get_stable_scale()
@@ -47,7 +47,7 @@ class ScaleDetector:
 					_id = self.detectCache[0]["id"]
 					
 					for i in range(self.detectCache[0]["fetch_num"]):
-						print("add_item")
+						# print("add_item")
 						self.cart.add_item(_id,self.lastDetectTime)
 
 					self.detectState = "NORMAL"
@@ -75,7 +75,7 @@ class ScaleDetector:
 
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
 
-			print(detect)
+			# print(detect)
 			# print("action time is: ",self.lastDetectTime)
 			_id = detect[0]["id"]
 
