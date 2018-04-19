@@ -27,13 +27,13 @@ class MotionDetect:
             self.hand_present -= 3 #不被覆盖就减状态
 
         if abs(self.hand_present) > 6:
-            self.hand_present = self.hand_present / abs(self.hand_present) * 6 # 状态只在[-6,6]区间内
+            self.hand_present = self.hand_present // abs(self.hand_present) * 6 # 状态只在[-6,6]区间内
         
         # 状态从-6变到6 或 从6变到-6
         if (self.hand_present != self.hand_last) and (abs(self.hand_present) == 6): 
             motion = self.hand_last - self.hand_present
             if motion!= 0:
-                motion = motion / abs(motion)
+                motion = motion // abs(motion)
                 self.hand_last = self.hand_present
                 return (self.motion_dict[motion],isCover)
         

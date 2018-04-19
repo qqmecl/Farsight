@@ -16,9 +16,6 @@ class ScaleDetector:
 	def reset(self):
 		self.lastScale = 0
 
-		self.handOutVal = 0
-		self.handInVal = 0
-
 		self.curActionDelta = 0
 		self.lastDetectTime = 0
 		self.detectState = "NORMAL"
@@ -71,6 +68,7 @@ class ScaleDetector:
 					self.cart.remove_item(_id,self.lastDetectTime)
 					self.detectState = "NORMAL"
 					self.lastScale += self.curActionDelta
+
 
 	#two judge will not interfere with each other
 	def detect_check(self,detectResults):

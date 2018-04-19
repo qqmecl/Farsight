@@ -257,6 +257,7 @@ class Closet:
 
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
+        
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
                 while(not self._detection_queue.empty()):
                     result = self._detection_queue.get_nowait()
