@@ -97,6 +97,7 @@ class ScaleDetector:
 
 	def notifyCloseDoor(self):
 		if self.detectState == "PULL_CHECKING":
+			
 			_id = self.detectCache[0]["id"]
 			self.cart.add_item(_id,self.lastDetectTime)
 			self.detectState = "NORMAL"

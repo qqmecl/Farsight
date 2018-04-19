@@ -6,35 +6,27 @@ import numpy as np
 import tornado.ioloop
 
 class Cart:
-    '''
-        虚拟购物车
-    '''
     MIN_ADD_THRESHOLD = 2
     MIN_REMOVE_THRESHOLD = 2
 
     def __init__(self, io):
         self.IO = io
-
-        self.start_weight = None
-        self.init_weight = None
-        # self.theoryWeight = None
-        # self.realWeight = None
-
-        self.lastActionItem = None
-        # self.lastPutBack = None
-
-
-        self.scale_vals = Queue(6)
-
-
         self.items = {}
         self.screen = io.screen
-        self.lastActionTime = None
 
         if settings.has_scale:
-            cartCheck = tornado.ioloop.PeriodicCallback(self.cart_check,150)
+            self.scale_vals = Queue(6)
+            self.start_weight = None
+            self.init_weight = None
+
+            self.before_doorOpen_weight = None
+            self.after_doorClose_weight = None
+
+            self.lastActionItem = None
+            self.lastActionTime = None
+
+            cartCheck = tornado.ioloop.PeriodicCallback(self.cart_check,60)
             cartCheck.start()
-        
 
     def timeCheck(self,actionTime):
         if self.lastActionTime is None:
@@ -46,6 +38,7 @@ class Cart:
 
         return False
 
+
     def add_item(self, item_id,actionTime):  # TODO: update screen display
         if self.timeCheck(actionTime):
             return
@@ -55,15 +48,12 @@ class Cart:
         else:
             self.items[item_id] = 1
 
-        # self.theoryWeight -= settings.items[item_id]["weight"]
-
         settings.logger.warning('camera shot Take out {0}'.format(settings.items[item_id]["name"]))
-
-        self.lastActionItem = item_id
-
         self.IO.update_screen_item(True,item_id)
 
-        self.lastActionTime = actionTime
+        if settings.has_scale:
+            self.lastActionItem = item_id
+            self.lastActionTime = actionTime
 
     def remove_item(self, item_id,actionTime):
         if self.timeCheck(actionTime):
@@ -72,15 +62,13 @@ class Cart:
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
 
-            self.lastActionItem = item_id
-
-            # self.theoryWeight += settings.items[item_id]["weight"]
-
             settings.logger.warning('camera shot Put back {0}'.format(settings.items[item_id]["name"]))
-
             self.IO.update_screen_item(False,item_id)
 
-            self.lastActionTime = actionTime
+            if settings.has_scale:
+                self.lastActionItem = item_id
+                self.lastActionTime = actionTime
+
             return True
 
         return False
@@ -98,7 +86,12 @@ class Cart:
         if self.init_weight is None:
             self.init_weight = weight
 
+    def setBeforDoorOpenWeight(self):
+        self.before_doorOpen_weight = self.IO.get_stable_scale()
 
+    def setAfterDoorCloseWeight(self):
+        self.after_doorClose_weight = self.IO.get_stable_scale()
+       
     def cart_check(self):
         if self.start_weight is None:
             return
