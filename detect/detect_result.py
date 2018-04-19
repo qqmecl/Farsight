@@ -21,6 +21,7 @@ class DetectResult:
 
             if motion is not "None":
                 self.motionTime[motion]=frame_time
+                print('fgdfg')
 
             # for val in detects:
             #     (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
@@ -138,7 +139,7 @@ class DetectResult:
     def loadData(self,detects):
         count={}
         for val in detects:
-            _id = val[1]
+            # _id = val[1] #???? repetition
             count[_id]=0
 
         for val in detects:
