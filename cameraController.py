@@ -33,18 +33,18 @@ class VideoStream:
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,5)
         self.updateScheduler.start()
 
-        self.last = time.time()
-        self.cnt = 0
+        # self.last = time.time()
+        # self.cnt = 0
         self.motionChecker = MotionDetect()
 
     def update(self):
         if self.isSending:
-            self.cnt+=1
+            # self.cnt+=1
             ret,frame = self.stream.read()
             if ret:
-                self.cnt+=1
-                if self.cnt == 99:
-                    self.cnt = 0
+                # self.cnt+=1
+                # if self.cnt == 99:
+                #     self.cnt = 0
 
                 motionType = self.motionChecker.checkInput(frame[:,int(DEFAULT_WIDTH/2)-10:int(DEFAULT_WIDTH/2)+10],time.time())
                 # if self.cnt %3 == 0 or motionType != "None":

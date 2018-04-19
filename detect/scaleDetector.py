@@ -67,7 +67,7 @@ class ScaleDetector:
 						if self.index == 0:
 							print("current handOutVal: ",self.handOutVal)
 							print("last scale is: ",self.lastScale)
-							print("                                              ")
+							print("               space                               ")
 			else:
 				self.handInVal = self.IO.get_stable_scale()
 

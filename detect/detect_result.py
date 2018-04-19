@@ -19,7 +19,7 @@ class DetectResult:
             
             motion = motion[0]
 
-            if motion is not "None":
+            if motion != "None":
                 self.motionTime[motion]=frame_time
 
             # for val in detects:
