@@ -52,7 +52,7 @@ class Cart:
 
         self.theoryWeight += settings.items[item_id]["weight"]
 
-        settings.logger.warning('camera shot Take out {1}'.format(settings.items[item_id]["name"]))
+        settings.logger.warning('camera shot Take out {0}'.format(settings.items[item_id]["name"]))
 
         self.IO.update_screen_item(True,item_id)
 
@@ -67,7 +67,7 @@ class Cart:
 
             self.theoryWeight -= settings.items[item_id]["weight"]
 
-            settings.logger.warning('camera shot Put back {1}'.format(settings.items[item_id]["name"]))
+            settings.logger.warning('camera shot Put back {0}'.format(settings.items[item_id]["name"]))
 
             self.IO.update_screen_item(False,item_id)
             self.lastActionTime = actionTime
