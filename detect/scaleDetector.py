@@ -21,7 +21,6 @@ class ScaleDetector:
 		self.detectState = "NORMAL"
 		self.detectCache = None
 
-
 	def check(self,motions):
 		motion,isCover = motions[0],motions[1]
 		# print(motion,isCover)
@@ -74,7 +73,7 @@ class ScaleDetector:
 
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
 
-			print(detect)
+			# print(detect)
 			# print("action time is: ",self.lastDetectTime)
 			_id = detect[0]["id"]
 
