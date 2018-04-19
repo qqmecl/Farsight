@@ -73,7 +73,7 @@ class ObjectDetector:
                     sign += 1
                     if sign % 2:
                         self.frame_merge_left = frame_truncated
-                        self.lastMotionType,self.lasFrame_time,self.last_index=motionType,frame_time
+                        self.lastMotionType,self.lasFrame_time,self.last_index=motionType,frame_time,index
                     else:
                         x = frame_truncated.shape[0] - self.frame_merge_left.shape[0]
                         if x == 0:
@@ -102,19 +102,20 @@ class ObjectDetector:
 
                             try:
                                 if i==0:
+                                    # if len(results[i]) >1:
+                                        # print("check two item by the same time: ",results[i])
                                     detection_queue.put_nowait([self.last_index,self.lastMotionType,results[i],self.lasFrame_time])#not a good structure
                                 else:
-                                    detection_queue.put_nowait([index,motionType,result,frame_time])#not a good structure
+                                    detection_queue.put_nowait([index,motionType,results[i],frame_time])#not a good structure
                             except queue.Full:
                                 print('[FULL]')
                                 pass
                 else:
-                    results = []
                     if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
                         print("object delte detect")
                         waste = detection_queue.get_nowait()
                     try:
-                        detection_queue.put_nowait([index,motionType,result,frame_time])#not a good structure
+                        detection_queue.put_nowait([index,motionType,[],frame_time])#not a good structure
                     except queue.Full:
                         print('[FULL]')
                         pass

@@ -16,10 +16,15 @@ class Cart:
         self.IO = io
 
         self.start_weight = None
+        self.theoryWeight = None
+        self.realWeight = None
+
+        self.lastTakeOut = None
+        self.lastPutBack = None
+
+
         self.scale_vals = Queue(6)
 
-        self.theoryWeight = 0
-        self.realWeight = 0
 
         self.items = {}
         self.screen = io.screen
@@ -30,7 +35,6 @@ class Cart:
             cartCheck.start()
         
 
-    # def 
     def timeCheck(self,actionTime):
         if self.lastActionTime is None:
             self.lastActionTime = actionTime
@@ -50,9 +54,11 @@ class Cart:
         else:
             self.items[item_id] = 1
 
-        self.theoryWeight += settings.items[item_id]["weight"]
+        self.theoryWeight -= settings.items[item_id]["weight"]
 
         settings.logger.warning('camera shot Take out {0}'.format(settings.items[item_id]["name"]))
+
+        self.lastTakeOut = item_id
 
         self.IO.update_screen_item(True,item_id)
 
@@ -65,11 +71,14 @@ class Cart:
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
 
-            self.theoryWeight -= settings.items[item_id]["weight"]
+            self.lastPutBack = item_id
+
+            self.theoryWeight += settings.items[item_id]["weight"]
 
             settings.logger.warning('camera shot Put back {0}'.format(settings.items[item_id]["name"]))
 
             self.IO.update_screen_item(False,item_id)
+
             self.lastActionTime = actionTime
             return True
 
@@ -82,6 +91,7 @@ class Cart:
 
     def setStartWeight(self,weight):
         self.start_weight = weight
+        self.theoryWeight = weight
 
 
     def cart_check(self):
@@ -102,6 +112,9 @@ class Cart:
 
 
         delta = self.start_weight - _mean
+
+        self.realWeight = _mean
+
         #empty current cart
         # if abs(self.realWeight - self.theoryWeight) < 50:
         if abs(delta) < 100:
@@ -109,6 +122,20 @@ class Cart:
                 for i in range(num):
                     self.IO.update_screen_item(False,_id)
             self.items={}
+            self.lastPutBack=None
+            self.lastTakeOut=None
+            return
+
+
+        delta2 = self.theoryWeight - self.realWeight
+        if delta2 > 150:
+            if self.lastTakeOut != None:
+                self.add_item(self.lastTakeOut,self.lastActionTime)
+                self.lastTakeOut = None
+        elif delta2 < -150:
+            if self.lastPutBack != None:
+                self.remove_item(self.lastPutBack,self.lastActionTime)
+                self.lastTakeOut = None
 
 
     def as_order(self):
