@@ -27,7 +27,7 @@ class ScaleDetector:
 		if motion == "PUSH":
 			self.lastScale = self.IO.get_stable_scale()
 
-			if self.cart.getStartWeight() is None:
+			if self.cart.getStartWeight() is None or self.cart.isEmpty():
 				self.cart.setStartWeight(self.lastScale)
 				
 			if self.detectState == "PULL_CHECKING":

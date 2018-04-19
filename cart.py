@@ -16,11 +16,11 @@ class Cart:
         self.IO = io
 
         self.start_weight = None
-        self.theoryWeight = None
+        # self.theoryWeight = None
         self.realWeight = None
 
-        self.lastTakeOut = None
-        self.lastPutBack = None
+        self.lastActionItem = None
+        # self.lastPutBack = None
 
 
         self.scale_vals = Queue(6)
@@ -54,11 +54,11 @@ class Cart:
         else:
             self.items[item_id] = 1
 
-        self.theoryWeight -= settings.items[item_id]["weight"]
+        # self.theoryWeight -= settings.items[item_id]["weight"]
 
         settings.logger.warning('camera shot Take out {0}'.format(settings.items[item_id]["name"]))
 
-        self.lastTakeOut = item_id
+        self.lastActionItem = item_id
 
         self.IO.update_screen_item(True,item_id)
 
@@ -71,9 +71,9 @@ class Cart:
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
 
-            self.lastPutBack = item_id
+            self.lastActionItem = item_id
 
-            self.theoryWeight += settings.items[item_id]["weight"]
+            # self.theoryWeight += settings.items[item_id]["weight"]
 
             settings.logger.warning('camera shot Put back {0}'.format(settings.items[item_id]["name"]))
 
@@ -91,14 +91,16 @@ class Cart:
 
     def setStartWeight(self,weight):
         self.start_weight = weight
-        self.theoryWeight = weight
+        # self.theoryWeight = weight
+        # print("theory weight is: ",weight)
 
 
     def cart_check(self):
-        weight = self.IO.get_stable_scale()
-
         if self.start_weight is None:
             return
+
+
+        weight = self.IO.get_stable_scale()
 
         self.scale_vals.enqueue(weight)
         vals = self.scale_vals.getAll()
@@ -127,23 +129,36 @@ class Cart:
             return
 
 
-        delta2 = self.theoryWeight - self.realWeight
+        theoryWeight = self.start_weight
 
+        for _id,num in self.items.items():
+            for i in range(num):
+                theoryWeight -= settings.items[_id]["weight"]
+
+
+        delta2 = theoryWeight - self.realWeight
+
+        print("theoryWeight is: ",theoryWeight)
+        print("realWeight is: ",self.realWeight)
         print("delta2 is: ",delta2)
+
         if delta2 > 100:
-            if self.lastTakeOut != None:
-                self.add_item(self.lastTakeOut,self.lastActionTime)
-                self.lastTakeOut = None
+            if self.lastActionItem != None:
+                self.add_item(self.lastActionItem,self.lastActionTime)
+                self.lastActionItem = None
         elif delta2 < -100:
-            if self.lastPutBack != None:
-                self.remove_item(self.lastPutBack,self.lastActionTime)
-                self.lastTakeOut = None
+            if self.lastActionItem != None:
+                self.remove_item(self.lastActionItem,self.lastActionTime)
+                self.lastActionItem = None
 
 
     def as_order(self):
         from common.util import get_mac_address
 
         return dict(data=self.items,code=get_mac_address())
+
+    def isEmpty(self):
+        return len(self.items)==0
 
     def reset(self):
         self.items={}
