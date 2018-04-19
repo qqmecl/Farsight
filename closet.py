@@ -343,7 +343,7 @@ class Closet:
         self.updateScheduler.stop()
         self.IO.change_to_processing_page()
 
-        order = self.cart.as_order()
+        order = self.cart.getFinalOrder()
         order["token"] = self.door_token
         self.cart.reset()
 

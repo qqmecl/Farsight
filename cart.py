@@ -96,7 +96,6 @@ class Cart:
         if self.start_weight is None:
             return
 
-
         weight = self.IO.get_stable_scale()
 
         self.scale_vals.enqueue(weight)
@@ -149,8 +148,7 @@ class Cart:
                 self.remove_item(self.lastActionItem,self.lastActionTime)
                 self.lastActionItem = None
 
-
-    def as_order(self):
+    def getFinalOrder(self):
         from common.util import get_mac_address
 
         return dict(data=self.items,code=get_mac_address())
@@ -160,3 +158,7 @@ class Cart:
 
     def reset(self):
         self.items={}
+
+        if settings.has_scale:
+            self.start_weight = None
+            self.init_weight = None
