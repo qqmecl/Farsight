@@ -210,7 +210,7 @@ class Screen:
 
 
 if __name__ == '__main__':
-    screen = Screen(port="/dev/ttyS5")
+    screen = Screen()
 
     # screen.change_to_page(Screen.INVENTORY_PAGE)
 
