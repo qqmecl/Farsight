@@ -55,13 +55,15 @@ class ObjectDetector:
         self.frameCount = 0
         self.confidenceThreshold=0.9
         self.items = items
-        self.timeStamp = time.strftime('%Y_%m_%d_%H_%M_%S_',time.localtime(time.time()))
+        self.timeStamp = time.strftime('%H_%M_%S_',time.localtime(time.time()))
         self.dynamicTracker=[]
 
         for i in range(2):
             self.dynamicTracker.append(DynamicTrack())
 
-        self.writePath = os.getcwd() + '/photo/'
+        self.writePath = os.getcwd() + '/photo/'+self.timeStamp+"/"
+        os.makedirs(self.writePath)
+
         # print(writePath)
         sign = 0
         self.vertical = None
@@ -263,11 +265,11 @@ class ObjectDetector:
         results.append(results0)
         results.append(results1)
 
-        if len(results0) > 1:
+        if len(results0) > 0:
             # print(self.frameCount," : ",results0)
             cv.imwrite(self.writePath + str(self.frameCount) + '.jpg', original)
 
-        if len(results1) > 1:
+        if len(results1) > 0:
             # print(self.frameCount," : ",results1)
             cv.imwrite(self.writePath + str(self.frameCount) + '.jpg', original)
 

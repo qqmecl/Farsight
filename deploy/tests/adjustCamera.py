@@ -21,8 +21,11 @@ else:
 
 index = 2
 cap = cv2.VideoCapture(usb_cameras[index])
-# cap = cv2.VideoCapture(0)
 ret=True
+
+
+DEFAULT_WIDTH=640
+DEFAULT_HEIGHT=480
 
 while(ret):
     ret, frame = cap.read()
@@ -30,8 +33,11 @@ while(ret):
         if index > 1:
             frame = cv2.flip(frame,1)
         
-        # frame=frame[20:200,10:100,]
+        centerX=int(DEFAULT_WIDTH/2)-20
+
+        cv2.rectangle(frame, (centerX-10, 0), (centerX+10, DEFAULT_HEIGHT),(0, 0, 255),5)
         cv2.imshow('frame',frame)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
