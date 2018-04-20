@@ -26,8 +26,8 @@ class Cart:
             self.after_doorClose_weight = None
             
 
-            # cartCheck = tornado.ioloop.PeriodicCallback(self.cart_check,60)
-            # cartCheck.start()
+            cartCheck = tornado.ioloop.PeriodicCallback(self.cart_check,60)
+            cartCheck.start()
 
     def timeCheck(self,actionTime):
         if self.lastActionTime is None:
@@ -110,9 +110,9 @@ class Cart:
 
         delta = self.init_weight - _mean
 
-        # self.realWeight = _mean
+        # # self.realWeight = _mean
 
-        #empty current cart
+        # #empty current cart
         # if abs(self.realWeight - self.theoryWeight) < 50:
         if abs(delta) < 70:
             for _id,num in self.items.items():
@@ -124,28 +124,28 @@ class Cart:
             return
 
 
-        theoryWeight = self.start_weight
+        # theoryWeight = self.start_weight
 
-        for _id,num in self.items.items():
-            for i in range(num):
-                theoryWeight -= settings.items[_id]["weight"]
+        # for _id,num in self.items.items():
+        #     for i in range(num):
+        #         theoryWeight -= settings.items[_id]["weight"]
 
 
-        delta2 = theoryWeight - _mean
+        # delta2 = theoryWeight - _mean
 
-        # print("start_weight is: ",self.start_weight)
-        # print("theoryWeight is: ",theoryWeight)
-        # print("realWeight is: ",_mean)
-        # print("delta2 is: ",delta2)
+        # # print("start_weight is: ",self.start_weight)
+        # # print("theoryWeight is: ",theoryWeight)
+        # # print("realWeight is: ",_mean)
+        # # print("delta2 is: ",delta2)
 
-        if delta2 > 100:
-            if self.lastActionItem != None:
-                self.add_item(self.lastActionItem,self.lastActionTime)
-                self.lastActionItem = None
-        elif delta2 < -100:
-            if self.lastActionItem != None:
-                self.remove_item(self.lastActionItem,self.lastActionTime)
-                self.lastActionItem = None
+        # if delta2 > 100:
+        #     if self.lastActionItem != None:
+        #         self.add_item(self.lastActionItem,self.lastActionTime)
+        #         self.lastActionItem = None
+        # elif delta2 < -100:
+        #     if self.lastActionItem != None:
+        #         self.remove_item(self.lastActionItem,self.lastActionTime)
+        #         self.lastActionItem = None
 
     def getFinalOrder(self):
         from common.util import get_mac_address

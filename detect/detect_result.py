@@ -5,7 +5,7 @@ from common.queue import Queue
 
 class DetectResult:
     def __init__(self):
-        self.window = Queue(12)
+        self.window = Queue(30)
         self.logger = multiprocessing.get_logger()
         self.reset()
         self.resetDetect()

@@ -19,7 +19,7 @@ else:
     "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
     ]
 
-index = 2
+index = 0
 cap = cv2.VideoCapture(usb_cameras[index])
 ret=True
 
@@ -30,13 +30,23 @@ DEFAULT_HEIGHT=480
 while(ret):
     ret, frame = cap.read()
     if ret:
-        if index > 1:
-            frame = cv2.flip(frame,1)
         
-        centerX=int(DEFAULT_WIDTH/2)-20
+        
+        centerX=315
 
-        cv2.rectangle(frame, (centerX-10, 0), (centerX+10, DEFAULT_HEIGHT),(0, 0, 255),5)
+        cv2.rectangle(frame, (centerX-10, 0), (centerX+10, DEFAULT_HEIGHT),(0, 0, 255),3)
         cv2.imshow('frame',frame)
+        cv2.imwrite('frame.png',frame)
+
+        # if index > 1:
+        #     frame = cv2.flip(frame,1)
+
+        # if index%2 == 1:
+        #     frame = frame[:, 160: , :]#Camera downstairs
+        # else:
+        #     frame = frame[:, 260: , :]#Camera upstairs
+
+        # cv2.imshow('frame',frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

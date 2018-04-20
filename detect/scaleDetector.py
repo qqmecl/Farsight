@@ -46,9 +46,9 @@ class ScaleDetector:
 				if delta < -(self.curActionDelta/2):
 					_id = self.detectCache[0]["id"]
 					
-					for i in range(self.detectCache[0]["fetch_num"]):
+					#for i in range(self.detectCache[0]["fetch_num"]):
 						# print("add_item")
-						self.cart.add_item(_id,self.lastDetectTime)
+					self.cart.add_item(_id,self.lastDetectTime)
 
 					self.detectState = "NORMAL"
 				else:
@@ -61,8 +61,8 @@ class ScaleDetector:
 					print("push_checking in back success!!")
 					_id = self.detectCache[0]["id"]
 
-					for i in range(self.detectCache[0]["fetch_num"]):
-						self.cart.remove_item(_id,self.lastDetectTime)
+					#for i in range(self.detectCache[0]["fetch_num"]):
+					self.cart.remove_item(_id,self.lastDetectTime)
 						
 					self.detectState = "NORMAL"
 					self.lastScale += self.curActionDelta
