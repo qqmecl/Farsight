@@ -33,7 +33,6 @@ class VideoStream:
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,5)
         self.updateScheduler.start()
 
-        # self.last = time.time()
         # self.cnt = 0
         self.motionChecker = MotionDetect()
 

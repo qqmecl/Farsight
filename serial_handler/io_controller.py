@@ -27,7 +27,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         scaleUpdate.start()
 
     def _check_weight_scale(self):
-        self.scale_vals.enqueue(int(self.scale.read()*1000)%10000)
+        self.scale_vals.enqueue(int(self.scale.read()*1000))
 
         vals = self.scale_vals.getAll()
         _min = min(vals)

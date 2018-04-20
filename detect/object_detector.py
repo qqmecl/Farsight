@@ -77,6 +77,7 @@ class ObjectDetector:
                     sign += 1
                     if sign % 2:
                         self.frame_merge_left = frame_truncated
+                        self.lastMotionType,self.lasFrame_time,self.last_index=motionType,frame_time,index
                     else:
                         left_x = self.frame_merge_left.shape[1]
                         right_x = frame_truncated.shape[1]
@@ -181,8 +182,6 @@ class ObjectDetector:
                                 left_box_pixel = right_x
 
 
-
-
                         #     sum_planB = abs(left_y - right_y) * left_x if left_y < right_y else abs(left_y - right_y) * right_x #left concatenate right
                         # else:
                         #     sum_planA = abs(left_x - right_x) * left_y + right_x * abs(right_x - left_y - right_y) if left_x < right_x else abs(left_x - right_x) * right_y + left_x * abs(left_x - left_y - right_y) #up concatenate down
@@ -280,19 +279,21 @@ class ObjectDetector:
                 except queue.Full:
                     print('[FULL]')
                     pass
+
             except queue.Empty:#不进行识别判断的时候帧会变空
                 # print('[EMPTY] input_q is: ')
                 pass
 
     ##当前只考虑单帧的判断
-    def detect_objects(self,originalFrame,frame_time, enlarge_num, left_box_pixel, sign):
+    def detect_objects(self,frame,frame_time, enlarge_num, left_box_pixel, sign):
         self.frameCount += 1
         results=[]
-        rows = originalFrame.shape[0]
-        cols = originalFrame.shape[1]
 
-        frame = originalFrame.copy()
-        originalFrame = cv.resize(originalFrame, (300, 300))
+        results0=[]
+        results1=[]
+
+        rows = frame.shape[0]
+        cols = frame.shape[1]
         frame = cv.resize(frame, (300, 300))
 
         frame = frame[:, :, [2, 1, 0]]
@@ -330,11 +331,16 @@ class ObjectDetector:
                     # print(left_box_pixel)
                     # cv.imwrite(self.writePath + str(sign) + '.jpg', originalFrame)
                     continue
+
                 itemId = self.classNames[out['detection_classes'][i]]
-                results.append((confidence,itemId,frame_time))
-      
-        # if len(results) > 2:
-            # cv.imwrite(self.writePath + str(sign) + '.jpg', frame)
+
+                if box_right_cols < frame_left_cols:
+                    results0.append((confidence,itemId,frame_time))
+                else:
+                    results1.append((confidence,itemId,frame_time))
+
+        results.append(results0)
+        results.append(results1)
         return results#默认返回空值
 
 

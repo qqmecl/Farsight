@@ -252,8 +252,11 @@ class Closet:
                 for i in range(2):
                     self.detectResults[i].reset()
                     self.detectResults[i].resetDetect()
-                    if settings.has_scale:
+
+                if settings.has_scale:
+                    for i in range(2):
                         self.scaleDetector[i].reset()
+                    self.cart.setBeforDoorOpenWeight()
 
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
@@ -340,8 +343,14 @@ class Closet:
         self.updateScheduler.stop()
         self.IO.change_to_processing_page()
 
-        order = self.cart.as_order()
+        order = self.cart.getFinalOrder()
         order["token"] = self.door_token
+        self.cart.reset()
+
+        order_data = order["data"]
+        for k,v in order_data.items():
+            print("final order is: ",settings.items[k]["name"],v)
+
 
         order["data"]={}
 
@@ -358,7 +367,8 @@ class Closet:
             self.pollPeriod.stop()
             settings.logger.evokeDoorClose()
 
-    #检查门是否关闭，此时只是关上了门，并没有真正锁上门
+
+    #If there is with scale logic, then final close action should be delayed.
     def _check_door_close(self):
         if self.mode == "operator_mode":
             if self.IO.is_door_lock(curSide = self.curSide):
@@ -373,6 +383,13 @@ class Closet:
 
                     self._stop_imageprocessing()
                     self.isStopCamera = True
+
+                    if settings.has_scale:
+                        for i in range(2):
+                            self.scaleDetector[i].notifyCloseDoor()
+
+                        self.cart.setAfterDoorCloseWeight()
+
                 else:
                     # self.input_queues,settings.items,self._detection_queue
                     if self.input_queues.empty() and self._detection_queue.empty():
@@ -382,7 +399,9 @@ class Closet:
                         for i in range(2):
                             self.detectResults[i].reset()
                         self.check_door_close_callback.stop()
-                        self._delay_do_order()
+
+                        laterAction = functools.partial(self._delay_do_order)
+                        tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterAction)
 
     #发送摄像头工作指令消息
     def _start_imageprocessing(self):
