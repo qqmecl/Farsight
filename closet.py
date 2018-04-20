@@ -305,15 +305,15 @@ class Closet:
             if direction == "IN":
                 settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
 
-                for i in range(detect[0]["fetch_num"]):
+                # for i in range(detect[0]["fetch_num"]):
                     # self.detectCache.append(self.cart.remove_item(id,now_time))
-                    self.cart.remove_item(id,now_time)
+                self.cart.remove_item(id,now_time)
 
             else:
                 settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
                 
-                for i in range(detect[0]["fetch_num"]):
-                    self.cart.add_item(id,now_time)
+                # for i in range(detect[0]["fetch_num"]):
+                self.cart.add_item(id,now_time)
 
                     # self.detectCache.append(True)
             # else:

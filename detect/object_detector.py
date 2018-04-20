@@ -280,11 +280,11 @@ class ObjectDetector:
         results.append(results1)
 
         if len(results0) > 1:
-            print(results0)
+            # print(self.frameCount," : ",results0)
             cv.imwrite(self.writePath + str(self.frameCount) + '.jpg', original)
 
         if len(results1) > 1:
-            print(results1)
+            # print(self.frameCount," : ",results1)
             cv.imwrite(self.writePath + str(self.frameCount) + '.jpg', original)
 
         return results#默认返回空值

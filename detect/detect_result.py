@@ -106,7 +106,7 @@ class DetectResult:
     def getCurrentDetection(self,isLast):#these parameters would significantly improve the performance of detect rate!
         id,num,_time,fetch_num = self.getMaxNum()
 
-        back_threshold,out_inTimethreshold,out_timeout_threshold = 1,2,1
+        back_threshold,out_inTimethreshold,out_timeout_threshold = 3,4,4
 
         if id is not None:
             if isLast:#in item check
@@ -117,8 +117,11 @@ class DetectResult:
             else:#out item check
                 now_time = time.time()
 
-                if now_time-self.actionTime < 1:
+                delta = now_time-self.actionTime
+
+                if delta < 1:
                     if num > out_inTimethreshold:
+                        print("with {} time got {} catch".format(delta,num))
                         return id,num,_time,fetch_num
                 else:
                     if num > out_timeout_threshold:
