@@ -122,7 +122,7 @@ class ObjectDetector:
                                 fill2 = np.zeros((left_x - left_y - right_y, left_x, 3), np.uint8)
                                 frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 0)
                                 frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
-                                left_box_pixel = left_y
+                                divide_val = left_y
                             
                             if photo_sign_A == 2:
                                 fill1 = np.zeros((right_y, left_x - right_x, 3), np.uint8)
@@ -130,7 +130,7 @@ class ObjectDetector:
                                 fill2 = np.zeros((left_y + right_y, left_y + right_y - left_x, 3), np.uint8)
                                 frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 0)
                                 frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
-                                left_box_pixel = left_y
+                                divide_val = left_y
                             
                             if photo_sign_A == 3:
                                 fill1 = np.zeros((left_y, right_x - left_x, 3), np.uint8)
@@ -138,7 +138,7 @@ class ObjectDetector:
                                 fill2 = np.zeros((right_x - left_y - right_y, right_x, 3), np.uint8)
                                 frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 0)
                                 frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
-                                left_box_pixel = right_y
+                                divide_val = right_y
 
                             if photo_sign_A == 4:
                                 fill1 = np.zeros((left_y, right_x - left_x, 3), np.uint8)
@@ -146,7 +146,7 @@ class ObjectDetector:
                                 fill2 = np.zeros((left_y + right_y, left_y + right_y - right_x, 3), np.uint8)
                                 frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 0)
                                 frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
-                                left_box_pixel = right_y
+                                divide_val = right_y
                         else:
                             self.vertical = False
                             if photo_sign_B == 5:
@@ -155,7 +155,7 @@ class ObjectDetector:
                                 fill2 = np.zeros((left_y, left_y - left_x - right_x, 3), np.uint8)
                                 frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 1)
                                 frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
-                                left_box_pixel = left_x
+                                divide_val = left_x
 
                             if photo_sign_B == 6:
                                 fill1 = np.zeros((left_y - right_y, right_x, 3), np.uint8)
@@ -163,7 +163,7 @@ class ObjectDetector:
                                 fill2 = np.zeros((left_x + right_x - left_y, left_x + right_x, 3), np.uint8)
                                 frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 1)
                                 frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
-                                left_box_pixel = left_x
+                                divide_val = left_x
 
                             if photo_sign_B == 7:
                                 fill1 = np.zeros((right_y - left_y, left_x, 3), np.uint8)
@@ -171,7 +171,7 @@ class ObjectDetector:
                                 fill2 = np.zeros((right_y, right_y - left_x - right_x, 3), np.uint8)
                                 frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 1)
                                 frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
-                                left_box_pixel = right_x
+                                divide_val = right_x
 
                             if photo_sign_B == 8:
                                 fill1 = np.zeros((right_y - left_y, left_x, 3), np.uint8)
@@ -179,123 +179,58 @@ class ObjectDetector:
                                 fill2 = np.zeros((left_x + right_x - right_y, left_x + right_x, 3), np.uint8)
                                 frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 1)
                                 frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
-                                left_box_pixel = right_x
+                                divide_val = right_x
 
 
-                        #     sum_planB = abs(left_y - right_y) * left_x if left_y < right_y else abs(left_y - right_y) * right_x #left concatenate right
-                        # else:
-                        #     sum_planA = abs(left_x - right_x) * left_y + right_x * abs(right_x - left_y - right_y) if left_x < right_x else abs(left_x - right_x) * right_y + left_x * abs(left_x - left_y - right_y) #up concatenate down
-                        # if sum_planA > sum_planB: #plan b is winner
-                        #     self.vertical = False
-                        #     diff = right_y - left_y
-                        #     if diff > 0:
-                        #         fill = np.zeros((diff, left_x, 3), np.uint8)
-                        #         self.frame_merge_left = np.concatenate((self.frame_merge_left, fill), axis = 0)
-                        #         left_box_pixel = left_x
-                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
-                        #     elif diff < 0:
-                        #         fill = np.zeros((abs(diff), right_x, 3), np.uint8)
-                        #         frame_truncated = np.concatenate((frame_truncated, fill), axis = 0)
-                        #         left_box_pixel = left_x
-                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
-                        #     else:
-                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
-                        #         left_box_pixel = left_x
+                        results = self.detect_objects(frame_merge,frame_time, divide_val)
 
-                        # elif sum_planA < sum_planB: #plan a is winner
-                        #     self.vertical = True
-                        #     diff = right_x - left_x
-                        #     if diff > 0:
-                        #         fill = np.zeros((left_y, diff, 3), np.uint8)
-                        #         self.frame_merge_left = np.concatenate((self.frame_merge_left, fill), axis = 1)
-                        #         left_box_pixel = left_y
-                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 0)
-                        #     elif diff < 0:
-                        #         fill = np.zeros((right_y, abs(diff), 3), np.uint8)
-                        #         frame_truncated = np.concatenate((frame_truncated, fill), axis = 1)
-                        #         left_box_pixel = left_y
-                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 0)
-                        #     else:
-                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 0)
-                        #         left_box_pixel = left_y
+                        for i in range(2):
+                            if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
+                                print("object delte detect")
+                                waste = detection_queue.get_nowait()
 
-                        # else:
-                        #     self.vertical = False
-                        #     frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
-                        #     left_box_pixel = left_x
-
-
-                        # cv.imwrite(writePath + str(sign) + '.jpg', frame_merge)
-                        enlarge_num = frame_merge.shape[1] / 300
-                        results = self.detect_objects(frame_merge,frame_time, enlarge_num, left_box_pixel, sign)
-
-
-                # if frame_truncated is not None:
-                #     row = frame_truncated.shape[0]
-                #     col = frame_truncated.shape[1]
-                #     if row>col:
-                #         fill = np.zeros((row,row-col,3),np.uint8)
-                #         frame_truncated = np.concatenate((frame_truncated,fill),1)
-                #     else:
-                #         fill = np.zeros((col-row,col,3),np.uint8)
-                #         frame_truncated = np.concatenate((frame_truncated,fill),0)
-
-                #     x += 1
-                #     if x % 2:
-                #         self.frame_merge_left = frame_truncated
-                #     else:
-                #         y = frame_truncated.shape[0] - self.frame_merge_left.shape[0]
-                #         if y > 0:
-                #             z = y % 2
-                #             y = y // 2
-                #             frame_x = cv.copyMakeBorder(self.frame_merge_left, y, y + z, y, y, cv.BORDER_CONSTANT, value=[0,0,0])
-                #             frame_merge = np.concatenate((frame_x, frame_truncated), axis = 1)
-                #         elif y == 0:
-                #             frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
-                #         elif y < 0:
-                #             z = abs(y) % 2
-                #             y = abs(y) // 2
-                #             frame_x = cv.copyMakeBorder(frame_truncated, y, y + z, y, y, cv.BORDER_CONSTANT, value=[0,0,0])
-                #             frame_merge = np.concatenate((self.frame_merge_left, frame_x), axis = 1)
-                        # cv.imwrite(writePath + str(x) + '.jpg', frame_merge)
-                        # cv.imshow('frame', frame_merge)
-
-                        # enlarge_num = frame_merge.shape[1] / 300
-                        # results = self.detect_objects(frame_merge,frame_time, enlarge_num, left_box_pixel)
-                    # if len(results) > 0:
-                        # print(results)
-                        # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
-
-                    # if results:
-                        # settings.logger.info('{}'.format(results[0][1]))
-                # if len(results) >0:
-                     # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
-
-                if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
-                    print("object delte detect")
-                    waste = detection_queue.get_nowait()
-                try:
-                    detection_queue.put_nowait([index,motionType,results,frame_time])#not a good structure
-                except queue.Full:
-                    print('[FULL]')
-                    pass
+                            try:
+                                if i==0:
+                                    # if len(results[i]) >1:
+                                        # print("check two item by the same time: ",results[i])
+                                    detection_queue.put_nowait([self.last_index,self.lastMotionType,results[i],self.lasFrame_time])#not a good structure
+                                else:
+                                    detection_queue.put_nowait([index,motionType,results[i],frame_time])#not a good structure
+                            except queue.Full:
+                                print('[FULL]')
+                                pass
+                else:
+                    if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
+                        print("object delte detect")
+                        waste = detection_queue.get_nowait()
+                    try:
+                        detection_queue.put_nowait([index,motionType,[],frame_time])#not a good structure
+                    except queue.Full:
+                        print('[FULL]')
+                        pass
 
             except queue.Empty:#不进行识别判断的时候帧会变空
                 # print('[EMPTY] input_q is: ')
                 pass
 
     ##当前只考虑单帧的判断
-    def detect_objects(self,frame,frame_time, enlarge_num, left_box_pixel, sign):
+    # def detect_objects(self,frame,frame_time, enlarge_num, divide_val, sign):
+    # def detect_objects(self,frame,frame_time, divide_val, sign):
+    def detect_objects(self,frame,frame_time, divide_val):
         self.frameCount += 1
+
+        # divide_val = int(divide_val / enlarge_num)
         results=[]
 
         results0=[]
         results1=[]
 
+        original = frame.copy()
+
         rows = frame.shape[0]
         cols = frame.shape[1]
         frame = cv.resize(frame, (300, 300))
-
+        # cv.imwrite(self.writePath + str(sign) + '.jpg', frame)
         frame = frame[:, :, [2, 1, 0]]
 
         out = self.tf_sess.run(self.tensor_dict,feed_dict={self.image_tensor: frame.reshape(1, frame.shape[0], frame.shape[1], 3)})
@@ -308,39 +243,50 @@ class ObjectDetector:
             confidence = out['detection_scores'][i]
             if confidence > self.confidenceThreshold:
                 bbox = out['detection_boxes'][i]
-                # cv.imwrite(self.writePath + time.strftime('%Y_%m_%d_%H_%M_%S_',time.localtime(time.time())) + '.jpg', bbox)
-                # cv.rectangle(originalFrame,
-                #     (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
-                #         (0,0,255), 2)
+                itemId = self.classNames[out['detection_classes'][i]]
+
+                cv.rectangle(original,
+                    (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
+                        (0,0,255), 2)
+
                 if self.vertical:
+                    # cv.imwrite(self.writePath + str(sign) + '.jpg', frame)
                     box_left_or_up = int(bbox[0] * rows)
                     box_right_or_down = int(bbox[2] * rows)
                 else:
                     box_left_or_up = int(bbox[1] * cols)
                     box_right_or_down = int(bbox[3] * cols)
-                # frame_left_cols = self.frame_merge_left.shape[1]
-                # left_box_pixel = int(left_box_pixel / enlarge_num)
-                # print(box_left_or_up)
-                # print(box_right_or_down)
-                # print(left_box_pixel)
-                # if box_left_or_up < left_box_pixel and box_left_or_up < frame_left_cols + 1 and box_right_or_down > frame_left_cols:
-                    # continue
-                if box_left_or_up < left_box_pixel and box_right_or_down > left_box_pixel:
-                    # print(box_left_or_up)
-                    # print(box_right_or_down)
-                    # print(left_box_pixel)
-                    # cv.imwrite(self.writePath + str(sign) + '.jpg', originalFrame)
-                    continue
 
-                itemId = self.classNames[out['detection_classes'][i]]
 
-                if box_right_cols < frame_left_cols:
-                    results0.append((confidence,itemId,frame_time))
+                up_y = int(bbox[0] * rows)
+                down_y = int(bbox[2] * rows)
+                left_x = int(bbox[1] * rows)
+                right_x = int(bbox[3] * rows)
+
+                if self.vertical:
+                    if up_y <= divide_val and down_y <= divide_val:
+                        results0.append((confidence,itemId,frame_time))
+
+                    if up_y >= divide_val and down_y >= divide_val:
+                        results1.append((confidence,itemId,frame_time))
                 else:
-                    results1.append((confidence,itemId,frame_time))
+                    if left_x <= divide_val and right_x <= divide_val:
+                        results0.append((confidence,itemId,frame_time))
+
+                    if left_x >= divide_val and right_x >= divide_val:
+                        results1.append((confidence,itemId,frame_time))
 
         results.append(results0)
         results.append(results1)
+
+        if len(results0) > 1:
+            print(results0)
+            cv.imwrite(self.writePath + str(self.frameCount) + '.jpg', original)
+
+        if len(results1) > 1:
+            print(results1)
+            cv.imwrite(self.writePath + str(self.frameCount) + '.jpg', original)
+
         return results#默认返回空值
 
 
