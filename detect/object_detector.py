@@ -61,39 +61,128 @@ class ObjectDetector:
         for i in range(2):
             self.dynamicTracker.append(DynamicTrack())
 
+        self.writePath = os.getcwd() + '/photo/'
+        # print(writePath)
         sign = 0
+        self.vertical = None
 
         while True:
             try:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
                 frame_truncated = self.dynamicTracker[index].check(frame_truncated)#get dynamic tracked location
-                
+                results = []
+                sign %= 999
+
                 if frame_truncated is not None:
-                    sign %= 99
                     sign += 1
                     if sign % 2:
                         self.frame_merge_left = frame_truncated
                         self.lastMotionType,self.lasFrame_time,self.last_index=motionType,frame_time,index
                     else:
-                        x = frame_truncated.shape[0] - self.frame_merge_left.shape[0]
-                        if x == 0:
-                            frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
-                            left_box_pixel = self.frame_merge_left.shape[1]
-                        else:
-                            y = abs(x)
-                            if y - x:
-                                fill = np.zeros((y, frame_truncated.shape[1], 3), np.uint8)
-                                frame_truncated = np.concatenate((frame_truncated, fill), axis = 0)
-                                left_box_pixel = self.frame_merge_left.shape[1]
-                                frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                        left_x = self.frame_merge_left.shape[1]
+                        right_x = frame_truncated.shape[1]
+                        left_y = self.frame_merge_left.shape[0]
+                        right_y = frame_truncated.shape[0]
+                        if left_x >= right_x:
+                            if left_x >= (left_y + right_y):
+                                sum_planA = (left_x - right_x) * right_y + left_x * (left_x - left_y - right_y) #up concatenate down
+                                photo_sign_A = 1
                             else:
-                                fill = np.zeros((y, self.frame_merge_left.shape[1], 3), np.uint8)
-                                self.frame_merge_left = np.concatenate((self.frame_merge_left, fill), axis = 0)
-                                left_box_pixel = self.frame_merge_left.shape[1]
-                                frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                                sum_planA = (left_x - right_x) * right_y + (left_y + right_y) * (left_y + right_y - left_x) #up concatenate down
+                                photo_sign_A = 2
+                        else:
+                            if right_x >= (left_y + right_y):
+                                sum_planA = (right_x - left_x) * left_y + right_x * (right_x - left_y - right_y) #up concatenate down
+                                photo_sign_A = 3
+                            else:
+                                sum_planA = (right_x - left_x) * left_y + (left_y + right_y) * (left_y + right_y - right_x) #up concatenate down
+                                photo_sign_A = 4
+                        
+                        if left_y >= right_y:
+                            if left_y >= (left_x + right_x):
+                                sum_planB = (left_y - right_y) * right_x + left_y * (left_y - left_x - right_x) #left concatenate right
+                                photo_sign_B = 5
+                            else:
+                                sum_planB = (left_y - right_y) * right_x + (left_x + right_x) * (left_x + right_x - left_y) #left concatenate right
+                                photo_sign_B = 6
+                        else:
+                            if right_y >= (left_x + right_x):
+                                sum_planB = (right_y - left_y) * left_x + right_y * (right_y - left_x - right_x) #left concatenate right
+                                photo_sign_B = 7
+                            else:
+                                sum_planB = (right_y - left_y) * left_x + (left_x + right_x) * (left_x + right_x - right_y) #left concatenate right
+                                photo_sign_B = 8
 
-                        enlarge_num = frame_merge.shape[1] / 300
-                        results = self.detect_objects(frame_merge,frame_time, enlarge_num, left_box_pixel)
+                        
+                        if sum_planA <= sum_planB:
+                            self.vertical = True  
+                            if photo_sign_A == 1:
+                                fill1 = np.zeros((right_y, left_x - right_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((frame_truncated, fill1), axis = 1)
+                                fill2 = np.zeros((left_x - left_y - right_y, left_x, 3), np.uint8)
+                                frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 0)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
+                                divide_val = left_y
+                            
+                            if photo_sign_A == 2:
+                                fill1 = np.zeros((right_y, left_x - right_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((frame_truncated, fill1), axis = 1)
+                                fill2 = np.zeros((left_y + right_y, left_y + right_y - left_x, 3), np.uint8)
+                                frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 0)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
+                                divide_val = left_y
+                            
+                            if photo_sign_A == 3:
+                                fill1 = np.zeros((left_y, right_x - left_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((self.frame_merge_left, fill1), axis = 1)
+                                fill2 = np.zeros((right_x - left_y - right_y, right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 0)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
+                                divide_val = right_y
+
+                            if photo_sign_A == 4:
+                                fill1 = np.zeros((left_y, right_x - left_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((self.frame_merge_left, fill1), axis = 1)
+                                fill2 = np.zeros((left_y + right_y, left_y + right_y - right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 0)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
+                                divide_val = right_y
+                        else:
+                            self.vertical = False
+                            if photo_sign_B == 5:
+                                fill1 = np.zeros((left_y - right_y, right_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((frame_truncated, fill1), axis = 0)
+                                fill2 = np.zeros((left_y, left_y - left_x - right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 1)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
+                                divide_val = left_x
+
+                            if photo_sign_B == 6:
+                                fill1 = np.zeros((left_y - right_y, right_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((frame_truncated, fill1), axis = 0)
+                                fill2 = np.zeros((left_x + right_x - left_y, left_x + right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 1)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
+                                divide_val = left_x
+
+                            if photo_sign_B == 7:
+                                fill1 = np.zeros((right_y - left_y, left_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((self.frame_merge_left, fill1), axis = 0)
+                                fill2 = np.zeros((right_y, right_y - left_x - right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 1)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
+                                divide_val = right_x
+
+                            if photo_sign_B == 8:
+                                fill1 = np.zeros((right_y - left_y, left_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((self.frame_merge_left, fill1), axis = 0)
+                                fill2 = np.zeros((left_x + right_x - right_y, left_x + right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 1)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
+                                divide_val = right_x
+
+
+                        results = self.detect_objects(frame_merge,frame_time, divide_val)
 
                         for i in range(2):
                             if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
@@ -119,24 +208,29 @@ class ObjectDetector:
                     except queue.Full:
                         print('[FULL]')
                         pass
+
             except queue.Empty:#不进行识别判断的时候帧会变空
                 # print('[EMPTY] input_q is: ')
                 pass
 
     ##当前只考虑单帧的判断
-    def detect_objects(self,frame,frame_time, enlarge_num, left_box_pixel):
+    # def detect_objects(self,frame,frame_time, enlarge_num, divide_val, sign):
+    # def detect_objects(self,frame,frame_time, divide_val, sign):
+    def detect_objects(self,frame,frame_time, divide_val):
         self.frameCount += 1
+
+        # divide_val = int(divide_val / enlarge_num)
         results=[]
 
         results0=[]
         results1=[]
 
+        original = frame.copy()
+
         rows = frame.shape[0]
         cols = frame.shape[1]
-
-        # frame = originalFrame.copy()
         frame = cv.resize(frame, (300, 300))
-
+        # cv.imwrite(self.writePath + str(sign) + '.jpg', frame)
         frame = frame[:, :, [2, 1, 0]]
 
         out = self.tf_sess.run(self.tensor_dict,feed_dict={self.image_tensor: frame.reshape(1, frame.shape[0], frame.shape[1], 3)})
@@ -149,29 +243,49 @@ class ObjectDetector:
             confidence = out['detection_scores'][i]
             if confidence > self.confidenceThreshold:
                 bbox = out['detection_boxes'][i]
-                # cv.imwrite(self.writePath + time.strftime('%Y_%m_%d_%H_%M_%S_',time.localtime(time.time())) + '.jpg', bbox)
-                # cv.rectangle(originalFrame,
-                #     (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
-                #         (0,0,255))
-                box_left_cols = int(bbox[1] * cols)
-                box_right_cols = int(bbox[3] * cols)
-
-                frame_left_cols = self.frame_merge_left.shape[1]
-
-                left_box_pixel = int(left_box_pixel / enlarge_num)
-
-                if box_left_cols > left_box_pixel and box_left_cols < frame_left_cols + 1 and box_right_cols > frame_left_cols:
-                    continue
-
                 itemId = self.classNames[out['detection_classes'][i]]
 
-                if box_right_cols < frame_left_cols:
-                    results0.append((confidence,itemId,frame_time))
+                cv.rectangle(original,
+                    (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
+                        (0,0,255), 2)
+
+                if self.vertical:
+                    # cv.imwrite(self.writePath + str(sign) + '.jpg', frame)
+                    box_left_or_up = int(bbox[0] * rows)
+                    box_right_or_down = int(bbox[2] * rows)
                 else:
-                    results1.append((confidence,itemId,frame_time))
+                    box_left_or_up = int(bbox[1] * cols)
+                    box_right_or_down = int(bbox[3] * cols)
+
+
+                up_y = int(bbox[0] * rows)
+                down_y = int(bbox[2] * rows)
+                left_x = int(bbox[1] * rows)
+                right_x = int(bbox[3] * rows)
+
+                if self.vertical:
+                    if up_y <= divide_val and down_y <= divide_val:
+                        results0.append((confidence,itemId,frame_time))
+
+                    if up_y >= divide_val and down_y >= divide_val:
+                        results1.append((confidence,itemId,frame_time))
+                else:
+                    if left_x <= divide_val and right_x <= divide_val:
+                        results0.append((confidence,itemId,frame_time))
+
+                    if left_x >= divide_val and right_x >= divide_val:
+                        results1.append((confidence,itemId,frame_time))
 
         results.append(results0)
         results.append(results1)
+
+        if len(results0) > 1:
+            print(results0)
+            cv.imwrite(self.writePath + str(self.frameCount) + '.jpg', original)
+
+        if len(results1) > 1:
+            print(results1)
+            cv.imwrite(self.writePath + str(self.frameCount) + '.jpg', original)
 
         return results#默认返回空值
 
@@ -192,7 +306,3 @@ class ObjectDetector:
                         name = name.strip("\'")
                         self.classNames[_id] = name+'001'
                         # self.classNames[_id] = name
-        f.close()
-
-
-    

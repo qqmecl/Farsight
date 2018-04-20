@@ -65,7 +65,6 @@ class ScaleDetector:
 					self.detectState = "NORMAL"
 					self.lastScale += self.curActionDelta
 
-
 	#two judge will not interfere with each other
 	def detect_check(self,detectResults):
 		detect = detectResults.getDetect()
@@ -101,5 +100,3 @@ class ScaleDetector:
 			_id = self.detectCache[0]["id"]
 			self.cart.add_item(_id,self.lastDetectTime)
 			self.detectState = "NORMAL"
-
-
