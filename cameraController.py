@@ -45,7 +45,7 @@ class VideoStream:
                 # if self.cnt == 99:
                 #     self.cnt = 0
                 centerX = settings.detect_baseLine[self.src]
-                motionType = self.motionChecker.checkInput(frame[:,centerX-10:centerX+10],time.time())
+                motionType = self.motionChecker.checkInput(frame[:,int(centerX)-10:int(centerX)+10],time.time())
                 
                 # if self.cnt %3 == 0 or motionType != "None":
                 self.call_back(self.src,frame,motionType)
