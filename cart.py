@@ -14,6 +14,9 @@ class Cart:
         self.items = {}
         self.screen = io.screen
 
+        self.lastActionItem = None
+        self.lastActionTime = None
+
         if settings.has_scale:
             self.scale_vals = Queue(6)
             self.start_weight = None
@@ -21,9 +24,7 @@ class Cart:
 
             self.before_doorOpen_weight = None
             self.after_doorClose_weight = None
-
-            self.lastActionItem = None
-            self.lastActionTime = None
+            
 
             cartCheck = tornado.ioloop.PeriodicCallback(self.cart_check,60)
             cartCheck.start()
@@ -33,7 +34,7 @@ class Cart:
             self.lastActionTime = actionTime
 
         delta = abs(actionTime - self.lastActionTime)
-        if delta > 0 and delta < 0.2:
+        if delta > 0 and delta < 0.4:
             return True
 
         return False
@@ -48,12 +49,11 @@ class Cart:
         else:
             self.items[item_id] = 1
 
-        settings.logger.warning('camera shot Take out {0}'.format(settings.items[item_id]["name"]))
+        # settings.logger.warning('camera shot Take out {0}'.format(settings.items[item_id]["name"]))
         self.IO.update_screen_item(True,item_id)
 
-        if settings.has_scale:
-            self.lastActionItem = item_id
-            self.lastActionTime = actionTime
+        self.lastActionItem = item_id
+        self.lastActionTime = actionTime
 
     def remove_item(self, item_id,actionTime):
         if self.timeCheck(actionTime):
@@ -62,12 +62,11 @@ class Cart:
         if item_id in self.items and self.items[item_id] > 0:
             self.items[item_id] -= 1
 
-            settings.logger.warning('camera shot Put back {0}'.format(settings.items[item_id]["name"]))
+            # settings.logger.warning('camera shot Put back {0}'.format(settings.items[item_id]["name"]))
             self.IO.update_screen_item(False,item_id)
 
-            if settings.has_scale:
-                self.lastActionItem = item_id
-                self.lastActionTime = actionTime
+            self.lastActionItem = item_id
+            self.lastActionTime = actionTime
 
             return True
 

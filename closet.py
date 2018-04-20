@@ -190,7 +190,7 @@ class Closet:
 
         self.debugTime = time.time()
 
-        self.detectCache=None
+        # self.detectCache=None
 
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
         self.updateScheduler.start()
@@ -295,46 +295,49 @@ class Closet:
 
             now_time = self.detectResults[checkIndex].getMotionTime("PUSH" if direction is "IN" else "PULL")
             now_num = detect[0]["num"]
-            intervalTime = now_time - self.lastDetectTime
 
-            if intervalTime > 0.5:
-                self.detectCache = None
-                self.detectCache=[detect[0]["id"],detect[0]["num"]]
-                if direction == "IN":
-                    settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
+            print("{} camera shot by {}".format(checkIndex,now_time))
+            # intervalTime = now_time - self.lastDetectTime
 
-                    for i in range(detect[0]["fetch_num"]):
-                        self.detectCache.append(self.cart.remove_item(id))
+            # if intervalTime > 0.5:
+                # self.detectCache = None
+                # self.detectCache=[detect[0]["id"],detect[0]["num"]]
+            if direction == "IN":
+                settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
 
-                else:
-                    settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
-                    
-                    for i in range(detect[0]["fetch_num"]):
-                        self.cart.add_item(id)
+                for i in range(detect[0]["fetch_num"]):
+                    # self.detectCache.append(self.cart.remove_item(id,now_time))
+                    self.cart.remove_item(id,now_time)
 
-                    self.detectCache.append(True)
             else:
-                if self.detectCache is not None:
-                    cacheId = self.detectCache[0]
-                    cacheNum = self.detectCache[1]
-                    actionSuccess = self.detectCache[2]
-                    if now_num > cacheNum and id != cacheId:
-                        if direction == "OUT":
-                            self.cart.remove_item(cacheId)
-                            self.cart.add_item(id)
+                settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
+                
+                for i in range(detect[0]["fetch_num"]):
+                    self.cart.add_item(id,now_time)
 
-                            settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
-                            settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
-                        elif direction == "IN":
-                            if actionSuccess:
-                                self.cart.add_item(cacheId)
-                                settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
+                    # self.detectCache.append(True)
+            # else:
+            #     if self.detectCache is not None:
+            #         cacheId = self.detectCache[0]
+            #         cacheNum = self.detectCache[1]
+            #         actionSuccess = self.detectCache[2]
+            #         if now_num > cacheNum and id != cacheId:
+            #             if direction == "OUT":
+            #                 self.cart.remove_item(cacheId)
+            #                 self.cart.add_item(id)
 
-                            self.cart.remove_item(id)
-                            settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
+            #                 settings.logger.warning('adjust|Put back,{},|'.format(settings.items[cacheId]["name"]))
+            #                 settings.logger.warning('adjust|take out,{},|'.format(settings.items[id]["name"]))
+            #             elif direction == "IN":
+            #                 if actionSuccess:
+            #                     self.cart.add_item(cacheId)
+            #                     settings.logger.warning('adjust|take out,{},|'.format(settings.items[cacheId]["name"]))
+
+            #                 self.cart.remove_item(id)
+            #                 settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
 
             self.detectResults[checkIndex].resetDetect()
-            self.lastDetectTime = now_time
+            # self.lastDetectTime = now_time
             self.detectResults[checkIndex].setActionTime()
 
 
