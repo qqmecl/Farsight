@@ -83,7 +83,7 @@ class ScaleDetector:
 
 						self.detectState = "NORMAL"
 
-						self.lastScale = self.handOutVal+ self.curActionDelta
+						self.lastScale = self.handOutVal + self.curActionDelta
 
 	#two judge will not interfere with each other
 	def detect_check(self,detectResults):
@@ -94,7 +94,7 @@ class ScaleDetector:
 
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
 
-			print(detect)
+			# print(detect)
 			# print("action time is: ",self.lastDetectTime)
 
 			_id = detect[0]["id"]
@@ -114,5 +114,3 @@ class ScaleDetector:
 			self.detectCache = detect
 			detectResults.resetDetect()
 			detectResults.setActionTime()
-
-

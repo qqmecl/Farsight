@@ -61,38 +61,174 @@ class ObjectDetector:
         for i in range(2):
             self.dynamicTracker.append(DynamicTrack())
 
+        self.writePath = os.getcwd() + '/photo/'
+        # print(writePath)
         sign = 0
+        self.vertical = None
 
         while True:
             try:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
                 frame_truncated = self.dynamicTracker[index].check(frame_truncated)#get dynamic tracked location
                 results = []
-                sign %= 99
+                sign %= 999
 
                 if frame_truncated is not None:
                     sign += 1
                     if sign % 2:
                         self.frame_merge_left = frame_truncated
                     else:
-                        x = frame_truncated.shape[0] - self.frame_merge_left.shape[0]
-                        if x == 0:
-                            frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
-                            left_box_pixel = self.frame_merge_left.shape[1]
-                        else:
-                            y = abs(x)
-                            if y - x:
-                                fill = np.zeros((y, frame_truncated.shape[1], 3), np.uint8)
-                                frame_truncated = np.concatenate((frame_truncated, fill), axis = 0)
-                                left_box_pixel = self.frame_merge_left.shape[1]
-                                frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                        left_x = self.frame_merge_left.shape[1]
+                        right_x = frame_truncated.shape[1]
+                        left_y = self.frame_merge_left.shape[0]
+                        right_y = frame_truncated.shape[0]
+                        if left_x >= right_x:
+                            if left_x >= (left_y + right_y):
+                                sum_planA = (left_x - right_x) * right_y + left_x * (left_x - left_y - right_y) #up concatenate down
+                                photo_sign_A = 1
                             else:
-                                fill = np.zeros((y, self.frame_merge_left.shape[1], 3), np.uint8)
-                                self.frame_merge_left = np.concatenate((self.frame_merge_left, fill), axis = 0)
-                                left_box_pixel = self.frame_merge_left.shape[1]
-                                frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                                sum_planA = (left_x - right_x) * right_y + (left_y + right_y) * (left_y + right_y - left_x) #up concatenate down
+                                photo_sign_A = 2
+                        else:
+                            if right_x >= (left_y + right_y):
+                                sum_planA = (right_x - left_x) * left_y + right_x * (right_x - left_y - right_y) #up concatenate down
+                                photo_sign_A = 3
+                            else:
+                                sum_planA = (right_x - left_x) * left_y + (left_y + right_y) * (left_y + right_y - right_x) #up concatenate down
+                                photo_sign_A = 4
+                        
+                        if left_y >= right_y:
+                            if left_y >= (left_x + right_x):
+                                sum_planB = (left_y - right_y) * right_x + left_y * (left_y - left_x - right_x) #left concatenate right
+                                photo_sign_B = 5
+                            else:
+                                sum_planB = (left_y - right_y) * right_x + (left_x + right_x) * (left_x + right_x - left_y) #left concatenate right
+                                photo_sign_B = 6
+                        else:
+                            if right_y >= (left_x + right_x):
+                                sum_planB = (right_y - left_y) * left_x + right_y * (right_y - left_x - right_x) #left concatenate right
+                                photo_sign_B = 7
+                            else:
+                                sum_planB = (right_y - left_y) * left_x + (left_x + right_x) * (left_x + right_x - right_y) #left concatenate right
+                                photo_sign_B = 8
 
-                        # cv.imwrite(writePath + str(x) + '.jpg', frame_merge)
+                        
+                        if sum_planA <= sum_planB:
+                            self.vertical = True  
+                            if photo_sign_A == 1:
+                                fill1 = np.zeros((right_y, left_x - right_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((frame_truncated, fill1), axis = 1)
+                                fill2 = np.zeros((left_x - left_y - right_y, left_x, 3), np.uint8)
+                                frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 0)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
+                                left_box_pixel = left_y
+                            
+                            if photo_sign_A == 2:
+                                fill1 = np.zeros((right_y, left_x - right_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((frame_truncated, fill1), axis = 1)
+                                fill2 = np.zeros((left_y + right_y, left_y + right_y - left_x, 3), np.uint8)
+                                frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 0)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
+                                left_box_pixel = left_y
+                            
+                            if photo_sign_A == 3:
+                                fill1 = np.zeros((left_y, right_x - left_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((self.frame_merge_left, fill1), axis = 1)
+                                fill2 = np.zeros((right_x - left_y - right_y, right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 0)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
+                                left_box_pixel = right_y
+
+                            if photo_sign_A == 4:
+                                fill1 = np.zeros((left_y, right_x - left_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((self.frame_merge_left, fill1), axis = 1)
+                                fill2 = np.zeros((left_y + right_y, left_y + right_y - right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 0)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
+                                left_box_pixel = right_y
+                        else:
+                            self.vertical = False
+                            if photo_sign_B == 5:
+                                fill1 = np.zeros((left_y - right_y, right_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((frame_truncated, fill1), axis = 0)
+                                fill2 = np.zeros((left_y, left_y - left_x - right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 1)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
+                                left_box_pixel = left_x
+
+                            if photo_sign_B == 6:
+                                fill1 = np.zeros((left_y - right_y, right_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((frame_truncated, fill1), axis = 0)
+                                fill2 = np.zeros((left_x + right_x - left_y, left_x + right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((self.frame_merge_left, frame_temp_temp), axis = 1)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
+                                left_box_pixel = left_x
+
+                            if photo_sign_B == 7:
+                                fill1 = np.zeros((right_y - left_y, left_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((self.frame_merge_left, fill1), axis = 0)
+                                fill2 = np.zeros((right_y, right_y - left_x - right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 1)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 1)
+                                left_box_pixel = right_x
+
+                            if photo_sign_B == 8:
+                                fill1 = np.zeros((right_y - left_y, left_x, 3), np.uint8)
+                                frame_temp_temp = np.concatenate((self.frame_merge_left, fill1), axis = 0)
+                                fill2 = np.zeros((left_x + right_x - right_y, left_x + right_x, 3), np.uint8)
+                                frame_temp = np.concatenate((frame_truncated, frame_temp_temp), axis = 1)
+                                frame_merge = np.concatenate((frame_temp, fill2), axis = 0)
+                                left_box_pixel = right_x
+
+
+
+
+                        #     sum_planB = abs(left_y - right_y) * left_x if left_y < right_y else abs(left_y - right_y) * right_x #left concatenate right
+                        # else:
+                        #     sum_planA = abs(left_x - right_x) * left_y + right_x * abs(right_x - left_y - right_y) if left_x < right_x else abs(left_x - right_x) * right_y + left_x * abs(left_x - left_y - right_y) #up concatenate down
+                        # if sum_planA > sum_planB: #plan b is winner
+                        #     self.vertical = False
+                        #     diff = right_y - left_y
+                        #     if diff > 0:
+                        #         fill = np.zeros((diff, left_x, 3), np.uint8)
+                        #         self.frame_merge_left = np.concatenate((self.frame_merge_left, fill), axis = 0)
+                        #         left_box_pixel = left_x
+                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                        #     elif diff < 0:
+                        #         fill = np.zeros((abs(diff), right_x, 3), np.uint8)
+                        #         frame_truncated = np.concatenate((frame_truncated, fill), axis = 0)
+                        #         left_box_pixel = left_x
+                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                        #     else:
+                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                        #         left_box_pixel = left_x
+
+                        # elif sum_planA < sum_planB: #plan a is winner
+                        #     self.vertical = True
+                        #     diff = right_x - left_x
+                        #     if diff > 0:
+                        #         fill = np.zeros((left_y, diff, 3), np.uint8)
+                        #         self.frame_merge_left = np.concatenate((self.frame_merge_left, fill), axis = 1)
+                        #         left_box_pixel = left_y
+                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 0)
+                        #     elif diff < 0:
+                        #         fill = np.zeros((right_y, abs(diff), 3), np.uint8)
+                        #         frame_truncated = np.concatenate((frame_truncated, fill), axis = 1)
+                        #         left_box_pixel = left_y
+                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 0)
+                        #     else:
+                        #         frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 0)
+                        #         left_box_pixel = left_y
+
+                        # else:
+                        #     self.vertical = False
+                        #     frame_merge = np.concatenate((self.frame_merge_left, frame_truncated), axis = 1)
+                        #     left_box_pixel = left_x
+
+
+                        # cv.imwrite(writePath + str(sign) + '.jpg', frame_merge)
+                        enlarge_num = frame_merge.shape[1] / 300
+                        results = self.detect_objects(frame_merge,frame_time, enlarge_num, left_box_pixel, sign)
 
 
                 # if frame_truncated is not None:
@@ -125,8 +261,8 @@ class ObjectDetector:
                         # cv.imwrite(writePath + str(x) + '.jpg', frame_merge)
                         # cv.imshow('frame', frame_merge)
 
-                        enlarge_num = frame_merge.shape[1] / 300
-                        results = self.detect_objects(frame_merge,frame_time, enlarge_num, left_box_pixel)
+                        # enlarge_num = frame_merge.shape[1] / 300
+                        # results = self.detect_objects(frame_merge,frame_time, enlarge_num, left_box_pixel)
                     # if len(results) > 0:
                         # print(results)
                         # cv.imwrite(str(index)+"/frame"+str(self.frameCount)+"_"+str(settings.items[results[0][1]]["name"])+".png",frame_truncated)
@@ -149,13 +285,14 @@ class ObjectDetector:
                 pass
 
     ##当前只考虑单帧的判断
-    def detect_objects(self,frame,frame_time, enlarge_num, left_box_pixel):
+    def detect_objects(self,originalFrame,frame_time, enlarge_num, left_box_pixel, sign):
         self.frameCount += 1
         results=[]
-        rows = frame.shape[0]
-        cols = frame.shape[1]
+        rows = originalFrame.shape[0]
+        cols = originalFrame.shape[1]
 
-        # frame = originalFrame.copy()
+        frame = originalFrame.copy()
+        originalFrame = cv.resize(originalFrame, (300, 300))
         frame = cv.resize(frame, (300, 300))
 
         frame = frame[:, :, [2, 1, 0]]
@@ -173,16 +310,31 @@ class ObjectDetector:
                 # cv.imwrite(self.writePath + time.strftime('%Y_%m_%d_%H_%M_%S_',time.localtime(time.time())) + '.jpg', bbox)
                 # cv.rectangle(originalFrame,
                 #     (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
-                #         (0,0,255))
-                box_left_cols = int(bbox[1] + cols)
-                box_right_cols = int(bbox[3] + cols)
-                frame_left_cols = self.frame_merge_left.shape[1]
-                left_box_pixel = int(left_box_pixel / enlarge_num)
-                if box_left_cols > left_box_pixel and box_left_cols < frame_left_cols + 1 and box_right_cols > frame_left_cols:
+                #         (0,0,255), 2)
+                if self.vertical:
+                    box_left_or_up = int(bbox[0] * rows)
+                    box_right_or_down = int(bbox[2] * rows)
+                else:
+                    box_left_or_up = int(bbox[1] * cols)
+                    box_right_or_down = int(bbox[3] * cols)
+                # frame_left_cols = self.frame_merge_left.shape[1]
+                # left_box_pixel = int(left_box_pixel / enlarge_num)
+                # print(box_left_or_up)
+                # print(box_right_or_down)
+                # print(left_box_pixel)
+                # if box_left_or_up < left_box_pixel and box_left_or_up < frame_left_cols + 1 and box_right_or_down > frame_left_cols:
+                    # continue
+                if box_left_or_up < left_box_pixel and box_right_or_down > left_box_pixel:
+                    # print(box_left_or_up)
+                    # print(box_right_or_down)
+                    # print(left_box_pixel)
+                    # cv.imwrite(self.writePath + str(sign) + '.jpg', originalFrame)
                     continue
                 itemId = self.classNames[out['detection_classes'][i]]
                 results.append((confidence,itemId,frame_time))
       
+        # if len(results) > 2:
+            # cv.imwrite(self.writePath + str(sign) + '.jpg', frame)
         return results#默认返回空值
 
 
@@ -202,7 +354,3 @@ class ObjectDetector:
                         name = name.strip("\'")
                         self.classNames[_id] = name+'001'
                         # self.classNames[_id] = name
-        f.close()
-
-
-    
