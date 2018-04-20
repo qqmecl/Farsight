@@ -106,7 +106,7 @@ class DetectResult:
     def getCurrentDetection(self,isLast):#these parameters would significantly improve the performance of detect rate!
         id,num,_time,fetch_num = self.getMaxNum()
 
-        back_threshold,out_inTimethreshold,out_timeout_threshold = 3,4,4
+        back_threshold,out_inTimethreshold,out_timeout_threshold = 1,2,2
 
         if id is not None:
             if isLast:#in item check
