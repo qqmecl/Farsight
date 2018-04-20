@@ -45,8 +45,9 @@ class DetectResult:
                         # print(pop)
                         self.loadData(self.window.dequeue())
 
-                    # id,num,_time = self.getMaxNum()
-                    # print("put back after check: ",id,num,_time)
+                    id,num,_time,fetch_num= self.getMaxNum()
+                    print("put back after check: ",id,num,_time)
+
                     detectId,num,t_ime,fetch_num = self.getCurrentDetection(True)
                     if detectId is not None:
                         self.detect.append({"direction":"IN","id":detectId,"num":num,"time":t_ime,"fetch_num":fetch_num})
@@ -106,7 +107,7 @@ class DetectResult:
     def getCurrentDetection(self,isLast):#these parameters would significantly improve the performance of detect rate!
         id,num,_time,fetch_num = self.getMaxNum()
 
-        back_threshold,out_inTimethreshold,out_timeout_threshold = 3,4,4
+        back_threshold,out_inTimethreshold,out_timeout_threshold = 1,2,1
 
         if id is not None:
             if isLast:#in item check
