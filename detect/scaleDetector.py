@@ -1,4 +1,5 @@
 import common.settings as settings
+import time
 
 class ScaleDetector:
 	def __init__(self,index):
@@ -15,11 +16,11 @@ class ScaleDetector:
 	
 	def reset(self):
 		self.lastScale = 0
-
 		self.curActionDelta = 0
 		self.lastDetectTime = 0
 		self.detectState = "NORMAL"
 		self.detectCache = None
+		self.visionDetectTime = None
 
 	def check(self,motions):
 		motion,isCover = motions[0],motions[1]
@@ -42,19 +43,21 @@ class ScaleDetector:
 			current = self.IO.get_stable_scale()
 			delta = current - self.lastScale
 
+			c_time = time.time()
 			if self.detectState == "PULL_CHECKING":
-				if delta < -(self.curActionDelta/2):
-					_id = self.detectCache[0]["id"]
-					
-					#for i in range(self.detectCache[0]["fetch_num"]):
-						# print("add_item")
-					self.cart.add_item(_id,self.lastDetectTime)
+				if abs(c_time - self.visionDetectTime)< 0.5:
+					if delta < -(self.curActionDelta/2):
+						_id = self.detectCache[0]["id"]
+						
+						#for i in range(self.detectCache[0]["fetch_num"]):
+							# print("add_item")
+						self.cart.add_item(_id,self.lastDetectTime)
 
-					self.detectState = "NORMAL"
-				else:
-					if self.index == 0:
-						print("current is: ",current)
-						print("self.lastScale is: ",self.lastScale)
+						self.detectState = "NORMAL"
+					else:
+						if self.index == 0:
+							print("current is: ",current)
+							print("self.lastScale is: ",self.lastScale)
 
 			if self.detectState == "PUSH_CHECKING":
 				if delta > (self.curActionDelta/2):
@@ -78,7 +81,7 @@ class ScaleDetector:
 
 			# if self.cart.timeCheck(self.lastDetectTime):
 				# return
-				
+
 			# print(detect)
 			# print("action time is: ",self.lastDetectTime)
 			_id = detect[0]["id"]
@@ -92,6 +95,8 @@ class ScaleDetector:
 				self.detectState = "PULL_CHECKING"
 			else:
 				self.detectState = "PUSH_CHECKING"
+
+			self.visionDetectTime = time.time()
 
 			self.curActionDelta = settings.items[_id]['weight']
 
