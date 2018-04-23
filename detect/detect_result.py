@@ -126,6 +126,7 @@ class DetectResult:
                         return id,num,_time,fetch_num
                 else:
                     if num > out_timeout_threshold:
+                        print("with outtime {} time got {} catch".format(delta,num))
                         return id,num,_time,fetch_num
                     else:
                         self.reset()
