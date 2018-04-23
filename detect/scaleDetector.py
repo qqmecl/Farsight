@@ -76,6 +76,9 @@ class ScaleDetector:
 
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
 
+			# if self.cart.timeCheck(self.lastDetectTime):
+				# return
+				
 			# print(detect)
 			# print("action time is: ",self.lastDetectTime)
 			_id = detect[0]["id"]
@@ -96,9 +99,11 @@ class ScaleDetector:
 			detectResults.resetDetect()
 			detectResults.setActionTime()
 
+	def reset(self):
+		self.detectState = "NORMAL"
+
 	def notifyCloseDoor(self):
 		if self.detectState == "PULL_CHECKING":
-			
 			_id = self.detectCache[0]["id"]
 			self.cart.add_item(_id,self.lastDetectTime)
 			self.detectState = "NORMAL"

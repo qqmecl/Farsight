@@ -33,8 +33,11 @@ class Cart:
         if self.lastActionTime is None:
             self.lastActionTime = actionTime
 
-        delta = abs(actionTime - self.lastActionTime)
-        if delta > 0 and delta < 0.4:
+        delta = actionTime - self.lastActionTime
+        if abs(delta) > 0 and abs(delta) < 0.4:
+            return True
+
+        if delta < 0:#last missed value
             return True
 
         return False
@@ -71,6 +74,10 @@ class Cart:
             return True
 
         return False
+
+
+    # def getLastActionTime(self):
+        # return self.lastActionTime
 
 
     def getStartWeight(self):
