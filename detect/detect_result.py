@@ -46,10 +46,12 @@ class DetectResult:
                         self.loadData(self.window.dequeue())
 
                     id,num,_time,fetch_num= self.getMaxNum()
-                    print("put back after check: ",id,num,_time)
 
                     detectId,num,t_ime,fetch_num = self.getCurrentDetection(True)
                     if detectId is not None:
+                        
+                        print("put back after check: ",id,num,_time)
+
                         self.detect.append({"direction":"IN","id":detectId,"num":num,"time":t_ime,"fetch_num":fetch_num})
                     else:#empty push
                         self.window.empty()#清空window
@@ -122,11 +124,11 @@ class DetectResult:
 
                 if delta < 1:
                     if num > out_inTimethreshold:
-                        print("with {} time got {} catch".format(delta,num))
+                        print("withIn {} time got {} catch".format(delta,num))
                         return id,num,_time,fetch_num
                 else:
                     if num > out_timeout_threshold:
-                        print("with outtime {} time got {} catch".format(delta,num))
+                        print("outtime {} time got {} catch".format(delta,num))
                         return id,num,_time,fetch_num
                     else:
                         self.reset()

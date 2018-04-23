@@ -26,8 +26,8 @@ class Cart:
             self.after_doorClose_weight = None
             
 
-            cartCheck = tornado.ioloop.PeriodicCallback(self.cart_check,60)
-            cartCheck.start()
+            # cartCheck = tornado.ioloop.PeriodicCallback(self.cart_check,60)
+            # cartCheck.start()
 
     def timeCheck(self,actionTime):
         if self.lastActionTime is None:
