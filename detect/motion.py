@@ -15,7 +15,7 @@ class MotionDetect:
             self.refLine = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             self.hand_last = -6     # -6 = 手在外面， 6 = 手在里面, 其余为中间状态
             self.hand_present = -6
-            return "None"
+            return ("None",False)
 
         curLine = frame# 当前帧的参考线
 
