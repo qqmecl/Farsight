@@ -14,14 +14,12 @@ class DetectResult:
         return self.motionTime[_type]
 
     def checkData(self,index,data,frame_time):
-
         self.latestFrameTime = frame_time
-
         for motion,detects in data.items():
             motion = motion[0]
 
             if motion != "None":
-                print("{} camera detect_result got motion: ".format(index,motion))
+                #filter multi pull and push situation.
                 if abs(frame_time-self.lastMotionTime[motion]) < 0.2:
                     motion = "None"
  
@@ -34,11 +32,9 @@ class DetectResult:
                     settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
             
             self.window.enqueue(detects)
-
-            #filter multi pull and push situation.
-
-
+            
             if motion != "None":
+                print("{} camera detect_result got motion {} by time {}".format(index,motion,frame_time))
                 self.motionTime[motion]=frame_time
                 
             if motion == "PUSH":#Action start or Action done.
@@ -61,15 +57,14 @@ class DetectResult:
                 self.lastMotion = motion
                 #TODO
             elif motion == "PULL":
-                if self.lastMotion == "PUSH":
-                    self.detectState = "PULL_CHECKING"
+                # if self.lastMotion == "PUSH":
+                self.detectState = "PULL_CHECKING"
 
-                    self.actionTime = self.motionTime["PULL"]
+                self.actionTime = self.motionTime["PULL"]
 
-                    # limit=3
-                    # while(self.window.size()>3):
-                    #     pop = self.window.dequeue()
-
+                limit=3
+                while(self.window.size()>limit):
+                    pop = self.window.dequeue()
 
                 self.lastMotion = motion
             elif motion == "None":

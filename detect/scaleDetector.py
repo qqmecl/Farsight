@@ -5,7 +5,6 @@ class ScaleDetector:
 	def __init__(self):
 		self.IO = None
 		self.cart = None
-		# self.index = index
 		self.reset()
 
 	def setIo(self,io):
@@ -24,7 +23,6 @@ class ScaleDetector:
 
 	def check(self,motions):
 		motion,isCover = motions[0],motions[1]
-		# print(motion,isCover)
 		if motion == "PUSH":
 			self.lastScale = self.IO.get_stable_scale()
 
@@ -34,7 +32,6 @@ class ScaleDetector:
 			if self.detectState == "PULL_CHECKING":
 				self.detectState = "NORMAL"
 
-			# if self.index == 0:
 			print("this push scale is: ",self.lastScale)
 
 		elif motion == "PULL":
@@ -69,19 +66,12 @@ class ScaleDetector:
 					self.detectState = "NORMAL"
 					self.lastScale += self.curActionDelta
 
-			
-
-	#two judge will not interfere with each other
 	def detect_check(self,detectResults):
 		detect = detectResults.getDetect()
 
 		if len(detect) > 0:
 			direction = detect[0]["direction"]
-
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
-
-			# if self.cart.timeCheck(self.lastDetectTime):
-			# 	return
 				
 			# print(detect)
 			_id = detect[0]["id"]
@@ -107,10 +97,8 @@ class ScaleDetector:
 			self.visionDetectTime = time.time()
 
 			self.curActionDelta = settings.items[_id]['weight']
-
 			self.detectCache = detect
 			detectResults.resetDetect()
-			# detectResults.setActionTime()
 
 	def notifyCloseDoor(self):
 		if self.detectState == "PULL_CHECKING":

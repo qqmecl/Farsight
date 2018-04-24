@@ -38,16 +38,10 @@ class VideoStream:
 
     def update(self):
         if self.isSending:
-            # self.cnt+=1
             ret,frame = self.stream.read()
             if ret:
-                # self.cnt+=1
-                # if self.cnt == 99:
-                #     self.cnt = 0
                 centerX = settings.detect_baseLine[self.src]
                 motionType = self.motionChecker.checkInput(frame[:,int(centerX)-10:int(centerX)+10],time.time())
-                
-                # if self.cnt %3 == 0 or motionType != "None":
                 self.call_back(self.src,frame,motionType)
 
     def setSending(self,state):
@@ -66,16 +60,8 @@ class CameraController:
         for i in range(4):
             self.cameras[i] = VideoStream(i,self.sendFrame)
 
-
         if settings.has_scale:
-            # self.scaleDetector = []
-            # for i in range(2):
-                # self.scaleDetector.append(ScaleDetector(i))
             self.scaleDetector = ScaleDetector()
-            
-
-    # def getScaleDetector(self,src):
-        # return self.scaleDetector[src]
 
     def getScaleDetector(self):
         return self.scaleDetector
@@ -113,12 +99,12 @@ class CameraController:
                 self.videoWriter[src].write(frame)
 
             if src > 1:
-                frame = cv2.flip(frame,1)
-                    
-            if src%2 == 1:
-                frame = frame[:, 160: , :]#Camera downstairs
+                frame = frame[:, :settings.detect_baseLine[src]+10]
             else:
-                frame = frame[:, 260: , :]#Camera upstairs
+                frame = frame[:, settings.detect_baseLine[src]-10:]
+
+            settings.detect_baseLine[src]
+
             self.frames_queues.put((frame,src%2,time.time(),motionType))
 
         except queue.Full:
