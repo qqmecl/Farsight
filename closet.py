@@ -115,19 +115,26 @@ class Closet:
         self.camera_control = CameraController(input_queue = self.input_queues)
 
         if settings.has_scale:
-            self.scaleDetector = []
-            for i in range(2):
-                scaleDetector = self.camera_control.getScaleDetector(i)
-                scaleDetector.setIo(self.IO)
-                scaleDetector.setCart(self.cart)
-                self.scaleDetector.append(scaleDetector)
+            # self.scaleDetector = []
+            # for i in range(2):
+            #     scaleDetector = self.camera_control.getScaleDetector(i)
+            #     scaleDetector.setIo(self.IO)
+            #     scaleDetector.setCart(self.cart)
+            #     self.scaleDetector.append(scaleDetector)
+
+            self.scaleDetector = self.camera_control.getScaleDetector()
+            self.scaleDetector.setIo(self.IO)
+            self.scaleDetector.setCart(self.cart)
 
 
         settings.logger.warning('camera standby')
 
-        self.detectResults = []
-        for i in range(2):
-            self.detectResults.append(DetectResult())
+        # self.detectResults = []
+        # for i in range(2):
+            # self.detectResults.append(DetectResult())
+
+
+        self.detectResult = DetectResult()
 
         handler = SignalHandler(object_detection_pools, tornado.ioloop.IOLoop.current())
         signal.signal(signal.SIGINT, handler.signal_handler)
@@ -249,13 +256,17 @@ class Closet:
 
                 self._start_imageprocessing()
 
-                for i in range(2):
-                    self.detectResults[i].reset()
-                    self.detectResults[i].resetDetect()
+                # for i in range(2):
+                #     self.detectResults[i].reset()
+                #     self.detectResults[i].resetDetect()
+
+                self.detectResult.reset()
+                self.detectResult.resetDetect()
 
                 if settings.has_scale:
-                    for i in range(2):
-                        self.scaleDetector[i].reset()
+                    # for i in range(2):
+                    #     self.scaleDetector[i].reset()
+                    self.scaleDetector.reset()
                     self.cart.setBeforDoorOpenWeight()
 
                 laterDoor = functools.partial(self.delayCheckDoorClose)
@@ -274,15 +285,18 @@ class Closet:
 
                     checkIndex = index%2
                     
-                    self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
+                    # self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
+                    self.detectResult.checkData(checkIndex,{motionType:result[2]},frame_time)
 
                     if settings.has_scale:
-                        self.scaleDetector[checkIndex].detect_check(self.detectResults[checkIndex])
+                        # self.scaleDetector[checkIndex].detect_check(self.detectResults[checkIndex])
+                        self.scaleDetector.detect_check(self.detectResult)
                     else:
-                        self.detect_check(checkIndex)
+                        self.detect_check()
 
-    def detect_check(self,checkIndex):#pure vision detect
-        detect = self.detectResults[checkIndex].getDetect()
+    def detect_check(self):#pure vision detect
+        # detect = self.detectResults[checkIndex].getDetect()
+        detect = self.detectResult.getDetect()
 
         if len(detect) > 0:
             direction = detect[0]["direction"]
@@ -290,27 +304,27 @@ class Closet:
 
             if settings.items[id]['name'] == "empty_hand":
                 print("check empty hand")
-                self.detectResults[checkIndex].resetDetect()
+                self.detectResult.resetDetect()
                 return
 
-            now_time = self.detectResults[checkIndex].getMotionTime("PUSH" if direction is "IN" else "PULL")
+            now_time = self.detectResult.getMotionTime("PUSH" if direction is "IN" else "PULL")
             now_num = detect[0]["num"]
 
-            print("{} camera shot by {}".format(checkIndex,now_time))
+            # print("{} camera shot by {}".format(checkIndex,now_time))
             # intervalTime = now_time - self.lastDetectTime
 
             # if intervalTime > 0.5:
                 # self.detectCache = None
                 # self.detectCache=[detect[0]["id"],detect[0]["num"]]
             if direction == "IN":
-                settings.logger.warning('{0} camera shot Put back,{1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
+                settings.logger.warning('camera shot Put back {1} with num {2}'.format(settings.items[id]["name"], now_num))
 
                 # for i in range(detect[0]["fetch_num"]):
                     # self.detectCache.append(self.cart.remove_item(id,now_time))
                 self.cart.remove_item(id,now_time)
 
             else:
-                settings.logger.warning('{0} camera shot Take out {1} with num {2}'.format(checkIndex,settings.items[id]["name"], now_num))
+                settings.logger.warning('camera shot Take out {1} with num {2}'.format(settings.items[id]["name"], now_num))
                 
                 # for i in range(detect[0]["fetch_num"]):
                 self.cart.add_item(id,now_time)
@@ -336,7 +350,7 @@ class Closet:
             #                 self.cart.remove_item(id)
             #                 settings.logger.warning('adjust|Put back,{},|'.format(settings.items[id]["name"]))
 
-            self.detectResults[checkIndex].resetDetect()
+            self.detectResult.resetDetect()
             # self.lastDetectTime = now_time
             # self.detectResults[checkIndex].setActionTime()
 
@@ -399,8 +413,8 @@ class Closet:
                         self.emptyQueueKeepCnt +=1
                     if self.emptyQueueKeepCnt == 4:
                         settings.logger.warning('Door Closed!')
-                        for i in range(2):
-                            self.detectResults[i].reset()
+                        # for i in range(2):
+                            # self.detectResults[i].reset()
                         self.check_door_close_callback.stop()
 
                         laterAction = functools.partial(self._delay_do_order)

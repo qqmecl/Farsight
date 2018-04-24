@@ -68,13 +68,17 @@ class CameraController:
 
 
         if settings.has_scale:
-            self.scaleDetector = []
-            for i in range(2):
-                self.scaleDetector.append(ScaleDetector(i))
+            # self.scaleDetector = []
+            # for i in range(2):
+                # self.scaleDetector.append(ScaleDetector(i))
+            self.scaleDetector = ScaleDetector()
+            
 
+    # def getScaleDetector(self,src):
+        # return self.scaleDetector[src]
 
-    def getScaleDetector(self,src):
-        return self.scaleDetector[src]
+    def getScaleDetector(self):
+        return self.scaleDetector
 
     def startCameras(self,cameras):
         self.curCameras = cameras
@@ -94,7 +98,8 @@ class CameraController:
 
     def sendFrame(self,src,frame,motionType):
         if settings.has_scale:
-            self.scaleDetector[src%2].check(motionType)
+            # self.scaleDetector[src%2].check(motionType)
+            self.scaleDetector.check(motionType)
 
         try:
             # self.cnt+=1

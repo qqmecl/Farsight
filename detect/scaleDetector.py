@@ -2,10 +2,10 @@ import common.settings as settings
 import time
 
 class ScaleDetector:
-	def __init__(self,index):
+	def __init__(self):
 		self.IO = None
 		self.cart = None
-		self.index = index
+		# self.index = index
 		self.reset()
 
 	def setIo(self,io):
@@ -38,7 +38,7 @@ class ScaleDetector:
 			print("this push scale is: ",self.lastScale)
 
 		elif motion == "PULL":
-			self.lastPullVal = self.IO.get_stable_scale()
+			pass
 		else:
 			current = self.IO.get_stable_scale()
 			delta = current - self.lastScale
@@ -90,7 +90,7 @@ class ScaleDetector:
 			print("action time is: ",self.lastDetectTime)
 
 			#[{'direction': 'OUT', 'id': '6921581596048001', 'num': 26, 'time': 1524473704.6296923, 'fetch_num': 2}]
-			print("camera {} with direction {} got {} by time {} with num {}".format(self.index,detect[0]["direction"],settings.items[_id]["name"],self.lastDetectTime,detect[0]["num"]))
+			print("direction {} got {} by time {} with num {}".format(detect[0]["direction"],settings.items[_id]["name"],self.lastDetectTime,detect[0]["num"]))
 			print("                        ")
 			print("                        ")
 
@@ -111,9 +111,6 @@ class ScaleDetector:
 			self.detectCache = detect
 			detectResults.resetDetect()
 			# detectResults.setActionTime()
-
-	# def reset(self):
-	# 	self.detectState = "NORMAL"
 
 	def notifyCloseDoor(self):
 		if self.detectState == "PULL_CHECKING":
