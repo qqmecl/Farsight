@@ -88,79 +88,78 @@ class ObjectDetector:
                         if left_x >= right_x:
                             if left_x >= (left_y + right_y):
                                 sum_planA = (left_x - right_x) * right_y + left_x * (left_x - left_y - right_y) #up concatenate down
-                                photo_sign = 1
+                                photo_sign_A = 1
                             else:
                                 sum_planA = (left_x - right_x) * right_y + (left_y + right_y) * (left_y + right_y - left_x) #up concatenate down
-                                photo_sign = 2
+                                photo_sign_A = 2
                         else:
                             if right_x >= (left_y + right_y):
                                 sum_planA = (right_x - left_x) * left_y + right_x * (right_x - left_y - right_y) #up concatenate down
-                                photo_sign = 3
+                                photo_sign_A = 3
                             else:
                                 sum_planA = (right_x - left_x) * left_y + (left_y + right_y) * (left_y + right_y - right_x) #up concatenate down
-                                photo_sign = 4
+                                photo_sign_A = 4
                         
                         if left_y >= right_y:
                             if left_y >= (left_x + right_x):
                                 sum_planB = (left_y - right_y) * right_x + left_y * (left_y - left_x - right_x) #left concatenate right
-                                photo_sign = 5
+                                photo_sign_B = 5
                             else:
                                 sum_planB = (left_y - right_y) * right_x + (left_x + right_x) * (left_x + right_x - left_y) #left concatenate right
-                                photo_sign = 6
+                                photo_sign_B = 6
                         else:
                             if right_y >= (left_x + right_x):
                                 sum_planB = (right_y - left_y) * left_x + right_y * (right_y - left_x - right_x) #left concatenate right
-                                photo_sign = 7
+                                photo_sign_B = 7
                             else:
                                 sum_planB = (right_y - left_y) * left_x + (left_x + right_x) * (left_x + right_x - right_y) #left concatenate right
-                                photo_sign = 8
+                                photo_sign_B = 8
 
-                        
-                        if sum_planA <= sum_planB:
+                        # print(sum_planB, 'gggggg', sum_planA)
+                        # print(sum_planB // sum_planA)
+                        if sum_planB // sum_planA:
                             self.vertical = True  
-                            if photo_sign == 1:
+                            if photo_sign_A == 1:
                                 frame_merge = self.compose_photo(small_fill_y = right_y, small_fill_x = left_x - right_x, big_fill_y = left_x - left_y - right_y,
-                                    big_fill_x = left_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axis = [1, 0, 0])
-                                divide_val = left_y
+                                    big_fill_x = left_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axises = [1, 0, 0])
                             
-                            if photo_sign == 2:
+                            if photo_sign_A == 2:
                                 frame_merge = self.compose_photo(small_fill_y = right_y, small_fill_x = left_x - right_x, big_fill_y = left_y + right_y,
-                                    big_fill_x = left_y + right_y - left_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axis = [1, 0, 1])
-                                divide_val = left_y
+                                    big_fill_x = left_y + right_y - left_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axises = [1, 0, 1])
                             
-                            if photo_sign == 3:
+                            if photo_sign_A == 3:
                                 frame_merge = self.compose_photo(small_fill_y = left_y, small_fill_x = right_x - left_x, big_fill_y = right_x - left_y - right_y,
-                                    big_fill_x = right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axis = [1, 0, 0])
-                                divide_val = right_y
+                                    big_fill_x = right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axises = [1, 0, 0], exchange = True)
 
-                            if photo_sign == 4:
+                            if photo_sign_A == 4:
                                 frame_merge = self.compose_photo(small_fill_y = left_y, small_fill_x = right_x - left_x, big_fill_y = left_y + right_y,
-                                    big_fill_x = left_y + right_y - right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axis = [1, 0, 1])
-                                divide_val = right_y
+                                    big_fill_x = left_y + right_y - right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axises = [1, 0, 1], exchange = True)
+
+                            divide_val = left_y
+                        
                         else:
                             self.vertical = False
-                            if photo_sign == 5:
+                            if photo_sign_B == 5:
                                 frame_merge = self.compose_photo(small_fill_y = left_y - right_y, small_fill_x = right_x, big_fill_y = left_y,
-                                    big_fill_x = left_y - left_x - right_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axis = [0, 1, 1])
-                                divide_val = left_x
+                                    big_fill_x = left_y - left_x - right_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axises = [0, 1, 1])
 
-                            if photo_sign == 6:
+                            if photo_sign_B == 6:
                                 frame_merge = self.compose_photo(small_fill_y = left_y - right_y, small_fill_x = right_x, big_fill_y = left_x + right_x - left_y,
-                                    big_fill_x = left_x + right_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axis = [0, 1, 0])
-                                divide_val = left_x
+                                    big_fill_x = left_x + right_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axises = [0, 1, 0])
 
-                            if photo_sign == 7:
+                            if photo_sign_B == 7:
                                 frame_merge = self.compose_photo(small_fill_y = right_y - left_y, small_fill_x = left_x, big_fill_y = right_y,
-                                    big_fill_x = right_y - left_x - right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axis = [0, 1, 1])
-                                divide_val = right_x
+                                    big_fill_x = right_y - left_x - right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axises = [0, 1, 1], exchange = True)
 
-                            if photo_sign == 8:
+                            if photo_sign_B == 8:
                                 frame_merge = self.compose_photo(small_fill_y = right_y - left_y, small_fill_x = left_x, big_fill_y = left_x + right_x - right_y,
-                                    big_fill_x = left_x + right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axis = [0, 1, 0])
-                                divide_val = right_x
+                                    big_fill_x = left_x + right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axises = [0, 1, 0], exchange = True)
+
+                            divide_val = left_x
 
 
-                        results = self.detect_objects(frame_merge,frame_time, divide_val)
+                        # cv.imwrite(self.writePath + str(sign) + '--' + str(sum_planA) + '--' + str(sum_planB) + '.jpg', frame_merge)
+                        results = self.detect_objects(frame_merge, frame_time, divide_val)
 
                         for i in range(2):
                             if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
@@ -168,12 +167,12 @@ class ObjectDetector:
                                 waste = detection_queue.get_nowait()
 
                             try:
-                                if i==0:
+                                if i:
                                     # if len(results[i]) >1:
                                         # print("check two item by the same time: ",results[i])
-                                    detection_queue.put_nowait([self.last_index,self.lastMotionType,results[i],self.lasFrame_time])#not a good structure
-                                else:
                                     detection_queue.put_nowait([index,motionType,results[i],frame_time])#not a good structure
+                                else:
+                                    detection_queue.put_nowait([self.last_index,self.lastMotionType,results[i],self.lasFrame_time])#not a good structure
                             except queue.Full:
                                 print('[FULL]')
                                 pass
@@ -191,12 +190,15 @@ class ObjectDetector:
                 # print('[EMPTY] input_q is: ')
                 pass
 
-    def compose_photo(self, small_fill_y, small_fill_x, big_fill_y, big_fill_x, frame_merge_filled, frame_merge_temp, axis):
+    def compose_photo(self, small_fill_y, small_fill_x, big_fill_y, big_fill_x, frame_merge_filled, frame_merge_temp, axises, exchange = False):
         fill1 = np.zeros((small_fill_y,small_fill_x, 3), np.uint8)
-        frame_temp_temp = np.concatenate((frame_merge_filled, fill1), axis = axis[0])
+        frame_temp_temp = np.concatenate((frame_merge_filled, fill1), axis = axises[0])
         fill2 = np.zeros((big_fill_y, big_fill_x, 3), np.uint8)
-        frame_temp = np.concatenate((frame_merge_temp, frame_temp_temp), axis = axis[1])
-        frame_merge = np.concatenate((frame_temp, fill2), axis = axis[2])
+        if exchange:
+            frame_temp = np.concatenate((frame_temp_temp, frame_merge_temp), axis = axises[1])
+        else:
+            frame_temp = np.concatenate((frame_merge_temp, frame_temp_temp), axis = axises[1])
+        frame_merge = np.concatenate((frame_temp, fill2), axis = axises[2])
         return frame_merge
     
     ##当前只考虑单帧的判断
@@ -235,26 +237,29 @@ class ObjectDetector:
                     (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
                         (0,0,255), 2)
 
-                if self.vertical:
-                    # cv.imwrite(self.writePath + str(sign) + '.jpg', frame)
-                    box_left_or_up = int(bbox[0] * rows)
-                    box_right_or_down = int(bbox[2] * rows)
-                else:
-                    box_left_or_up = int(bbox[1] * cols)
-                    box_right_or_down = int(bbox[3] * cols)
+                # if self.vertical:
+                #     # cv.imwrite(self.writePath + str(sign) + '.jpg', frame)
+                #     box_left_or_up = int(bbox[0] * rows)
+                #     box_right_or_down = int(bbox[2] * rows)
+                # else:
+                #     box_left_or_up = int(bbox[1] * cols)
+                #     box_right_or_down = int(bbox[3] * cols)
 
 
                 up_y = int(bbox[0] * rows)
                 down_y = int(bbox[2] * rows)
-                left_x = int(bbox[1] * rows)
-                right_x = int(bbox[3] * rows)
+                left_x = int(bbox[1] * cols)
+                right_x = int(bbox[3] * cols)
 
-                if self.vertical:
+                if self.vertical:          # append True is first_frame.....append False is second_box
                     if up_y <= divide_val and down_y <= divide_val:
                         results0.append((confidence,itemId,frame_time))
 
                     if up_y >= divide_val and down_y >= divide_val:
                         results1.append((confidence,itemId,frame_time))
+
+                    # if up_y <= divide_val and down_y >= divide_val:
+                    #     cv.imwrite(self.writePath + 'multi' + str(self.frameCount) + '.jpg', original)
                 else:
                     if left_x <= divide_val and right_x <= divide_val:
                         results0.append((confidence,itemId,frame_time))
@@ -262,16 +267,19 @@ class ObjectDetector:
                     if left_x >= divide_val and right_x >= divide_val:
                         results1.append((confidence,itemId,frame_time))
 
+                    # if left_x <= divide_val and right_x >= divide_val:
+                    #     cv.imwrite(self.writePath + 'multi' + str(self.frameCount) + '.jpg', original)
+
         results.append(results0)
         results.append(results1)
 
-        if len(results0) > 0:
+        # if len(results0) > 0:
             # print(self.frameCount," : ",results0)
-            cv.imwrite(self.writePath + str(self.frameCount) + '.jpg', original)
+            # cv.imwrite(self.writePath + 'box_in_up_and_left' + str(self.frameCount) + '.jpg', original)
 
-        if len(results1) > 0:
+        # if len(results1) > 0:
             # print(self.frameCount," : ",results1)
-            cv.imwrite(self.writePath + str(self.frameCount) + '.jpg', original)
+            # cv.imwrite(self.writePath + 'box_in_down_and_right' + str(self.frameCount) + '.jpg', original)
 
         return results#默认返回空值
 
