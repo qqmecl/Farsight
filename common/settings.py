@@ -53,7 +53,7 @@ detect_baseLine=[]
 for i in range(4):
     content = config_parser.get("usb_cameras","index"+str(i))
     usb_cameras.append(content)
-    centerX = config_parser.get("detect","centerX"+str(i))
+    centerX = config_parser.getint("base_line","centerX"+str(i))
     detect_baseLine.append(centerX)
 
 content = config_parser.get("usb_cameras","index"+str(i))

@@ -97,13 +97,16 @@ class CameraController:
             self.scaleDetector[src%2].check(motionType)
 
         try:
+            # self.cnt+=1
             # cur=time.time()
             # if cur - self.lastTime>1.0:
-                # print("send ",self.cnt," frame cur second")
-                # self.cnt=0 
-                # self.lastTime = cur
-            # if settings.logger.checkSaveVideo():
-            #     self.videoWriter[src].write(frame)
+            #     print("send ",self.cnt," frame cur second")
+            #     self.cnt=0 
+            #     self.lastTime = cur
+
+            if settings.logger.checkSaveVideo():
+                self.videoWriter[src].write(frame)
+
 
             if src > 1:
                 frame = cv2.flip(frame,1)

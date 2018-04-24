@@ -338,7 +338,7 @@ class Closet:
 
             self.detectResults[checkIndex].resetDetect()
             # self.lastDetectTime = now_time
-            self.detectResults[checkIndex].setActionTime()
+            # self.detectResults[checkIndex].setActionTime()
 
 
     def _delay_do_order(self):
@@ -355,7 +355,7 @@ class Closet:
             print("final order is: ",settings.items[k]["name"],v)
 
 
-        # order["data"]={}
+        order["data"]={}
 
         strData = json.dumps(order)
         self.pollData = self.encrypter.aes_cbc_encrypt(strData, key = settings.sea_key)
