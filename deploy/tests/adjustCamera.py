@@ -3,6 +3,8 @@ import cv2
 import os
 
 usb_cameras=[]
+detect_baseLine=[]
+
 if os.path.exists("../../local/config.ini"):
     from configparser import ConfigParser
     config_parser = ConfigParser()
@@ -10,16 +12,11 @@ if os.path.exists("../../local/config.ini"):
     for i in range(4):
         content = config_parser.get("usb_cameras","index"+str(i))
         usb_cameras.append(content)
-    #config_parser.close()
-else:
-    usb_cameras=[
-    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:10:1.0-video-index0",
-    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:9:1.0-video-index0",
-    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:6:1.0-video-index0",#done
-    "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:8:1.0-video-index0"
-    ]
+        centerX = config_parser.getint("base_line","centerX"+str(i))
+        detect_baseLine.append(centerX)
 
-index = 0
+
+index = 3
 cap = cv2.VideoCapture(usb_cameras[index])
 ret=True
 
@@ -31,8 +28,7 @@ while(ret):
     ret, frame = cap.read()
     if ret:
         
-        
-        centerX=315
+        centerX=detect_baseLine[index]
 
         cv2.rectangle(frame, (centerX-10, 0), (centerX+10, DEFAULT_HEIGHT),(0, 0, 255),3)
         cv2.imshow('frame',frame)

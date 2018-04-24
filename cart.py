@@ -15,7 +15,8 @@ class Cart:
         self.screen = io.screen
 
         self.lastActionItem = None
-        self.lastActionTime = None
+
+        self.lastActionTimes = Queue(3)
 
         if settings.has_scale:
             self.scale_vals = Queue(6)
@@ -30,12 +31,13 @@ class Cart:
             # cartCheck.start()
 
     def timeCheck(self,actionTime):
-        if self.lastActionTime is None:
-            self.lastActionTime = actionTime
+        if self.lastActionTimes.size() == 0:
+            return False
 
-        delta = actionTime - self.lastActionTime
-        if abs(delta) > 0 and abs(delta) < 0.4:
-            return True
+        for time in self.lastActionTimes.getAll():
+            delta = actionTime - time
+            if abs(delta) > 0 and abs(delta) < 0.4:
+                return True
 
         if delta < 0:#last missed value
             return True
@@ -56,7 +58,8 @@ class Cart:
         self.IO.update_screen_item(True,item_id)
 
         self.lastActionItem = item_id
-        self.lastActionTime = actionTime
+
+        self.lastActionTimes.enqueue(actionTime)
 
     def remove_item(self, item_id,actionTime):
         if self.timeCheck(actionTime):
@@ -69,7 +72,8 @@ class Cart:
             self.IO.update_screen_item(False,item_id)
 
             self.lastActionItem = item_id
-            self.lastActionTime = actionTime
+
+            self.lastActionTimes.enqueue(actionTime)
 
             return True
 

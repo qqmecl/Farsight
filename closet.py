@@ -338,7 +338,7 @@ class Closet:
 
             self.detectResults[checkIndex].resetDetect()
             # self.lastDetectTime = now_time
-            self.detectResults[checkIndex].setActionTime()
+            # self.detectResults[checkIndex].setActionTime()
 
 
     def _delay_do_order(self):

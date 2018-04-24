@@ -83,10 +83,16 @@ class ScaleDetector:
 			# if self.cart.timeCheck(self.lastDetectTime):
 			# 	return
 				
-			print(detect)
+			# print(detect)
+			_id = detect[0]["id"]
+			print("                        ")
+			print("                        ")
 			print("action time is: ",self.lastDetectTime)
 
-			_id = detect[0]["id"]
+			#[{'direction': 'OUT', 'id': '6921581596048001', 'num': 26, 'time': 1524473704.6296923, 'fetch_num': 2}]
+			print("camera {} with direction {} got {} by time {} with num {}".format(self.index,detect[0]["direction"],settings.items[_id]["name"],self.lastDetectTime,detect[0]["num"]))
+			print("                        ")
+			print("                        ")
 
 			if settings.items[_id]['name'] == "empty_hand":
 				print("check empty hand take out")
@@ -104,7 +110,7 @@ class ScaleDetector:
 
 			self.detectCache = detect
 			detectResults.resetDetect()
-			detectResults.setActionTime()
+			# detectResults.setActionTime()
 
 	# def reset(self):
 	# 	self.detectState = "NORMAL"

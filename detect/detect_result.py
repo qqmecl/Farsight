@@ -9,22 +9,33 @@ class DetectResult:
         self.logger = multiprocessing.get_logger()
         self.reset()
         self.resetDetect()
-        self.curMarkTime = time.time()
+
+        # self.curMarkTime = time.time()
+        
+        self.latestFrameTime = None
         
     def getMotionTime(self,_type):
         return self.motionTime[_type]
 
     def checkData(self,index,data,frame_time):
+
+        self.latestFrameTime = frame_time
+
         for motion,detects in data.items():
             
             motion = motion[0]
 
             if motion != "None":
                 self.motionTime[motion]=frame_time
+                print("detect_result got motion: ",motion)
 
-            # for val in detects:
-            #     (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
-            #     settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
+            if len(detects) == 0:
+                pass
+                # settings.logger.info('{0} camera shot {1} by time {2}'.format(index,"None",frame_time))
+            else:
+                for val in detects:
+                    (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
+                    settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
             
             self.window.enqueue(detects)
 
@@ -45,14 +56,16 @@ class DetectResult:
                         # print(pop)
                         self.loadData(self.window.dequeue())
 
-                    id,num,_time,fetch_num= self.getMaxNum()
+                    # id,num,_time,fetch_num= self.getMaxNum()
 
-                    detectId,num,t_ime,fetch_num = self.getCurrentDetection(True)
+                    detectId,num,_time,fetch_num = self.getCurrentDetection(True)
+
+                    print("put back after check: ",id,num,_time)
+
                     if detectId is not None:
                         
-                        print("put back after check: ",id,num,_time)
 
-                        self.detect.append({"direction":"IN","id":detectId,"num":num,"time":t_ime,"fetch_num":fetch_num})
+                        self.detect.append({"direction":"IN","id":detectId,"num":num,"time":_time,"fetch_num":fetch_num})
                     else:#empty push
                         self.window.empty()#清空window
 
@@ -64,14 +77,24 @@ class DetectResult:
                 # print("Last motion is: ",self.lastMotion)
                 if self.lastMotion == "PUSH":
                     self.detectState = "PULL_CHECKING"
-                    self.actionTime = time.time()
+
+                    # self.actionTime = time.time()
+                    self.actionTime = self.motionTime["PULL"]
+
+                    # limit=3#limit 
+                    # while(not self.window.isEmpty() and limit >0):
+                    #     pop = self.window.dequeue()
+                    #     # cv.imwrite()
+                    #     self.loadData(pop)
+                    #     limit-=1
 
                     limit=3#limit 
-                    while(not self.window.isEmpty() and limit >0):
+                    while(self.window.size()>3):
                         pop = self.window.dequeue()
                         # cv.imwrite()
-                        self.loadData(pop)
-                        limit-=1
+                        # self.loadData(pop)
+                        # limit-=1
+
                     # print("pull checking start time : ",self.actionTime)
 
                 self.lastMotion = motion
@@ -80,7 +103,8 @@ class DetectResult:
                 if self.detectState == "PULL_CHECKING":
                     #filter time less situation.
 
-                    self.takeOutCheck(timeCheck=True)
+                    # self.takeOutCheck(timeCheck=True)
+                    self.takeOutCheck()
 
 
 
@@ -89,11 +113,11 @@ class DetectResult:
             pop = self.window.dequeue()
             isAdd = True
             for val in pop:
-                _time=val[2]
-                if timeCheck and self.curMarkTime > _time:
-                    isAdd = False
-                break
-            if isAdd:
+                # _time=val[2]
+                # if timeCheck and self.curMarkTime > _time:
+                    # isAdd = False
+                # break
+            # if isAdd:
                 self.loadData(pop)
             # else:
                 # print("not load data")
@@ -118,9 +142,9 @@ class DetectResult:
                 else:
                     self.reset()
             else:#out item check
-                now_time = time.time()
+                # now_time = time.time()
 
-                delta = now_time-self.actionTime
+                delta = self.latestFrameTime-self.actionTime
 
                 if delta < 1:
                     if num > out_inTimethreshold:
@@ -168,8 +192,8 @@ class DetectResult:
         for k,item in settings.items.items():
             self.processing[k]=dict(num=0,time=0,fetch_num=0)
 
-    def setActionTime(self):
-        self.curMarkTime = time.time()
+    # def setActionTime(self):
+        # self.curMarkTime = time.time()
 
     def getMaxNum(self):
         maxId,count ="",0
