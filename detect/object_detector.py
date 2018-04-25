@@ -251,6 +251,7 @@ class ObjectDetector:
                 left_x = int(bbox[1] * cols)
                 right_x = int(bbox[3] * cols)
 
+
                 if self.vertical:          # append True is first_frame.....append False is second_box
                     if up_y <= divide_val and down_y <= divide_val:
                         results0.append((confidence,itemId,frame_time))
@@ -259,7 +260,7 @@ class ObjectDetector:
                         results1.append((confidence,itemId,frame_time))
 
                     # if up_y <= divide_val and down_y >= divide_val:
-                    #     cv.imwrite(self.writePath + 'multi' + str(self.frameCount) + '.jpg', original)
+                    
                 else:
                     if left_x <= divide_val and right_x <= divide_val:
                         results0.append((confidence,itemId,frame_time))
@@ -269,6 +270,8 @@ class ObjectDetector:
 
                     # if left_x <= divide_val and right_x >= divide_val:
                     #     cv.imwrite(self.writePath + 'multi' + str(self.frameCount) + '.jpg', original)
+
+        cv.imwrite(self.writePath + 'multi' + str(self.frameCount) + '.jpg', original)
 
         results.append(results0)
         results.append(results1)

@@ -84,6 +84,10 @@ class CameraController:
             if settings.logger.checkSaveVideo():
                 self.videoWriter[src].write(frame)
 
+            if settings.is_offline and src==0:
+                cv2.imshow("frame",frame)
+                cv2.waitKey(1)
+
 
             if src > 1:
                 frame = frame[:, :settings.detect_baseLine[src]+10]
