@@ -19,6 +19,7 @@ items = {
     '6925303730574001': dict(name='统一阿萨姆奶茶', price=6.5, weight=550.0),
     '6925303754952001': dict(name='小茗同学黄色', price=6.5, weight=546.0),
     '6925303714857001': dict(name='汤达人豚骨面', price=13.5, weight=184.0),
+    '0000000000000001': dict(name='empty_hand', price=13.5, weight=184.0),
 }
 
 # items = {
@@ -32,14 +33,10 @@ items = {
 #     '0000000000001': dict(name='empty_hand', price=3.5, weight=343.0)
 # }
 
-http_port = 5000
 sea_key = None
 
 welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,'D8:9E:F3:1D:EE:7C': 0x0D,'D8:9E:F3:1E:13:8A': 0x33}
 WELCOME_PAGE = welcome_page.get(get_mac_address(), 0x33)
-
-SAVE_DEBUG_OUTPUT = False
-SAVE_DETECT_OUTPUT = False
 
 #Load basic config corresponding to every different machine.
 
@@ -47,27 +44,34 @@ from configparser import ConfigParser
 config_parser = ConfigParser()
 config_parser.read("/home/votance/Projects/Farsight/local/config.ini")
 
+camera_width  = config_parser.getint("usb_cameras","width")
+camera_height = config_parser.getint("usb_cameras","height")
+camera_number = config_parser.getint("usb_cameras","number")
+
 usb_cameras=[]
 detect_baseLine=[]
 
-for i in range(4):
+for i in range(camera_number):
     content = config_parser.get("usb_cameras","index"+str(i))
     usb_cameras.append(content)
     centerX = config_parser.getint("base_line","centerX"+str(i))
     detect_baseLine.append(centerX)
 
-content = config_parser.get("usb_cameras","index"+str(i))
-SAVE_VIDEO_OUTPUT = config_parser.getboolean("maintain_switch","save_video_output")
+
+#hardware configuration
+camera_version = config_parser.getint("hardware","camera_version")
+lock_version = config_parser.getint("hardware","lock_version")
 
 speaker_on = config_parser.getboolean("maintain_switch","speaker_on")
 
-
+#serial ports configuration
 door_port = config_parser.get("serial_ports","door_port")
 speaker_port = config_parser.get("serial_ports","speaker_port")
 scale_port = config_parser.get("serial_ports","scale_port")
 screen_port = config_parser.get("serial_ports","screen_port")
 
-machine_state = config_parser.get("run_mode","hardware")
+
 has_scale = config_parser.getboolean("run_mode","withscale")
+is_offline = config_parser.getboolean("run_mode","offline")
 
 logger = Logger(config_parser.get("run_mode","client_mode"))

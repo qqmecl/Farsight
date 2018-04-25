@@ -75,18 +75,15 @@ class Closet:
         self.encrypter = Encrypter()
         self.input_queues = Queue(maxsize=20)
         self._detection_queue = Queue(maxsize=20*4)
-        self.check_door_time_out = False
         
         self.num_workers = config['num_workers']
         self.left_cameras = config['left_cameras']
         self.right_cameras = config['right_cameras']
 
-        self.IO = IO_Controller()
-        # 一定要在开门之前读数，不然开门动作可能会让读数抖动
-        self.cart = Cart(self.IO)
-
-
-        self.initItemData()
+        if not settings.is_offline:
+            self.IO = IO_Controller()
+            self.cart = Cart(self.IO)
+            self.initItemData()
        
     def initItemData(self):
         from common.util import get_mac_address
@@ -107,33 +104,37 @@ class Closet:
         self.lastDetectTime = time.time()
 
         object_detection_pools = []
-        indexs = self.left_cameras + self.right_cameras
-
         pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue))
-
-        self.machine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
         self.camera_control = CameraController(input_queue = self.input_queues)
 
         if settings.has_scale:
             self.scaleDetector = self.camera_control.getScaleDetector()
             self.scaleDetector.setIo(self.IO)
             self.scaleDetector.setCart(self.cart)
-
-
-        settings.logger.warning('camera standby')
         self.detectResult = DetectResult()
+
+        if settings.is_offline:
+            stateMachine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='left-door-open')
+            self.debugTime = time.time()
+            self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
+            self.updateScheduler.start()
+            laterStart = functools.partial(self.autoDelayStart)
+            tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterStart)
+        else:
+            make_http_app(self).listen(5000)
+            stateMachine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
+            self.init_success()
+            settings.logger.warning('camera standby')
+            print("Start success")
+
 
         handler = SignalHandler(object_detection_pools, tornado.ioloop.IOLoop.current())
         signal.signal(signal.SIGINT, handler.signal_handler)
-
-
-        make_http_app(self).listen(5000)
-
-        self.init_success()
-
-        print("Start success")
-
         tornado.ioloop.IOLoop.current().start()
+
+    def autoDelayStart(self):
+        self.curSide = 0
+        self._start_imageprocessing()
 
 
     def authorize(self, token, side):
@@ -292,11 +293,16 @@ class Closet:
             
             if direction == "IN":
                 settings.logger.warning('camera shot Put back {} with num {}'.format(settings.items[id]["name"], now_num))
-                self.cart.remove_item(id,now_time)
+
+
+                if not settings.is_offline:
+                    self.cart.remove_item(id,now_time)
             else:
                 settings.logger.warning('camera shot Take out {} with num {}'.format(settings.items[id]["name"], now_num))
-                # for i in range(detect[0]["fetch_num"]):
-                self.cart.add_item(id,now_time)
+
+                if not settings.is_offline:
+                    # for i in range(detect[0]["fetch_num"]):
+                    self.cart.add_item(id,now_time)
 
             self.detectResult.resetDetect()
 
@@ -359,7 +365,7 @@ class Closet:
 
     #发送摄像头工作指令消息
     def _start_imageprocessing(self):
-        if self.curSide == self.IO.doorLock.LEFT_DOOR:
+        if self.curSide == 0:
             self.camera_control.startCameras(self.left_cameras)
         else:
             self.camera_control.startCameras(self.right_cameras)

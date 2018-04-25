@@ -89,7 +89,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     '''
     def is_door_open(self, curside):
 
-        if settings.machine_state == "new":
+        if settings.lock_version == 2:
             return self.doorLock.is_door_open(curside)
         else:
             return self.doorLock.old_is_door_open(curside)
@@ -97,7 +97,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
 
     def is_door_lock(self, debugTime = None, curSide = None):
         # return self.doorLock.is_door_lock()
-        if settings.machine_state == "new":
+        if settings.lock_version == 2:
             return self.doorLock.is_door_lock()
         else:
             if debugTime:
@@ -110,7 +110,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
     #     return self.doorLock.both_door_closed() #peihuo
 
     def lock_up_door_close(self, curside):
-        if settings.machine_state == "new":
+        if settings.lock_version == 2:
             return self.doorLock.lock_up_door_close(curside)
         else:
             return True
