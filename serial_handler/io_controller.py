@@ -21,7 +21,7 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         if not settings.android_screen:
             self.speaker = Speaker()
 
-        if settings.box_style == 'single':
+        if settings.has_scale:
             self.scale = WeightScale()
         self.screen = Screen()
         #门和锁
