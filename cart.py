@@ -55,7 +55,10 @@ class Cart:
             self.items[item_id] = 1
 
         # settings.logger.warning('camera shot Take out {0}'.format(settings.items[item_id]["name"]))
-        self.IO.update_screen_item(True,item_id)
+        if settings.android_screen:
+            self.IO.add_item(item_id)
+        else:
+            self.IO.update_screen_item(True,item_id)
 
         self.lastActionItem = item_id
 
@@ -69,7 +72,10 @@ class Cart:
             self.items[item_id] -= 1
 
             # settings.logger.warning('camera shot Put back {0}'.format(settings.items[item_id]["name"]))
-            self.IO.update_screen_item(False,item_id)
+            if settings.android_screen:
+                self.IO.remove_item(item_id)
+            else:
+                self.IO.update_screen_item(False,item_id)
 
             self.lastActionItem = item_id
 
@@ -106,7 +112,8 @@ class Cart:
         if self.start_weight is None:
             return
 
-        weight = self.IO.get_stable_scale()
+        if settings.has_scale:
+            weight = self.IO.get_stable_scale()
 
         self.scale_vals.enqueue(weight)
         vals = self.scale_vals.getAll()

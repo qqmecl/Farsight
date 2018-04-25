@@ -16,7 +16,9 @@ class DoorLockHandler:
     RIGHT_DOOR = 1
 
     #串口地址可配置
-    def __init__(self, port=settings.door_port):
+    def __init__(self, port=None):
+        if not port:
+            port = settings.door_port
         rate = 9600
         self.com = serial.Serial(port, baudrate=rate, timeout=1)
         # self.lock = threading.Lock()
@@ -53,9 +55,13 @@ class DoorLockHandler:
     # 1010 0110
 
     def checkAllState(self):
-        array = [1, 2, 0, 0, 0, 8]
+        if settings.box_style == 'single':
+            array = [1, 2, 0, 0, 0, 4] #last number single 4 double 8
+        if settings.box_style == 'double':
+            array = [1, 2, 0, 0, 0, 8] #last number single 4 double 8
         self._send_data(array)
         data = self.com.read(6)
+        # print(data[-3])
         return data[-3]
 
         # strdata = list(map(lambda x:('/x' if len(hex(x))>=4 else '/x0')+hex(x)[2:],data))
@@ -71,30 +77,47 @@ class DoorLockHandler:
 
         state = self.checkAllState()
 
-        if curside & 1:     #1 is right_door
-            return not state ^ 105
-        else:
-            return not state ^ 150
+        if settings.box_style == 'single':
+            return not state ^ 6
+
+        elif settings.box_style == 'double':
+            if curside & 1:     #1 is right_door
+                return not state ^ 105
+            else:
+                return not state ^ 150
 
     def is_door_lock(self):
         state = self.checkAllState()
-        return not state ^ 153
+        
+        if settings.box_style == 'single':
+            return not state ^ 9
+
+        elif settings.box_style == 'double':
+            return not state ^ 153
 
     def lock_up_door_close(self, curside):
         state = self.checkAllState()
 
-        if curside & 1:
-            return not state ^ 89
-        else:
-            return not state ^ 149
+        if settings.box_style == 'single':
+            return not state ^ 5
+
+        elif settings.box_style == 'double':
+            if curside & 1:
+                return not state ^ 89
+            else:
+                return not state ^ 149
 
     def lock_down_door_open(self, curside):
         state = self.checkAllState()
+        
+        if settings.box_style == 'single':
+            return not state ^ 10
 
-        if curside & 1:
-            return not state ^ 169
-        else:
-            return not state ^ 154
+        if settings.box_style == 'double':
+            if curside & 1:
+                return not state ^ 169
+            else:
+                return not state ^ 154
 
     def old_is_door_open(self, side):
         '''
@@ -120,6 +143,8 @@ class DoorLockHandler:
             打开一边的锁，会自动延时重置锁的状态
         '''
         # TODO:确保状态是关闭
+        if settings.box_style == 'signal':
+            side = 0
         array = [1, 5, 0, side, 0xff, 0]  # TODO
         self._send_data(array)
         self.com.read(8)  #读掉数据，如果不读掉数据，会影响后续的数据读取
@@ -185,8 +210,12 @@ if __name__ == '__main__':
     handler = DoorLockHandler()
 
     #分为锁和门
-    # handler.unlock(DoorLockHandler.LEFT_DOOR)  # 开左边锁，以打开门
+    # tornado.ioloop.IOLoop.current().start()
+    handler.unlock(DoorLockHandler.LEFT_DOOR)  # 开左边锁，以打开门
 
-    handler.reset_lock(DoorLockHandler.LEFT_DOOR)
-    handler.reset_lock(DoorLockHandler.RIGHT_DOOR)
+    # handler.checkAllState()
+    # handler.reset_lock(DoorLockHandler.LEFT_DOOR)
+    # handler.reset_lock(DoorLockHandler.RIGHT_DOOR)
     # print(handler.both_door_closed())
+    # tornado.ioloop.PeriodicCallback(handler.checkAllState, 100).start()
+    tornado.ioloop.IOLoop.current().start()

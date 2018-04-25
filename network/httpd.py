@@ -56,7 +56,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 		# print(psp['sea_key'].encode())
 		settings.sea_key = self.encrypter.decrypt_rsa(psp['sea_key'].encode())
 		paramsDict = self.parseData(psp['aes_token'], settings.sea_key)
-		# settings.logger.info(''.format(paramsDict))
+		# settings.logger.info('{}, dfjd'.format(paramsDict))
 		secret = paramsDict.get('secret')
 		side = paramsDict.get('side', 'left')
 		token = paramsDict.get('token')
@@ -76,7 +76,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 				self.closet.adjust_items((itemId,num))
 			else:
 				if role == 'user':
-					if side == 'left':
+					if side in ('left', 'single'):
 						self.closet.authorize(token=token, side=DoorLockHandler.LEFT_DOOR)
 					else:
 						self.closet.authorize(token=token, side=DoorLockHandler.RIGHT_DOOR)
@@ -84,7 +84,7 @@ class AuthorizationHandler(tornado.web.RequestHandler):
 					#self.write(role)
 					# 配货员逻辑，同时解锁两边门
 					#self.closet.authorize_operator()
-					if side == 'left':
+					if side in ('left', 'single'):
 						self.closet.authorize_operator(token=token, side=DoorLockHandler.LEFT_DOOR)
 					else:
 						self.closet.authorize_operator(token=token, side=DoorLockHandler.RIGHT_DOOR)

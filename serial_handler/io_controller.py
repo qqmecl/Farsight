@@ -1,8 +1,12 @@
 import common.settings as settings
 from serial_handler.door_lock import DoorLockHandler
-from serial_handler.speaker import Speaker
-from serial_handler.scale import WeightScale
-from serial_handler.screen import Screen
+# from serial_handler.speaker import Speaker
+# from serial_handler.scale import WeightScale
+if settings.android_screen:
+    from serial_handler.screen import Screen
+else:
+    from serial_handler.screen_double import Screen
+
 import common.settings as settings
 from common.queue import Queue
 import tornado.ioloop
@@ -14,8 +18,11 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         self.blocking = False
 
         #连接各个串口
-        self.speaker = Speaker()
-        self.scale = WeightScale()
+        if not settings.android_screen:
+            self.speaker = Speaker()
+
+        if settings.box_style == 'single':
+            self.scale = WeightScale()
         self.screen = Screen()
         #门和锁
         self.doorLock = DoorLockHandler()
@@ -23,8 +30,9 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         self.scale_vals = Queue(6)
         self.stable_scale_val = 0
 
-        scaleUpdate = tornado.ioloop.PeriodicCallback(self._check_weight_scale,100)
-        scaleUpdate.start()
+        if settings.has_scale:
+            scaleUpdate = tornado.ioloop.PeriodicCallback(self._check_weight_scale,100)
+            scaleUpdate.start()
 
     def _check_weight_scale(self):
         self.scale_vals.enqueue(int(self.scale.read()*1000))
@@ -71,14 +79,25 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
         self.screen.change_to_page(Screen.INVENTORY_PAGE)
 
     def change_to_processing_page(self):
-        
         self.screen.change_to_page(Screen.PROCESSING_PAGE)
 
+    def change_to_thank_page(self):
+        
+        self.screen.change_to_page(Screen.THANK_PAGE)
+    
     def update_screen_item(self,isAdd,itemId):
     	self.screen.update_item(isAdd,itemId)
     '''
     	screen部分接口
     '''
+    '''
+        android screen interface
+    '''
+    def add_item(self, itemId):
+        self.screen.Add_item(name = settings.items[itemId]['name'], price = settings.items[itemId]['price'], number = 1)
+
+    def remove_item(self, itemId):
+        self.screen.remove_item(name = settings.items[itemId]['name'], number = 1)
 
 
 

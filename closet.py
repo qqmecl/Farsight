@@ -100,7 +100,7 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        settings.items["0000000000000001"] = dict(name='empty_hand', price=0, weight=184.0)
+        settings.items["0000000000001001"] = dict(name='empty_hand', price=0, weight=184.0)
         # print(settings.items)
 
     def start(self):
@@ -132,12 +132,11 @@ class Closet:
         handler = SignalHandler(object_detection_pools, tornado.ioloop.IOLoop.current())
         signal.signal(signal.SIGINT, handler.signal_handler)
 
-
         make_http_app(self).listen(5000)
 
         self.init_success()
 
-        print("Start success")
+        settings.logger.warning("Start success")
 
         tornado.ioloop.IOLoop.current().start()
 
@@ -289,14 +288,14 @@ class Closet:
             id = detect[0]["id"]
 
             if settings.items[id]['name'] == "empty_hand":
-                print("check empty hand")
+                # print("check empty hand")
                 self.detectResults[checkIndex].resetDetect()
                 return
 
             now_time = self.detectResults[checkIndex].getMotionTime("PUSH" if direction is "IN" else "PULL")
             now_num = detect[0]["num"]
 
-            print("{} camera shot by {}".format(checkIndex,now_time))
+            # print("{} camera shot by {}".format(checkIndex,now_time))
             # intervalTime = now_time - self.lastDetectTime
 
             # if intervalTime > 0.5:
@@ -368,6 +367,10 @@ class Closet:
         if req.status_code == 200:
             self.order_process_success()
             self.pollPeriod.stop()
+            if settings.box_style == 'single':
+                self.IO.change_to_thank_page()
+                time.sleep(1)
+                self.IO.change_to_welcome_page()
             settings.logger.evokeDoorClose()
 
 

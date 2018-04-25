@@ -27,7 +27,7 @@ class DetectResult:
 
             if motion != "None":
                 self.motionTime[motion]=frame_time
-                print("detect_result got motion: ",motion)
+                # print("detect_result got motion: ",motion)
 
             if len(detects) == 0:
                 pass
@@ -35,7 +35,7 @@ class DetectResult:
             else:
                 for val in detects:
                     (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
-                    settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
+                    # settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
             
             self.window.enqueue(detects)
 
@@ -60,7 +60,7 @@ class DetectResult:
 
                     detectId,num,_time,fetch_num = self.getCurrentDetection(True)
 
-                    print("put back after check: ",id,num,_time)
+                    # print("put back after check: ",id,num,_time)
 
                     if detectId is not None:
                         
@@ -148,11 +148,11 @@ class DetectResult:
 
                 if delta < 1:
                     if num > out_inTimethreshold:
-                        print("withIn {} time got {} catch".format(delta,num))
+                        settings.logger.warning("withIn {} time got {} catch".format(delta,num))
                         return id,num,_time,fetch_num
                 else:
                     if num > out_timeout_threshold:
-                        print("outtime {} time got {} catch".format(delta,num))
+                        settings.logger.warning("outtime {} time got {} catch".format(delta,num))
                         return id,num,_time,fetch_num
                     else:
                         self.reset()

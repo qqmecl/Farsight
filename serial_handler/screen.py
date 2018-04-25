@@ -1,259 +1,197 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from serial_handler.crc import crc16
 import serial
-import struct
-import itertools
-import functools
-import tornado.ioloop
+import time
 import common.settings as settings
 
+
 class Screen:
-    CHANGE_PAGE_ADDRESS = 0
+    WELCOME_PAGE = [0x00]
+    INVENTORY_PAGE = [0x01]
+    PROCESSING_PAGE = [0x02]
+    THANK_PAGE = [0x03]
+    DEBUG_PAGE = [0x04]
 
-    CART_COUNT_ADDRESS = 200
-    CART_TOTAL_ADDRESS = 201
-
-    WELCOME_PAGE = settings.WELCOME_PAGE
-    
-    INVENTORY_PAGE = 0x34
-
-    PROCESSING_PAGE = 0x36
-    ALL_COUNT_ADDRESS = 200
-    ALL_TOTAL_ADDRESS = 201
-
-    PROTOCOL_6_LEN = 8  # 06功能码长度
-    ITEM_NAME_START_ADDRESS = 500  # 单行商品起始地址
-    ITEM_NAME_INTERVAL = 50  # 单行商品间高度间隔
-
-    ITEM_PRICE_START_ADDRESS = 100  # 单行商品价格起始地址
-    ITEM_PRICE_INTERVAL = 10  # 单行商品价格间高度间隔
-
-    ITEM_NUM_START_ADDRESS = 101  # 单行商品数量起始地址
-    ITEM_NUM_INTERVAL = 10  # 单行商品数量间高度间隔
-
-    LINE_MAX_LIMIT = 14  # 最大可允许行数
-
-    def __init__(self, port=None):
-        if port is None:
-            port = settings.screen_port
-        #port="/dev/ttyS1"
-        # print(port)
-        # rate = 115200  # 当前串口通信设备波特率
+    APPEND_ITEM = [0x02]
+    CLEAR_CART_LIST = [0x03]
+    UPDATE_CART_PRICE = [0x04]
+    CLEAR_CART_PRICE = [0x05]
+    UPDATE_CART_NUMBER = [0x06]
+    CLEAR_CART_NUMBER = [0x07]
+    m_drink_Dic = {}
+    m_commodity_Dic = {}
+    m_total_number = 0
+    m_total_price = 0
+    def __init__(self, port=settings.screen_port):
         rate = 9600  # 当前串口通信设备波特率
-        self.com = serial.Serial(port, baudrate=rate, timeout=0.1)
-        # settings.logger.info(self.com)
-        self.resetData()
-
+        # rate = 115200  # 当前串口通信设备波特率
+        self.com = serial.Serial(port, baudrate=rate)
+        self.m_current_page = self.WELCOME_PAGE
+        self.change_to_page(self.m_current_page)
+        self.close()
     def resetData(self):
-        self.curItems = []  # [['007001','维他柠檬茶',700,1]]id,name,price,num
-        self.cartCount = 0
-        self.cartPrice = 0
+        self.curItems = [] 
 
-    # 开放给外部的物品更新接口1，增减item
-    def update_item(self, isAdd, itemId):  # 当前速度较慢，后期需提高用户体验
-        # 对商品id增减逻辑进行判断
-        fromDeleteIndex = -1
-        isNewItem = True
-        # settings.logger.info(self.curItems)
-        for i, item in enumerate(self.curItems):
-            if itemId == item[0]:
-                isNewItem = False
-                name_add = 150 if i > 6 else 0
-                if isAdd:
-                    self.cartCount += 1
-                    self.cartPrice += item[2]
-                    item[3] += 1
-                    self.update_Single_line(i)
-                    # self.do_protocol_6(Screen.ITEM_NUM_START_ADDRESS + i * Screen.ITEM_NUM_INTERVAL + num_add, item[3])  # 写商品数量
-                else:
-                    self.cartCount -= 1
-                    self.cartPrice -= item[2]
-                    if item[3] == 1:  # 当前商品数量变为零，删除当前行，后续所有行均需前移一行
-                        fromDeleteIndex = i
-                        break
-                    else:
-                        item[3] -= 1
-                        self.update_Single_line(i)
-                        # self.do_protocol_6(Screen.ITEM_NUM_START_ADDRESS + i * Screen.ITEM_NUM_INTERVAL + num_add, item[3])  # 写商品数量
-                break
-
-        # settings.logger.info(isNewItem,self.curItems)
-        
-        # 如果是一种新的商品走如下逻辑
-        if isNewItem:
-            for _id, _dict in settings.items.items():
-                if itemId == _id:
-                    newItem = [_id, _dict["name"], int(_dict["price"] * 10), 1]
-                    self.curItems.append(newItem)
-                    self.update_Single_line(len(self.curItems) - 1)
-                    self.cartCount += 1
-                    self.cartPrice += newItem[2]
-                    break
-
-        if fromDeleteIndex > -1:
-            # settings.logger.info("fromDeleteIndex is: ",fromDeleteIndex)
-            lastIndex = len(self.curItems) - 1
-            self.clear_line_content(lastIndex)  # 先清空最后一行内容
-            del self.curItems[fromDeleteIndex]  # 从self.curItems中删除当前为零商品行
-            index = lastIndex - 1
-            # settings.logger.info(self.curItems)
-            while(index >= fromDeleteIndex):
-                self.update_Single_line(index)
-                index -= 1
-
-        # 最后更新总体数据统计
-        self.update_static_info()
-
-    # 开放给外部的物品更新接口2，设置页面切换
     def change_to_page(self, page):
-        if page == Screen.PROCESSING_PAGE:
-            for i in range(len(self.curItems)):
-                self.clear_line_content(i)
-
-            self.do_protocol_6(Screen.ALL_COUNT_ADDRESS, self.cartCount)
-            # 设置process order info
-            self.do_protocol_6(Screen.ALL_TOTAL_ADDRESS, self.cartPrice)
-
-            self.resetData()
-            reset = functools.partial(self.change_to_page, Screen.WELCOME_PAGE)
-            tornado.ioloop.IOLoop.current().call_later(delay=3, callback=reset)
-        elif page == Screen.WELCOME_PAGE:
-            self.do_protocol_6(Screen.ALL_COUNT_ADDRESS,0)
-            # 设置process order info
-            self.do_protocol_6(Screen.ALL_TOTAL_ADDRESS,0)
-        elif page == Screen.INVENTORY_PAGE:
-            for i in range(7):
-                self.clear_line_content(i)
-
-        self.do_protocol_6(Screen.CHANGE_PAGE_ADDRESS, page)  # 0地址码
-
-    # 按ModBus功能码为6的协议写数据
-    def do_protocol_6(self, address, content):
-        # settings.logger.info("address is ",address)
-        conf = [0x01, 0x06, *divmod(address, 256), *divmod(content, 256)]
-        array = crc16().createarray(conf)
-        data = struct.pack(str(Screen.PROTOCOL_6_LEN) + "B", *array)
-        # settings.logger.info(data)
+        self.m_current_page = page
+        if page == self.INVENTORY_PAGE: 
+            self.close()
+        elif page == self.THANK_PAGE:
+            self.close()
+        data = [0xA0, 0x90,0x01,0x00,0x01] + page +[0xFF, 0xFC, 0xFF, 0xFF]
         self.com.write(data)
-        self.com.read(Screen.PROTOCOL_6_LEN)
 
+    def Init_item_info(self,order,goodsName,price,number):
+        m_head = [0xA0, 0x90]
+        m_tail = [0xFF, 0xFC, 0xFF, 0xFF]
+        m_data = self.get_goods_Info_hex(goodsName)
+        m_info = self.get_info_hex(str(price),str(number))
+        m_datalen = [*divmod(len(m_data + m_info), 256)]
+        m_allData = m_head + order + m_datalen + m_data + m_info + m_tail
+        return m_allData
 
-    # 按ModBus功能码为5的协议写数据
-    def do_protocol_5(self, address, content):
-        # settings.logger.info("5address is ",address)
-        conf = [0x01, 0x05, *divmod(address, 256), 0xff,content]
-        array = crc16().createarray(conf)
-        data = struct.pack(str(Screen.PROTOCOL_6_LEN) + "B", *array)
-        self.com.write(data)
-        self.com.read(Screen.PROTOCOL_6_LEN)
+    def Add_item(self, name, price, number, order = [0x02]):
+        #print(self.m_current_page)
+        if self.m_current_page != self.INVENTORY_PAGE:
+            #print("return")
+            return
+        if self.m_commodity_Dic.get(name) == None:
+           # print("Add OK")
+            data = self.Init_item_info(order,name,price,number)
 
-    # 按ModBus功能码为16的协议写数据
-    def do_protocol_16(self, address, content):
-        # settings.logger.info("address is ",address)
-        results = [0x01, 0x10, *divmod(address, 256), 0x00, len(content), len(content) * 2]
-        codepoints = [divmod(ord(x), 256) for x in content]
-        conf = results + list(itertools.chain.from_iterable(codepoints))
-        array = crc16().createarray(conf)
-        data = struct.pack(str(len(array)) + "B", *array)
-        self.com.write(data)
-        self.com.read(len(conf) + 2)  # 读出缓存数据
+            info = [data,price,number]
+            #print("ADD",self.ByteToHex(data))
+            self.m_commodity_Dic[name] = info
+        else:
+            self.m_commodity_Dic[name][2] += number
+            self.Update_item_info(order,name,price,self.m_commodity_Dic[name][2])
+        self.m_total_price += price
+        self.m_total_number += number
+        self.Update_show()
 
-    def processItemName(self, item):
-        FULL_SPACE = '　'
-        HALF_SPACE = ' '
+    def Update_item_info(self,order,key,price,number):
+        if self.m_commodity_Dic.get(key) != None:
+            self.m_commodity_Dic[key][2] = int(number)
+            data = self.Init_item_info(order,key, price,str(self.m_commodity_Dic[key][2]))
+            #print("ADD",data)
+            self.m_commodity_Dic[key][0] = data
+        #return 
 
-        result=item[1]
-        supplement = 7 - len(item[1])
-        result += ''.join([FULL_SPACE for s in range(supplement)]) + FULL_SPACE
-        result += str(item[2]/10)+HALF_SPACE+"元"
-        result += FULL_SPACE+FULL_SPACE+FULL_SPACE
-        result += str(item[3])
-        # settings.logger.info(result)
-        return result
+    def get_goods_Info_hex(self, name):
+        if self.m_drink_Dic.get(name) == None:
+            data_bytes = name.encode(encoding='utf-8')
+            data = []
+            for i in data_bytes:
+                data.append(i)
+            else:
+                self.m_drink_Dic[name] = data
+                return data
+        else:
+            return self.m_drink_Dic.get(name)
 
-    def update_Single_line(self, index):
-        # 先清除本行内容
-        assert index < Screen.LINE_MAX_LIMIT and index > -1, "Index out of range!!!"
-        self.clear_line_content(index)
-        # 然后更新本行内容
-        item = self.curItems[index]
-        display_item = self.processItemName(item)
-        add = 150 if index > 6 else 0
-        # settings.logger.info(item,index)
-        self.do_protocol_16(Screen.ITEM_NAME_START_ADDRESS + index * Screen.ITEM_NAME_INTERVAL + add,display_item)#写商品info
-        # settings.logger.info("weird!!")  
+        #return price and number  hex
 
+    def get_info_hex(self, price,number):
+        m_line = [0x2D]
+        #print(hex(int(number)))
+        m_number = number.encode(encoding = 'utf-8')
+        #print(self.ByteToHex(m_number))
+        m_price = price.encode(encoding='utf-8')
+        number_ls = []
+        price_ls = []
+        for i in m_number:
+            number_ls.append(i)
+        for i in m_price:
+            price_ls.append(i)
+        data = m_line + price_ls + m_line + number_ls
+        #print("info",self.ByteToHex(data))
+        return data
 
-    def update_static_info(self):
-        # settings.logger.info("")
-        # 设置购物车商品数量
-        self.do_protocol_6(Screen.CART_COUNT_ADDRESS, self.cartCount)
-        # 设置购物车内商品总价
-        self.do_protocol_6(Screen.CART_TOTAL_ADDRESS, self.cartPrice)
+    def ByteToHex(self, bins):
+        data = []
+        for x in bins:
+            data.append(('0x%02X' % x).strip())
+        return data
+    #update info or clear info
+    def Update_or_clear(self,order,number = ""):
+        m_head = [0xA0, 0x90]
+        data = number.encode(encoding = 'utf-8')
+        data_ls = []
+        for i in data:
+            data_ls.append(i)
+        m_datalen = [*divmod(len(data), 256)]
+        m_tail = [0xFF, 0xFC, 0xFF, 0xFF]
+        m_all = m_head + order + m_datalen + data_ls + m_tail
+        #print(self.ByteToHex(m_all))
+        self.com.write(m_all)
+    # update show info
+    def Update_show(self):
+        self.Update_or_clear(self.CLEAR_CART_LIST)
+        self.Update_or_clear(self.UPDATE_CART_PRICE,str(round(self.m_total_price, 1)))
+        self.Update_or_clear(self.UPDATE_CART_NUMBER,str(self.m_total_number))
+        for key in self.m_commodity_Dic:
+            #print("Update show",self.ByteToHex(self.m_commodity_Dic[key][0]))
+            self.com.write(self.com.write(self.m_commodity_Dic[key][0]))
 
-    def clear_line_content(self, index):
-        assert index < Screen.LINE_MAX_LIMIT and index > -1, "Index out of range!!!"
-        add = 150 if index > 6 else 0
-        self.do_protocol_5(Screen.ITEM_NAME_START_ADDRESS + index * Screen.ITEM_NAME_INTERVAL + add, 0)  # 写商品名称
-       
-
-    def on_close_door():
-        self.change_to_page(Screen.PROCESSING_PAGE)
-        for i in range(len(self.curItems)):
-            self.clear_line_content(i)
-
-        self.do_protocol_6(Screen.CART_COUNT_ADDRESS, 0)
-        # 设置购物车内商品总价
-        self.do_protocol_6(Screen.CART_TOTAL_ADDRESS, 0)
-        # self.resetData()
-
-
+    def remove_item(self, name, number, order = [0x02]):
+        #print("remove_item")
+        if self.m_commodity_Dic.get(name) == None:
+            return
+        m_number = self.m_commodity_Dic[name][2] - number
+        m_price = self.m_commodity_Dic[name][1]
+        if m_number <= 0:
+            #print(m_number)
+            #print(number)
+            value = number + m_number
+            #print(value)
+            m_price = self.m_commodity_Dic[name][1] * value
+            self.m_total_number -= value
+            self.m_total_price -= m_price
+            self.m_commodity_Dic.pop(name)
+        else:
+            self.m_total_number -= number
+            self.m_total_price -= m_price
+            #print("m_total_number",self.m_total_number)
+            #print("m_total_price",self.m_total_number)
+            self.Update_item_info(order,name,str(m_price),str(m_number))
+        self.Update_show()
+    #clear info
+    def close(self):
+        self.Update_or_clear(self.CLEAR_CART_LIST)
+        self.Update_or_clear(self.CLEAR_CART_NUMBER)
+        self.Update_or_clear(self.CLEAR_CART_PRICE)
+        self.m_commodity_Dic.clear()
+        self.m_total_price = 0
+        self.m_total_number = 0
+        # print("close(self):")
+    
+    def Debug(self):
+        while True:
+            number = input("please input index")
+            last = time.time()
+            if number == '1':
+                screen.change_to_page(screen.WELCOME_PAGE)
+            elif number == '2':
+                screen.change_to_page(screen.INVENTORY_PAGE)
+            elif number == '3':
+                screen.change_to_page(screen.PROCESSING_PAGE)
+            elif number == '4':
+                screen.change_to_page(screen.THANK_PAGE)
+            elif number == '5':
+                screen.change_to_page(screen.DEBUG_PAGE)
+            elif number == '7':
+                screen.Add_item("康师傅果粒橙", 5.0, 1)
+            elif number == '8':
+                screen.Add_item("农夫山泉", 4, 1)
+            elif number == 'q':
+                number = int(input("please input remove number"))
+                last = time.time()
+                screen.remove_item("康师傅果粒橙",number)
+            elif number == '0':
+                break
+            else:
+                continue
+            print(time.time()-last)
+        self.close()
 if __name__ == '__main__':
     screen = Screen()
-
-    # screen.change_to_page(Screen.INVENTORY_PAGE)
-
-    # screen.do_protocol_6(Screen.CART_COUNT_ADDRESS,0)
-    # screen.do_protocol_6(Screen.CART_TOTAL_ADDRESS,0)
-
-    
-    # screen.change_to_page(Screen.INVENTORY_PAGE)
-    screen.change_to_page(Screen.WELCOME_PAGE)
-    
-
-    # for i in range(7):
-    #     screen.clear_line_content(i)
-
-    # screen.update_static_info()
-
-    
-    # screen.do_protocol_6(Screen.CART_COUNT_ADDRESS, 12)
-
-    # screen.update_item(True,"6921168509256")
-    # screen.update_item(True,"007001")
-    # screen.update_item(True,"007001")
-
-    # screen.update_item(True,"001001")
-    # screen.update_item(True,"001001")
-
-    # screen.update_item(True,"006001")
-    # screen.update_item(True,"006001")
-
-
-
-    # # screen.do_protocol_16(550, "fae rtewrw3er 3wrr34wrt ")  # 写商品名称
-
-    # scre***********en.update_item(True,"001002")
-
-    # screen.update_item(True,"维他柠檬茶")
-    # # screen.update_item(False,"维他柠檬茶")
-    # screen.update_item(True,"美汁源果粒橙")
-    # screen.update_item(False,"维他柠檬茶")
-
-    # screen.update_item(True,"阿萨姆原味奶茶")
-    # screen.update_item(True,"酸酸辣辣豚骨面")
-
-    # screen.update_item(False,"美汁源果粒橙")
-    # screen.update_item(True,"酸酸辣辣豚骨面")
-    # screen.update_item(False,"维他柠檬茶")
+    screen.Debug()
