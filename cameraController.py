@@ -84,7 +84,6 @@ class CameraController:
 
     def sendFrame(self,src,frame,motionType):
         if settings.has_scale:
-            # self.scaleDetector[src%2].check(motionType)
             self.scaleDetector.check(motionType)
 
         try:
