@@ -2,10 +2,9 @@ import common.settings as settings
 import time
 
 class ScaleDetector:
-	def __init__(self,index):
+	def __init__(self):
 		self.IO = None
 		self.cart = None
-		self.index = index
 		self.reset()
 
 	def setIo(self,io):
@@ -24,7 +23,6 @@ class ScaleDetector:
 
 	def check(self,motions):
 		motion,isCover = motions[0],motions[1]
-		# print(motion,isCover)
 		if motion == "PUSH":
 			self.lastScale = self.IO.get_stable_scale()
 
@@ -34,16 +32,16 @@ class ScaleDetector:
 			if self.detectState == "PULL_CHECKING":
 				self.detectState = "NORMAL"
 
-			# if self.index == 0:
 			print("this push scale is: ",self.lastScale)
 
 		elif motion == "PULL":
-			self.lastPullVal = self.IO.get_stable_scale()
+			pass
 		else:
 			current = self.IO.get_stable_scale()
 			delta = current - self.lastScale
 
 			c_time = time.time()
+			
 			if self.detectState == "PULL_CHECKING":
 				if abs(c_time - self.visionDetectTime)< 0.5:
 					if delta < -(self.curActionDelta/2):
@@ -54,7 +52,6 @@ class ScaleDetector:
 						self.cart.add_item(_id,self.lastDetectTime)
 					self.detectState = "NORMAL"
 				else:
-					# if self.index == 0:
 					print("current is: ",current)
 					print("self.lastScale is: ",self.lastScale)
 
@@ -69,19 +66,12 @@ class ScaleDetector:
 					self.detectState = "NORMAL"
 					self.lastScale += self.curActionDelta
 
-			
-
-	#two judge will not interfere with each other
 	def detect_check(self,detectResults):
 		detect = detectResults.getDetect()
 
 		if len(detect) > 0:
 			direction = detect[0]["direction"]
-
 			self.lastDetectTime = detectResults.getMotionTime("PUSH" if direction is "IN" else "PULL")
-
-			# if self.cart.timeCheck(self.lastDetectTime):
-			# 	return
 				
 			# print(detect)
 			_id = detect[0]["id"]
@@ -90,7 +80,7 @@ class ScaleDetector:
 			print("action time is: ",self.lastDetectTime)
 
 			#[{'direction': 'OUT', 'id': '6921581596048001', 'num': 26, 'time': 1524473704.6296923, 'fetch_num': 2}]
-			print("camera {} with direction {} got {} by time {} with num {}".format(self.index,detect[0]["direction"],settings.items[_id]["name"],self.lastDetectTime,detect[0]["num"]))
+			print("direction {} got {} by time {} with num {}".format(detect[0]["direction"],settings.items[_id]["name"],self.lastDetectTime,detect[0]["num"]))
 			print("                        ")
 			print("                        ")
 
@@ -107,13 +97,8 @@ class ScaleDetector:
 			self.visionDetectTime = time.time()
 
 			self.curActionDelta = settings.items[_id]['weight']
-
 			self.detectCache = detect
 			detectResults.resetDetect()
-			# detectResults.setActionTime()
-
-	# def reset(self):
-	# 	self.detectState = "NORMAL"
 
 	def notifyCloseDoor(self):
 		if self.detectState == "PULL_CHECKING":
