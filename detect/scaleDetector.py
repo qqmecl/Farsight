@@ -50,11 +50,12 @@ class ScaleDetector:
 						#for i in range(self.detectCache[0]["fetch_num"]):
 							# print("add_item")
 						self.cart.add_item(_id,self.lastDetectTime)
-					self.detectState = "NORMAL"
-				else:
-					pass
-					# print("current is: ",current)
-					# print("self.lastScale is: ",self.lastScale)
+						self.detectState = "NORMAL"
+					else:
+						# pass
+						print("current is: ",current)
+						print("self.lastScale is: ",self.lastScale)
+						print("                      ")
 
 			if self.detectState == "PUSH_CHECKING":
 				if delta > (self.curActionDelta/2):
