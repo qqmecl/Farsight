@@ -33,7 +33,6 @@ items = {
     '0000000000001': dict(name='empty_hand', price=3.5, weight=343.0)
 }
 
-http_port = 5000
 sea_key = None
 
 welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,'D8:9E:F3:1D:EE:7C': 0x0D,'D8:9E:F3:1E:13:8A': 0x33}
@@ -63,8 +62,6 @@ for i in range(camera_number):
     centerX = config_parser.getint("base_line","centerX"+str(i))
     detect_baseLine.append(centerX)
 
-SAVE_VIDEO_OUTPUT = config_parser.getboolean("maintain_switch","save_video_output")
-
 #hardware configuration
 camera_version = config_parser.getint("hardware","camera_version")
 lock_version = config_parser.getint("hardware","lock_version")
@@ -83,6 +80,5 @@ has_scale = config_parser.getboolean("run_mode","withscale")
 
 is_offline = config_parser.getboolean("run_mode","offline")
 
-machine_state = config_parser.get("run_mode", "hardware")
 
 logger = Logger(config_parser.get("run_mode","client_mode"))

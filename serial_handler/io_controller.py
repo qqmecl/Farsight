@@ -19,10 +19,13 @@ class IO_Controller:#统一管理所有IO设备，增加代码清晰度
 
         #连接各个串口
         if not settings.android_screen:
+            from serial_handler.speaker import Speaker
             self.speaker = Speaker()
 
         if settings.has_scale:
+            from serial_handler.scale import WeightScale
             self.scale = WeightScale()
+
         self.screen = Screen()
         #门和锁
         self.doorLock = DoorLockHandler()

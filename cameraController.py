@@ -8,25 +8,16 @@ import tornado.ioloop
 from detect.scaleDetector import ScaleDetector
 
 
-if settings.machine_state == "new":
-    DEFAULT_WIDTH = 1280
-    DEFAULT_HEIGHT = 720
-else:
-    DEFAULT_WIDTH = 640
-    DEFAULT_HEIGHT = 480
-
-DEFAULT_FPS = 20#视频文件的保存帧率，还需要和图像处理帧率进行比对
-
 class VideoStream:
     def __init__(self,src,callback):
         self.src = src
         self.stream = cv2.VideoCapture(settings.usb_cameras[src])
 
-        if settings.machine_state == "new":
+        if settings.camera_version == "2":
             self.stream.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc(*'MJPG'))
 
-        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH,DEFAULT_WIDTH)
-        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT,DEFAULT_HEIGHT)
+        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH,settings.camera_width)
+        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT,settings.camera_height)
         self.call_back = callback
         self.isSending = False
 
@@ -65,22 +56,17 @@ class CameraController:
         self.videoWriter={}
         # self.cnt = 0
         # self.lastTime = time.time()
-        if settings.box_style == 'single':
-            for i in range(2):
-                self.cameras[i] = VideoStream(i,self.sendFrame)
-        elif settings.box_style == 'double':
-            for i in range(4):
-                self.cameras[i] = VideoStream(i,self.sendFrame)
+        for i in range(settings.camera_number):
+            self.cameras[i] = VideoStream(i,self.sendFrame)
 
 
         if settings.has_scale:
-            self.scaleDetector = []
-            for i in range(2):
-                self.scaleDetector.append(ScaleDetector(i))
+            self.scaleDetector = ScaleDetector()
 
+          
 
-    def getScaleDetector(self,src):
-        return self.scaleDetector[src]
+    def getScaleDetector(self):
+        return self.scaleDetector
 
     def startCameras(self,cameras):
         self.curCameras = cameras
@@ -88,7 +74,7 @@ class CameraController:
             self.cameras[src].setSending(True)
             if settings.logger.checkSaveVideo():
                 self.videoWriter[src] = cv2.VideoWriter(settings.logger.getSaveVideoPath()+str(src)+".avi", 
-                    cv2.VideoWriter_fourcc(*'XVID'),DEFAULT_FPS, (DEFAULT_WIDTH,DEFAULT_HEIGHT))
+                    cv2.VideoWriter_fourcc(*'XVID'),25, (settings.camera_width,settings.camera_height))
 
 
     def stopCameras(self):
@@ -100,7 +86,7 @@ class CameraController:
 
     def sendFrame(self,src,frame,motionType):
         if settings.has_scale:
-            self.scaleDetector[src%2].check(motionType)
+            self.scaleDetector.check(motionType)
 
         try:
             # self.cnt+=1
@@ -114,13 +100,16 @@ class CameraController:
                 self.videoWriter[src].write(frame)
 
 
+            if settings.is_offline and src==0:
+                cv2.imshow("frame",frame)
+                cv2.waitKey(1)
+
+
             if src > 1:
-                frame = cv2.flip(frame,1)
-                    
-            if src%2 == 1:
-                frame = frame[:, 160: , :]#Camera downstairs
+                frame = frame[:, :settings.detect_baseLine[src]+10]
             else:
-                frame = frame[:, 260: , :]#Camera upstairs
+                frame = frame[:, settings.detect_baseLine[src]-10:]
+                
             self.frames_queues.put((frame,src%2,time.time(),motionType))
 
         except queue.Full:
