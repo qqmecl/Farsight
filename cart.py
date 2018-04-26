@@ -97,7 +97,7 @@ class Cart:
     def setStartWeight(self,weight):
         self.start_weight = weight
         # self.theoryWeight = weight
-        print("start weight is: ",weight)
+        # print("start weight is: ",weight)
 
         if self.init_weight is None:
             self.init_weight = weight
@@ -168,7 +168,7 @@ class Cart:
     def getFinalOrder(self):
         from common.util import get_mac_address
 
-        if abs(self.after_doorClose_weight - self.before_doorOpen_weigh) < 20:
+        if abs(self.after_doorClose_weight - self.before_doorOpen_weight) < 20:
             self.items = {}
         
         return dict(data=self.items,code=get_mac_address())

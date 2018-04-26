@@ -78,7 +78,7 @@ class ScaleDetector:
 			_id = detect[0]["id"]
 			settings.logger.info("                        ")
 			settings.logger.info("                        ")
-			settings.logger.info("action time is: ",self.lastDetectTime)
+			settings.logger.info("action time is: ".format(self.lastDetectTime))
 
 			#[{'direction': 'OUT', 'id': '6921581596048001', 'num': 26, 'time': 1524473704.6296923, 'fetch_num': 2}]
 			settings.logger.info("direction {} got {} by time {} with num {}".format(detect[0]["direction"],settings.items[_id]["name"],self.lastDetectTime,detect[0]["num"]))
