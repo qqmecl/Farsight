@@ -32,7 +32,7 @@ class ScaleDetector:
 			if self.detectState == "PULL_CHECKING":
 				self.detectState = "NORMAL"
 
-			print("this push scale is: ",self.lastScale)
+			#print("this push scale is: ",self.lastScale)
 
 		elif motion == "PULL":
 			pass
@@ -52,12 +52,13 @@ class ScaleDetector:
 						self.cart.add_item(_id,self.lastDetectTime)
 					self.detectState = "NORMAL"
 				else:
-					print("current is: ",current)
-					print("self.lastScale is: ",self.lastScale)
+					pass
+					# print("current is: ",current)
+					# print("self.lastScale is: ",self.lastScale)
 
 			if self.detectState == "PUSH_CHECKING":
 				if delta > (self.curActionDelta/2):
-					print("push_checking in back success!!")
+					# print("push_checking in back success!!")
 					_id = self.detectCache[0]["id"]
 
 					#for i in range(self.detectCache[0]["fetch_num"]):
@@ -75,17 +76,17 @@ class ScaleDetector:
 				
 			# print(detect)
 			_id = detect[0]["id"]
-			print("                        ")
-			print("                        ")
-			print("action time is: ",self.lastDetectTime)
+			settings.logger.info("                        ")
+			settings.logger.info("                        ")
+			settings.logger.info("action time is: ",self.lastDetectTime)
 
 			#[{'direction': 'OUT', 'id': '6921581596048001', 'num': 26, 'time': 1524473704.6296923, 'fetch_num': 2}]
-			print("direction {} got {} by time {} with num {}".format(detect[0]["direction"],settings.items[_id]["name"],self.lastDetectTime,detect[0]["num"]))
-			print("                        ")
-			print("                        ")
+			settings.logger.info("direction {} got {} by time {} with num {}".format(detect[0]["direction"],settings.items[_id]["name"],self.lastDetectTime,detect[0]["num"]))
+			settings.logger.info("                        ")
+			settings.logger.info("                        ")
 
 			if settings.items[_id]['name'] == "empty_hand":
-				print("check empty hand take out")
+				# print("check empty hand take out")
 				detectResults.resetDetect()
 				return
 

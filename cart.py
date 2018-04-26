@@ -168,6 +168,9 @@ class Cart:
     def getFinalOrder(self):
         from common.util import get_mac_address
 
+        if abs(self.after_doorClose_weight - self.before_doorOpen_weigh) < 20:
+            self.items = {}
+        
         return dict(data=self.items,code=get_mac_address())
 
     def isEmpty(self):

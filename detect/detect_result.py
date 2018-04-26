@@ -34,7 +34,7 @@ class DetectResult:
             self.window.enqueue(detects)
             
             if motion != "None":
-                print("{} camera detect_result got motion {} by time {}".format(index,motion,frame_time))
+                # print("{} camera detect_result got motion {} by time {}".format(index,motion,frame_time))
                 self.motionTime[motion]=frame_time
                 
             if motion == "PUSH":#Action start or Action done.
@@ -47,7 +47,7 @@ class DetectResult:
 
                     detectId,num,_time,fetch_num = self.getCurrentDetection(True)
 
-                    print("put back after check: ",detectId,num,_time)
+                    # print("put back after check: ",detectId,num,_time)
                     if detectId is not None:
                         self.detect.append({"direction":"IN","id":detectId,"num":num,"time":_time,"fetch_num":fetch_num})
                     else:#empty push
