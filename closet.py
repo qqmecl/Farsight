@@ -97,7 +97,7 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        settings.items["0000000000001001"] = dict(name='empty_hand', price=0, weight=184.0)
+        settings.items["0000000000000001"] = dict(name='empty_hand', price=0, weight=184.0)
         # print(settings.items)
 
     def start(self):
