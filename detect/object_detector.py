@@ -61,8 +61,8 @@ class ObjectDetector:
         for i in range(2):
             self.dynamicTracker.append(DynamicTrack())
 
-        self.writePath = os.getcwd() + '/photo/'+self.timeStamp+"/"
-        os.makedirs(self.writePath)
+        # self.writePath = os.getcwd() + '/photo/'+self.timeStamp+"/"
+        # os.makedirs(self.writePath)
 
         # print(writePath)
         sign = 0
@@ -271,7 +271,7 @@ class ObjectDetector:
                     # if left_x <= divide_val and right_x >= divide_val:
                     #     cv.imwrite(self.writePath + 'multi' + str(self.frameCount) + '.jpg', original)
 
-        cv.imwrite(self.writePath + 'multi' + str(self.frameCount) + '.jpg', original)
+        # cv.imwrite(self.writePath + 'multi' + str(self.frameCount) + '.jpg', original)
 
         results.append(results0)
         results.append(results1)
