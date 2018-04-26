@@ -80,5 +80,6 @@ has_scale = config_parser.getboolean("run_mode","withscale")
 
 is_offline = config_parser.getboolean("run_mode","offline")
 
+client_mode = config_parser.get("run_mode","client_mode")
 
-logger = Logger(config_parser.get("run_mode","client_mode"))
+logger = Logger(client_mode)
