@@ -121,6 +121,7 @@ class DetectResult:
             (_id,time)=(val[1],val[2])
             count[_id]+=1
 
+            # if _id == '6921168509256001':
             new_num = self.processing[_id]["num"] + 1
             self.processing[_id]["time"] = ((self.processing[_id]["time"]*self.processing[_id]["num"])+time)/new_num
             self.processing[_id]["num"] = new_num

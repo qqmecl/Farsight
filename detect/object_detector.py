@@ -160,7 +160,7 @@ class ObjectDetector:
 
                         # cv.imwrite(self.writePath + str(sign) + '--' + str(sum_planA) + '--' + str(sum_planB) + '.jpg', frame_merge)
                         results = self.detect_objects(frame_merge, frame_time, divide_val)
-
+                        # print(results)
                         for i in range(2):
                             if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
                                 print("object delte detect")

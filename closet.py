@@ -97,8 +97,9 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        settings.items["0000000000000001"] = dict(name='empty_hand', price=0, weight=184.0)
-        # print(settings.items)
+        settings.items["0000000000001001"] = dict(name='empty_hand', price=0, weight=184.0)
+        # settings.items["6921168509256001"] = dict(name = "nongfushanquan", price = 2, weight = 575.0)
+        print(settings.items)
 
     def start(self):
         self.lastDetectTime = time.time()
@@ -186,6 +187,9 @@ class Closet:
 
         self.debugTime = time.time()
 
+        # self.cnt = 0
+        # self.lastTime = time.time()
+
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
         self.updateScheduler.start()
 
@@ -255,6 +259,12 @@ class Closet:
         
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
                 while(not self._detection_queue.empty()):
+                    # self.cnt+=1
+                    # cur=time.time()
+                    # if cur - self.lastTime>1.0:
+                    #     print("calc ",self.cnt,"xxxx frame cur second")
+                    #     self.cnt=0 
+                    #     self.lastTime = cur
                     result = self._detection_queue.get_nowait()
 
                     index = result[0]

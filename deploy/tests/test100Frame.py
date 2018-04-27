@@ -8,7 +8,7 @@ usb_cameras = [
 "/dev/v4l/by-path/pci-0000:00:14.0-usb-0:4:1.0-video-index0"]
 
 
-camera =cv2.VideoCapture(usb_cameras[0])
+camera =cv2.VideoCapture(usb_cameras[2])
 # 
 w,h = 1280, 720
 # w,h = 640,480
@@ -32,6 +32,6 @@ while True:
         last = now
         print(cnt)
         cnt=0
-    cv2.imshow("img", frame)
+    cv2.imshow("img", frame[:, 630:650])
 
     key = cv2.waitKey(1) & 0xff

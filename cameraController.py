@@ -13,7 +13,7 @@ class VideoStream:
         self.src = src
         self.stream = cv2.VideoCapture(settings.usb_cameras[src])
 
-        if settings.camera_version == "2":
+        if settings.camera_version == 2:
             self.stream.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc(*'MJPG'))
 
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH,settings.camera_width)
@@ -37,8 +37,8 @@ class VideoStream:
                 #     self.cnt = 0
                 centerX = settings.detect_baseLine[self.src]
                 motionType = self.motionChecker.checkInput(frame[:,int(centerX)-10:int(centerX)+10],time.time())
-                # if motionType[0] != 'None':
-                #     print(motionType)
+                if motionType[0] != 'None':
+                    print(motionType)
                 
                 # if self.cnt %3 == 0 or motionType != "None":
                 self.call_back(self.src,frame,motionType)
