@@ -332,9 +332,9 @@ class Closet:
         for k,v in order_data.items():
             settings.logger.info("final order is {} with num {}".format(settings.items[k]["name"],v))
 
-        # if settings.client_mode=="develop":
-            # order["data"]={}
-        order["data"]={}
+        if settings.client_mode=="develop":
+            order["data"]={}
+        # order["data"]={}
 
         strData = json.dumps(order)
         self.pollData = self.encrypter.aes_cbc_encrypt(strData, key = settings.sea_key)
