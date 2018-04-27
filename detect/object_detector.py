@@ -20,7 +20,7 @@ else:
     LABEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'pascal_label_map.pbtxt')
 
 class ObjectDetector:
-    def __init__(self,input_q,items,detection_queue):
+    def __init__(self,input_q,items,camera_number,detection_queue):
         setproctitle('[farsight] model_inferencing_processor')
 
         signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -58,7 +58,7 @@ class ObjectDetector:
         self.timeStamp = time.strftime('%H_%M_%S_',time.localtime(time.time()))
         self.dynamicTracker=[]
 
-        for i in range(2):
+        for i in range(camera_number):
             self.dynamicTracker.append(DynamicTrack())
 
         # self.writePath = os.getcwd() + '/photo/'+self.timeStamp+"/"

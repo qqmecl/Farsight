@@ -50,12 +50,15 @@ class ScaleDetector:
 						#for i in range(self.detectCache[0]["fetch_num"]):
 							# print("add_item")
 						self.cart.add_item(_id,self.lastDetectTime)
+
+						settings.logger.info("Final detect Out {}".format(settings.items[_id]["name"]))
+
 						self.detectState = "NORMAL"
 					else:
-						# pass
-						print("current is: ",current)
-						print("self.lastScale is: ",self.lastScale)
-						print("                      ")
+						pass
+						# print("current is: ",current)
+						# print("self.lastScale is: ",self.lastScale)
+						# print("                      ")
 
 			if self.detectState == "PUSH_CHECKING":
 				if delta > (self.curActionDelta/2):
@@ -64,7 +67,9 @@ class ScaleDetector:
 
 					#for i in range(self.detectCache[0]["fetch_num"]):
 					self.cart.remove_item(_id,self.lastDetectTime)
-						
+					
+					settings.logger.info("Final detect In {}".format(settings.items[_id]["name"]))
+
 					self.detectState = "NORMAL"
 					self.lastScale += self.curActionDelta
 
@@ -77,14 +82,8 @@ class ScaleDetector:
 				
 			# print(detect)
 			_id = detect[0]["id"]
-			settings.logger.info("                        ")
-			settings.logger.info("                        ")
-			settings.logger.info("action time is: ".format(self.lastDetectTime))
-
 			#[{'direction': 'OUT', 'id': '6921581596048001', 'num': 26, 'time': 1524473704.6296923, 'fetch_num': 2}]
-			settings.logger.info("direction {} got {} by time {} with num {}".format(detect[0]["direction"],settings.items[_id]["name"],self.lastDetectTime,detect[0]["num"]))
-			settings.logger.info("                        ")
-			settings.logger.info("                        ")
+			settings.logger.info("vision detect direction {} got {} by time {} with num {}".format(detect[0]["direction"],settings.items[_id]["name"],self.lastDetectTime,detect[0]["num"]))
 
 			if settings.items[_id]['name'] == "empty_hand":
 				# print("check empty hand take out")

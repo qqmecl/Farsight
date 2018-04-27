@@ -96,6 +96,9 @@ class CameraController:
             #     self.cnt=0 
             #     self.lastTime = cur
 
+            # if frame.shape[0] != 480 or frame.shape[1] != 640 or frame.shape[2] != 3:
+                # return
+
             if settings.logger.checkSaveVideo():
                 self.videoWriter[src].write(frame)
 
@@ -109,8 +112,8 @@ class CameraController:
                 frame = frame[:, :settings.detect_baseLine[src]+10]
             else:
                 frame = frame[:, settings.detect_baseLine[src]-10:]
-                
-            self.frames_queues.put((frame,src%2,time.time(),motionType))
+
+            self.frames_queues.put((frame,src,time.time(),motionType))
 
         except queue.Full:
             settings.logger.info('[FULL] input_q')
