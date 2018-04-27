@@ -178,7 +178,7 @@ class ObjectDetector:
                                 pass
                 else:
                     if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
-                        print("object delte detect")
+                        # print("object delte detect")
                         waste = detection_queue.get_nowait()
                     try:
                         detection_queue.put_nowait([index,motionType,[],frame_time])#not a good structure
