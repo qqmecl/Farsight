@@ -99,7 +99,7 @@ class Closet:
             result[res['goods_code']] = c
         settings.items = result
         settings.items["0000000000001001"] = dict(name='empty_hand', price=0, weight=184.0)
-        print(settings.items)
+        # print(settings.items)
 
     def start(self):
         self.lastDetectTime = time.time()
