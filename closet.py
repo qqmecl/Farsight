@@ -77,8 +77,8 @@ class Closet:
         self._detection_queue = Queue(maxsize=20*4)
         
         self.num_workers = config['num_workers']
-        self.left_cameras = config['left_cameras']
-        self.right_cameras = config['right_cameras']
+        # self.left_cameras = config['left_cameras']
+        # self.right_cameras = config['right_cameras']
 
 
         if not settings.is_offline:
@@ -273,7 +273,8 @@ class Closet:
                         if frame_time < self.debugTime:
                             return
 
-                        checkIndex = index%2
+                        # checkIndex = index%2
+                        checkIndex = index
                         
                         # self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
                         self.detectResult.checkData(checkIndex,{motionType:result[2]},frame_time)
@@ -384,9 +385,9 @@ class Closet:
     #发送摄像头工作指令消息
     def _start_imageprocessing(self):
         if self.curSide == 0:
-            self.camera_control.startCameras(self.left_cameras)
+            self.camera_control.startCameras(settings.left_cameras)
         else:
-            self.camera_control.startCameras(self.right_cameras)
+            self.camera_control.startCameras(settings.right_cameras)
 
     #发送摄像头停止工作指令消息
     def _stop_imageprocessing(self):

@@ -22,6 +22,8 @@ class DetectResult:
                 #filter multi pull and push situation.
                 if abs(frame_time-self.lastMotionTime[motion]) < 0.2:
                     motion = "None"
+
+                print("evoke motion: ",index,motion,frame_time)
  
             if len(detects) == 0:
                 pass
@@ -29,7 +31,7 @@ class DetectResult:
             else:
                 for val in detects:
                     (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
-                    # settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
+                    settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
             
             self.window.enqueue(detects)
             

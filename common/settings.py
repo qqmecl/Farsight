@@ -46,21 +46,35 @@ config_parser.read("/home/votance/Projects/Farsight/local/config.ini")
 
 camera_width  = config_parser.getint("usb_cameras","width")
 camera_height = config_parser.getint("usb_cameras","height")
-camera_number = config_parser.getint("usb_cameras","number")
+
+leftCamerasNum = config_parser.getint("usb_cameras","leftCamerasNum")
+rightCamerasNum = config_parser.getint("usb_cameras","rightCamerasNum")
+camera_number = leftCamerasNum+rightCamerasNum
 
 usb_cameras=[]
 detect_baseLine=[]
+
+left_cameras=[]
+right_cameras=[]
 
 
 box_style = config_parser.get("box_style", "style")
 android_screen = config_parser.getboolean("box_style", "android")
 
+for i in range(leftCamerasNum):
+    content = config_parser.getint("usb_cameras","leftCameras"+str(i))
+    left_cameras.append(content)
+
+for i in range(rightCamerasNum):
+    content = config_parser.getint("usb_cameras","rightCameras"+str(i))
+    right_cameras.append(content)
 
 for i in range(camera_number):
     content = config_parser.get("usb_cameras","index"+str(i))
     usb_cameras.append(content)
     centerX = config_parser.getint("base_line","centerX"+str(i))
     detect_baseLine.append(centerX)
+
 
 #hardware configuration
 camera_version = config_parser.getint("hardware","camera_version")

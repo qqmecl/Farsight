@@ -117,7 +117,7 @@ class ObjectDetector:
 
                         # print(sum_planB, 'gggggg', sum_planA)
                         # print(sum_planB // sum_planA)
-                        if sum_planB // sum_planA:
+                        if sum_planB - sum_planA>=0:
                             self.vertical = True  
                             if photo_sign_A == 1:
                                 frame_merge = self.compose_photo(small_fill_y = right_y, small_fill_x = left_x - right_x, big_fill_y = left_x - left_y - right_y,
