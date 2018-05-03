@@ -15,8 +15,9 @@ class DetectResult:
 
     def checkData(self,index,data,frame_time):
         self.latestFrameTime = frame_time
+
         for motion,detects in data.items():
-            motion = motion[0]
+            # motion = motion[0]
 
             if motion == "PUSH" or motion == "PULL":
                 #filter multi pull and push situation.
@@ -70,7 +71,7 @@ class DetectResult:
                     pop = self.window.dequeue()
 
                 self.lastMotion = motion
-            elif motion == "None":
+            elif motion == "OUT":
                 if self.detectState == "PULL_CHECKING":
                     self.takeOutCheck()
 

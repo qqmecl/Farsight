@@ -21,8 +21,8 @@ class ScaleDetector:
 		self.detectCache = None
 		self.visionDetectTime = None
 
-	def check(self,motions):
-		motion,isCover = motions[0],motions[1]
+	def check(self,motion):
+		# motion,isCover = motions[0],motions[1]
 		if motion == "PUSH":
 			self.lastScale = self.IO.get_stable_scale()
 

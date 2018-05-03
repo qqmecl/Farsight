@@ -287,33 +287,34 @@ class Closet:
                         # self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
                         self.detectResult.checkData(checkIndex,{motionType:result[2]},frame_time)
 
-
-                        if motionType == "OUT" or motionType =="PULL":
-                            self.timeCnt[index]["end"] = frame_time
-                        else:
-                            self.timeCnt[index]["start"] = frame_time
-
+                        if motionType == "IN" or motionType =="PUSH":
+                            self.timeCnt[index]["start"] = time.time()
 
                         if settings.has_scale:
-                            # self.scaleDetector[checkIndex].detect_check(self.detectResults[checkIndex])
                             self.scaleDetector.detect_check(self.detectResult)
                         else:
                             self.detect_check()
                     except queue.Empty:
                         pass
 
+
                 #To check how long the hand is outside the closet?
                 if settings.has_scale:
                     check_cart = True
                     curCameras = settings.left_cameras if self.curSide == self.IO.doorLock.LEFT_DOOR else settings.right_cameras
+
+                    end_time = time.time()
                     for index in curCameras:
-                        if self.timeCnt[index]["end"] - self.timeCnt[index]["start"] <1.0:
+                        if end_time - self.timeCnt[index]["start"] < 1.0:
                             check_cart = False
-                            self.timeCnt[index]["start"] = self.timeCnt[index]["end"]
                             break
                     
                     if check_cart:
-                        self.cart.cart_check(self.outSideClosetFromTime)
+                        self.cart.cart_check()
+                        for index in curCameras:
+                            self.timeCnt[index]["start"] = self.timeCnt[index]["end"]
+                    # else:
+                        # print(self.timeCnt)
 
     def detect_check(self):#pure vision detect
         # detect = self.detectResults[checkIndex].getDetect()
