@@ -75,10 +75,7 @@ class Closet:
         self.encrypter = Encrypter()
         self.input_queues = Queue(maxsize=20)
         self._detection_queue = Queue(maxsize=20*4)
-        
         self.num_workers = config['num_workers']
-        # self.left_cameras = config['left_cameras']
-        # self.right_cameras = config['right_cameras']
 
 
         if not settings.is_offline:
@@ -188,6 +185,17 @@ class Closet:
 
         self.debugTime = time.time()
 
+        self.timeCnt=[]
+        for i in range(settings.camera_number):
+            now_time = time.time()
+            timer = {"start":now_time,"end":now_time}
+            self.timeCnt.append(timer)
+
+
+        self.outSide0KeepTime = -1.0
+        self.outSide1KeepTime = -1.0
+
+
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
         self.updateScheduler.start()
 
@@ -279,6 +287,13 @@ class Closet:
                         # self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
                         self.detectResult.checkData(checkIndex,{motionType:result[2]},frame_time)
 
+
+                        if motionType == "OUT" or motionType =="PULL":
+                            self.timeCnt[index]["end"] = frame_time
+                        else:
+                            self.timeCnt[index]["start"] = frame_time
+
+
                         if settings.has_scale:
                             # self.scaleDetector[checkIndex].detect_check(self.detectResults[checkIndex])
                             self.scaleDetector.detect_check(self.detectResult)
@@ -286,6 +301,19 @@ class Closet:
                             self.detect_check()
                     except queue.Empty:
                         pass
+
+                #To check how long the hand is outside the closet?
+                if settings.has_scale:
+                    check_cart = True
+                    curCameras = settings.left_cameras if self.curSide == self.IO.doorLock.LEFT_DOOR else settings.right_cameras
+                    for index in curCameras:
+                        if self.timeCnt[index]["end"] - self.timeCnt[index]["start"] <1.0:
+                            check_cart = False
+                            self.timeCnt[index]["start"] = self.timeCnt[index]["end"]
+                            break
+                    
+                    if check_cart:
+                        self.cart.cart_check(self.outSideClosetFromTime)
 
     def detect_check(self):#pure vision detect
         # detect = self.detectResults[checkIndex].getDetect()

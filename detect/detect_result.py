@@ -18,7 +18,7 @@ class DetectResult:
         for motion,detects in data.items():
             motion = motion[0]
 
-            if motion != "None":
+            if motion == "PUSH" or motion == "PULL":
                 #filter multi pull and push situation.
                 if abs(frame_time-self.lastMotionTime[motion]) < 0.2:
                     motion = "None"
@@ -35,7 +35,7 @@ class DetectResult:
             
             self.window.enqueue(detects)
             
-            if motion != "None":
+            if motion == "PUSH" or motion == "PULL":
                 # print("{} camera detect_result got motion {} by time {}".format(index,motion,frame_time))
                 self.motionTime[motion]=frame_time
                 
