@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+from multiprocessing import Process
 
 usb_cameras=[]
 detect_baseLine=[]
@@ -21,7 +22,9 @@ for i in range(camera_number):
     centerX = config_parser.getint("base_line","centerX"+str(i))
     detect_baseLine.append(centerX)
 
-index = 2
+
+# def adjust_cameras(index):
+index = 1
 cap = cv2.VideoCapture(usb_cameras[index])
 ret=True
 
@@ -39,6 +42,6 @@ while(ret):
 
 cap.release()
 cv2.destroyAllWindows()
- 
-
-
+     
+# Process(target = adjust_cameras, args = (0,)).start()
+# Process(target = adjust_cameras, args = (1,)).start()
