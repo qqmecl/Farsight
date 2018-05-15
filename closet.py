@@ -75,10 +75,8 @@ class Closet:
         self.encrypter = Encrypter()
         self.input_queues = Queue(maxsize=20)
         self._detection_queue = Queue(maxsize=20*4)
-        
         self.num_workers = config['num_workers']
-        self.left_cameras = config['left_cameras']
-        self.right_cameras = config['right_cameras']
+
 
         if not settings.is_offline:
             self.IO = IO_Controller()
@@ -103,9 +101,10 @@ class Closet:
 
     def start(self):
         self.lastDetectTime = time.time()
+        self.send_camera_instruction = False
 
         object_detection_pools = []
-        pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,self._detection_queue))
+        pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,settings.camera_number,self._detection_queue))
         self.camera_control = CameraController(input_queue = self.input_queues)
 
         if settings.has_scale:
@@ -187,8 +186,17 @@ class Closet:
 
         self.debugTime = time.time()
 
-        # self.cnt = 0
-        # self.lastTime = time.time()
+
+        self.timeCnt=[]
+        for i in range(settings.camera_number):
+            now_time = time.time()
+            timer = {"start":now_time,"end":now_time}
+            self.timeCnt.append(timer)
+
+
+        self.outSide0KeepTime = -1.0
+        self.outSide1KeepTime = -1.0
+
 
         self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
         self.updateScheduler.start()
@@ -227,6 +235,19 @@ class Closet:
     def update(self):
         if self.state == "authorized-left" or self.state ==  "authorized-right":#已验证则检测是否开门
 
+            if not self.send_camera_instruction:
+                self._start_imageprocessing()#camera start to open
+
+                self.detectResult.reset()
+                self.detectResult.resetDetect()
+
+                if settings.has_scale:
+                    self.scaleDetector.reset()
+                    self.cart.setBeforDoorOpenWeight()
+
+                self.send_camera_instruction = True
+
+
             if self.IO.is_door_lock(self.debugTime):
                 settings.logger.info("Time Out time is: {}".format(time.time()-self.debugTime))
                 self.IO.change_to_welcome_page()
@@ -245,45 +266,58 @@ class Closet:
                 self.debugTime = time.time()
                 settings.logger.info("OpenDoor time is {}".format(self.debugTime))
 
-                self._start_imageprocessing()
-
-                self.detectResult.reset()
-                self.detectResult.resetDetect()
-
-                if settings.has_scale:
-                    self.scaleDetector.reset()
-                    self.cart.setBeforDoorOpenWeight()
+                
 
                 laterDoor = functools.partial(self.delayCheckDoorClose)
                 tornado.ioloop.IOLoop.current().call_later(delay=2, callback=laterDoor)
         
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
                 while(not self._detection_queue.empty()):
-                    # self.cnt+=1
-                    # cur=time.time()
-                    # if cur - self.lastTime>1.0:
-                    #     print("calc ",self.cnt,"xxxx frame cur second")
-                    #     self.cnt=0 
-                    #     self.lastTime = cur
-                    result = self._detection_queue.get_nowait()
 
-                    index = result[0]
-                    motionType = result[1]
-                    frame_time = result[3]#frame time maybe wrong
+                    try:
+                        result = self._detection_queue.get_nowait()
 
-                    if frame_time < self.debugTime:
-                        return
+                        index = result[0]
+                        motionType = result[1]
+                        frame_time = result[3]#frame time maybe wrong
 
-                    checkIndex = index%2
+                        if frame_time < self.debugTime:
+                            return
+
+                        # checkIndex = index%2
+                        checkIndex = index
+                        
+                        # self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
+                        self.detectResult.checkData(checkIndex,{motionType:result[2]},frame_time)
+
+                        if motionType == "IN" or motionType =="PUSH":
+                            self.timeCnt[index]["start"] = time.time()
+
+                        if settings.has_scale:
+                            self.scaleDetector.detect_check(self.detectResult)
+                        else:
+                            self.detect_check()
+                    except queue.Empty:
+                        pass
+
+
+                #To check how long the hand is outside the closet?
+                if settings.has_scale:
+                    check_cart = True
+                    curCameras = settings.left_cameras if self.curSide == self.IO.doorLock.LEFT_DOOR else settings.right_cameras
+
+                    end_time = time.time()
+                    for index in curCameras:
+                        if end_time - self.timeCnt[index]["start"] < 1.0:
+                            check_cart = False
+                            break
                     
-                    # self.detectResults[checkIndex].checkData(checkIndex,{motionType:result[2]},frame_time)
-                    self.detectResult.checkData(checkIndex,{motionType:result[2]},frame_time)
-
-                    if settings.has_scale:
-                        # self.scaleDetector[checkIndex].detect_check(self.detectResults[checkIndex])
-                        self.scaleDetector.detect_check(self.detectResult)
-                    else:
-                        self.detect_check()
+                    if check_cart:
+                        self.cart.cart_check()
+                        for index in curCameras:
+                            self.timeCnt[index]["start"] = self.timeCnt[index]["end"]
+                    # else:
+                        # print(self.timeCnt)
 
     def detect_check(self):#pure vision detect
         # detect = self.detectResults[checkIndex].getDetect()
@@ -321,16 +355,19 @@ class Closet:
         self.updateScheduler.stop()
         self.IO.change_to_processing_page()
 
+        self.send_camera_instruction = False
+
         order = self.cart.getFinalOrder()
         order["token"] = self.door_token
         self.cart.reset()
 
         order_data = order["data"]
         for k,v in order_data.items():
-            print("final order is: ",settings.items[k]["name"],v)
+            settings.logger.info("final order is {} with num {}".format(settings.items[k]["name"],v))
 
         if settings.client_mode=="develop":
             order["data"]={}
+        # order["data"]={}
 
         strData = json.dumps(order)
         self.pollData = self.encrypter.aes_cbc_encrypt(strData, key = settings.sea_key)
@@ -380,9 +417,9 @@ class Closet:
     #发送摄像头工作指令消息
     def _start_imageprocessing(self):
         if self.curSide == 0:
-            self.camera_control.startCameras(self.left_cameras)
+            self.camera_control.startCameras(settings.left_cameras)
         else:
-            self.camera_control.startCameras(self.right_cameras)
+            self.camera_control.startCameras(settings.right_cameras)
 
     #发送摄像头停止工作指令消息
     def _stop_imageprocessing(self):

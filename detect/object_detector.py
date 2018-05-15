@@ -10,17 +10,25 @@ import common.settings as settings
 from detect.dynamic_track import DynamicTrack
 import tensorflow as tf
 
-CWD_PATH = os.getcwd()
+
+# SELECTED_MODEL = '/data/faster_rcnn/'
+SELECTED_MODEL = '/../Models/mobilenet_ssd_v1_coco/'
+# SELECTED_MODEL = '/../Models/mobilenet_ssd_v2_coco/'
+
+
+CWD_PATH = os.getcwd()+SELECTED_MODEL
+
+
 
 if CWD_PATH != '/':
-    MODEL_PATH = os.path.join(CWD_PATH + '/data/old12_withhand/' + 'frozen_inference_graph.pb')
-    LABEL_PATH = os.path.join(CWD_PATH + '/data/old12_withhand/' + 'pascal_label_map.pbtxt')
+    MODEL_PATH = os.path.join(CWD_PATH  + 'frozen_inference_graph.pb')
+    LABEL_PATH = os.path.join(CWD_PATH  + 'pascal_label_map.pbtxt')
 else:
-    MODEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'frozen_inference_graph.pb')
-    LABEL_PATH = os.path.join('/home/votance/Projects/Farsight' + CWD_PATH + 'data/' + 'pascal_label_map.pbtxt')
+    MODEL_PATH = os.path.join('/home/votance/Projects/Farsight/' + CWD_PATH  + 'frozen_inference_graph.pb')
+    LABEL_PATH = os.path.join('/home/votance/Projects/Farsight/' + CWD_PATH  + 'pascal_label_map.pbtxt')
 
 class ObjectDetector:
-    def __init__(self,input_q,items,detection_queue):
+    def __init__(self,input_q,items,camera_number,detection_queue):
         setproctitle('[farsight] model_inferencing_processor')
 
         signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -58,7 +66,7 @@ class ObjectDetector:
         self.timeStamp = time.strftime('%H_%M_%S_',time.localtime(time.time()))
         self.dynamicTracker=[]
 
-        for i in range(2):
+        for i in range(camera_number):
             self.dynamicTracker.append(DynamicTrack())
 
         # self.writePath = os.getcwd() + '/photo/'+self.timeStamp+"/"
@@ -68,6 +76,7 @@ class ObjectDetector:
         sign = 0
         self.vertical = None
 
+        allCnt = 0
         while True:
             try:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
@@ -76,6 +85,9 @@ class ObjectDetector:
                 sign %= 999
 
                 if frame_truncated is not None:
+                    # allCnt+=1
+                    # cv.imwrite(str(allCnt)+".png",frame_truncated)
+
                     sign += 1
                     if sign % 2:
                         self.frame_merge_left = frame_truncated
@@ -117,7 +129,7 @@ class ObjectDetector:
 
                         # print(sum_planB, 'gggggg', sum_planA)
                         # print(sum_planB // sum_planA)
-                        if sum_planB // sum_planA:
+                        if sum_planB - sum_planA>=0:
                             self.vertical = True  
                             if photo_sign_A == 1:
                                 frame_merge = self.compose_photo(small_fill_y = right_y, small_fill_x = left_x - right_x, big_fill_y = left_x - left_y - right_y,
@@ -159,8 +171,12 @@ class ObjectDetector:
 
 
                         # cv.imwrite(self.writePath + str(sign) + '--' + str(sum_planA) + '--' + str(sum_planB) + '.jpg', frame_merge)
+                        before = time.time()
                         results = self.detect_objects(frame_merge, frame_time, divide_val)
+
                         # print(results)
+                        # print("consume time: ",time.time()-before)
+
                         for i in range(2):
                             if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
                                 print("object delte detect")
@@ -178,7 +194,7 @@ class ObjectDetector:
                                 pass
                 else:
                     if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
-                        print("object delte detect")
+                        # print("object delte detect")
                         waste = detection_queue.get_nowait()
                     try:
                         detection_queue.put_nowait([index,motionType,[],frame_time])#not a good structure
@@ -301,5 +317,5 @@ class ObjectDetector:
                     elif splits[0] == "name":
                         name = splits[1].strip()
                         name = name.strip("\'")
-                        self.classNames[_id] = name+'001'
-                        # self.classNames[_id] = name
+                        # self.classNames[_id] = name+'001'
+                        self.classNames[_id] = name

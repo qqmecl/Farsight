@@ -15,7 +15,7 @@ class MotionDetect:
             self.refLine = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             self.hand_last = -6     # -6 = 手在外面， 6 = 手在里面, 其余为中间状态
             self.hand_present = -6
-            return ("None",False)
+            return "OUT"
 
         curLine = frame# 当前帧的参考线
 
@@ -35,9 +35,9 @@ class MotionDetect:
             if motion!= 0:
                 motion = motion // abs(motion)
                 self.hand_last = self.hand_present
-                return (self.motion_dict[motion],isCover)
+                return self.motion_dict[motion]
         
-        return ("None",isCover)
+        return "IN" if isCover else "OUT"
 
     def reset(self):
         self.refLine = None

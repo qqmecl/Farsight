@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+from multiprocessing import Process
 
 usb_cameras=[]
 detect_baseLine=[]
@@ -8,7 +9,11 @@ detect_baseLine=[]
 from configparser import ConfigParser
 config_parser = ConfigParser()
 config_parser.read("../../local/config.ini")
-camera_number = config_parser.getint("usb_cameras","number")
+
+leftCamerasNum = config_parser.getint("usb_cameras","leftCamerasNum")
+rightCamerasNum = config_parser.getint("usb_cameras","rightCamerasNum")
+camera_number = leftCamerasNum+rightCamerasNum
+
 camera_height = config_parser.getint("usb_cameras","height")
 
 for i in range(camera_number):
@@ -17,6 +22,8 @@ for i in range(camera_number):
     centerX = config_parser.getint("base_line","centerX"+str(i))
     detect_baseLine.append(centerX)
 
+
+# def adjust_cameras(index):
 index = 1
 cap = cv2.VideoCapture(usb_cameras[index])
 ret=True
@@ -29,23 +36,12 @@ while(ret):
 
         cv2.rectangle(frame, (centerX-10, 0), (centerX+10, camera_height),(0, 0, 255),3)
         cv2.imshow('frame',frame)
-        cv2.imwrite('frame.png',frame)
-
-        # if index > 1:
-        #     frame = cv2.flip(frame,1)
-
-        # if index%2 == 1:
-        #     frame = frame[:, 160: , :]#Camera downstairs
-        # else:
-        #     frame = frame[:, 260: , :]#Camera upstairs
-
-        # cv2.imshow('frame',frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
 cap.release()
 cv2.destroyAllWindows()
- 
-
-
+     
+# Process(target = adjust_cameras, args = (0,)).start()
+# Process(target = adjust_cameras, args = (1,)).start()

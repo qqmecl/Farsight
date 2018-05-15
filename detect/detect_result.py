@@ -15,13 +15,16 @@ class DetectResult:
 
     def checkData(self,index,data,frame_time):
         self.latestFrameTime = frame_time
-        for motion,detects in data.items():
-            motion = motion[0]
 
-            if motion != "None":
+        for motion,detects in data.items():
+            # motion = motion[0]
+
+            if motion == "PUSH" or motion == "PULL":
                 #filter multi pull and push situation.
                 if abs(frame_time-self.lastMotionTime[motion]) < 0.2:
                     motion = "None"
+
+                print("evoke motion: ",index,motion,frame_time)
  
             if len(detects) == 0:
                 pass
@@ -29,11 +32,11 @@ class DetectResult:
             else:
                 for val in detects:
                     (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
-                    # settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
+                    settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
             
             self.window.enqueue(detects)
             
-            if motion != "None":
+            if motion == "PUSH" or motion == "PULL":
                 # print("{} camera detect_result got motion {} by time {}".format(index,motion,frame_time))
                 self.motionTime[motion]=frame_time
                 
@@ -68,7 +71,7 @@ class DetectResult:
                     pop = self.window.dequeue()
 
                 self.lastMotion = motion
-            elif motion == "None":
+            elif motion == "OUT":
                 if self.detectState == "PULL_CHECKING":
                     self.takeOutCheck()
 
@@ -87,7 +90,7 @@ class DetectResult:
     def getCurrentDetection(self,isLast):
         id,num,_time,fetch_num = self.getMaxNum()
 
-        back_threshold,out_inTimethreshold,out_timeout_threshold = 1,2,1
+        back_threshold,out_inTimethreshold,out_timeout_threshold = 1,2,0
 
         if id is not None:
             if isLast:

@@ -169,7 +169,11 @@ class Cart:
         from common.util import get_mac_address
 
         if settings.has_scale:
-            if abs(self.after_doorClose_weight - self.before_doorOpen_weight) < 20:
+
+            settings.logger.warning("On before_doorOpen_weight is: {}".format(self.before_doorOpen_weight))
+            settings.logger.warning("On after_doorClose_weight is: {}".format(self.after_doorClose_weight))
+            
+            if abs(self.after_doorClose_weight - self.before_doorOpen_weight) < 150:
                 self.items = {}
         
         return dict(data=self.items,code=get_mac_address())

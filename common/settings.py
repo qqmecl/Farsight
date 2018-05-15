@@ -10,6 +10,7 @@ ORDER_URL = 'https://www.hihigo.shop/api/v1/order'
 items = {
     '6921168509256001': dict(name='农夫山泉矿泉水', price=2.0, weight=575.0),
     '6956416200067001': dict(name='美汁源果粒橙', price=5.0, weight=487.0),
+
     # '6920202888883001': dict(name='红牛', price=8.0, weight=298.0),
     '6902538006100001': dict(name='脉动', price=6.5, weight=650.0),
     # '6921581596048001': dict(name='三得利乌龙茶', price=6.0, weight=528.0),
@@ -36,7 +37,6 @@ items = {
 # }
 
 
-
 sea_key = None
 
 welcome_page = {'D8:9E:F3:1D:E6:9E': 0x33,'D8:9E:F3:1D:EE:7C': 0x0D,'D8:9E:F3:1E:13:8A': 0x33}
@@ -50,21 +50,35 @@ config_parser.read("/home/votance/Projects/Farsight/local/config.ini")
 
 camera_width  = config_parser.getint("usb_cameras","width")
 camera_height = config_parser.getint("usb_cameras","height")
-camera_number = config_parser.getint("usb_cameras","number")
+
+leftCamerasNum = config_parser.getint("usb_cameras","leftCamerasNum")
+rightCamerasNum = config_parser.getint("usb_cameras","rightCamerasNum")
+camera_number = leftCamerasNum+rightCamerasNum
 
 usb_cameras=[]
 detect_baseLine=[]
+
+left_cameras=[]
+right_cameras=[]
 
 
 box_style = config_parser.get("box_style", "style")
 android_screen = config_parser.getboolean("box_style", "android")
 
+for i in range(leftCamerasNum):
+    content = config_parser.getint("usb_cameras","leftCameras"+str(i))
+    left_cameras.append(content)
+
+for i in range(rightCamerasNum):
+    content = config_parser.getint("usb_cameras","rightCameras"+str(i))
+    right_cameras.append(content)
 
 for i in range(camera_number):
     content = config_parser.get("usb_cameras","index"+str(i))
     usb_cameras.append(content)
     centerX = config_parser.getint("base_line","centerX"+str(i))
     detect_baseLine.append(centerX)
+
 
 #hardware configuration
 camera_version = config_parser.getint("hardware","camera_version")

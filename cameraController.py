@@ -6,6 +6,7 @@ import queue
 from detect.motion import MotionDetect
 import tornado.ioloop
 from detect.scaleDetector import ScaleDetector
+from common.shelter import Shelter
 
 
 class VideoStream:
@@ -26,6 +27,7 @@ class VideoStream:
 
         # self.cnt = 0
         self.motionChecker = MotionDetect()
+        self.shelter = Shelter()
 
     def update(self):
         if self.isSending:
@@ -35,11 +37,14 @@ class VideoStream:
                 # self.cnt+=1
                 # if self.cnt == 99:
                 #     self.cnt = 0
-                centerX = settings.detect_baseLine[self.src]
-                motionType = self.motionChecker.checkInput(frame[:,int(centerX)-10:int(centerX)+10],time.time())
-                if motionType[0] != 'None':
-                    print(motionType)
-                
+
+                centerX = int(settings.detect_baseLine[self.src])
+                image = cv2.cvtColor(frame[:, centerX - 10: centerX + 10], cv2.COLOR_BGR2GRAY)
+                # self.shelter.shadow(image)
+                motionType = self.motionChecker.checkInput(frame[:,centerX-10:centerX+10],time.time())
+                # if motionType[0] != 'None':
+                #     print(motionType)
+
                 # if self.cnt %3 == 0 or motionType != "None":
                 self.call_back(self.src,frame,motionType)
 
@@ -47,6 +52,7 @@ class VideoStream:
         self.isSending = state
         if not state:
             self.motionChecker.reset()
+            self.shelter.reset()
 
 
 class CameraController:
@@ -63,7 +69,7 @@ class CameraController:
         if settings.has_scale:
             self.scaleDetector = ScaleDetector()
 
-          
+
 
     def getScaleDetector(self):
         return self.scaleDetector
@@ -73,7 +79,7 @@ class CameraController:
         for src in cameras:
             self.cameras[src].setSending(True)
             if settings.logger.checkSaveVideo():
-                self.videoWriter[src] = cv2.VideoWriter(settings.logger.getSaveVideoPath()+str(src)+".avi", 
+                self.videoWriter[src] = cv2.VideoWriter(settings.logger.getSaveVideoPath()+str(src)+".avi",
                     cv2.VideoWriter_fourcc(*'XVID'),25, (settings.camera_width,settings.camera_height))
 
 
@@ -93,8 +99,11 @@ class CameraController:
             # cur=time.time()
             # if cur - self.lastTime>1.0:
             #     print("send ",self.cnt," frame cur second")
-            #     self.cnt=0 
+            #     self.cnt=0
             #     self.lastTime = cur
+
+            # if frame.shape[0] != 480 or frame.shape[1] != 640 or frame.shape[2] != 3:
+                # return
 
             if settings.logger.checkSaveVideo():
                 self.videoWriter[src].write(frame)
@@ -109,8 +118,8 @@ class CameraController:
                 frame = frame[:, :settings.detect_baseLine[src]+10]
             else:
                 frame = frame[:, settings.detect_baseLine[src]-10:]
-                
-            self.frames_queues.put((frame,src%2,time.time(),motionType))
+
+            self.frames_queues.put((frame,src,time.time(),motionType))
 
         except queue.Full:
             settings.logger.info('[FULL] input_q')
