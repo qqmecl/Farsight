@@ -83,7 +83,7 @@ class Closet:
         if not settings.is_offline:
             self.IO = IO_Controller()
             self.cart = Cart(self.IO)
-            self.initItemData()
+            # self.initItemData()
        
     def initItemData(self):
         from common.util import get_mac_address
