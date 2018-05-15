@@ -14,6 +14,9 @@ import common.settings as settings
 class DoorLockHandler:
     LEFT_DOOR = 0
     RIGHT_DOOR = 1
+    if settings.box_style == 'treble':
+        RIGHT_DOOR = 2
+        MIDDLE_DOOR = 1
 
     #串口地址可配置
     def __init__(self, port=None):
@@ -59,6 +62,8 @@ class DoorLockHandler:
             array = [1, 2, 0, 0, 0, 4] #last number single 4 double 8
         if settings.box_style == 'double':
             array = [1, 2, 0, 0, 0, 8] #last number single 4 double 8
+        if settings.box_style == 'treble':
+            array = [1, 2, 0, 0, 0, 16] #last number single 4 double 8
         self._send_data(array)
         data = self.com.read(6)
         # print(data[-3])
@@ -85,6 +90,13 @@ class DoorLockHandler:
                 return not state ^ 105
             else:
                 return not state ^ 150
+        elif settings.box_style == 'treble':
+            if curside & 1:
+                return not state ^ 100
+            elif curside & 2:
+                return not state ^ 100
+            else:
+                return not state ^ 100
 
     def is_door_lock(self):
         state = self.checkAllState()
@@ -106,6 +118,13 @@ class DoorLockHandler:
                 return not state ^ 89
             else:
                 return not state ^ 149
+        elif settings.box_style == 'treble':
+            if curside & 1:
+                return not state ^ 100
+            elif curside & 2:
+                return not state ^ 100
+            else:
+                return not state ^ 100
 
     def lock_down_door_open(self, curside):
         state = self.checkAllState()
@@ -118,6 +137,13 @@ class DoorLockHandler:
                 return not state ^ 169
             else:
                 return not state ^ 154
+        elif settings.box_style == 'treble':
+            if curside & 1:
+                return not state ^ 100
+            elif curside & 2:
+                return not state ^ 100
+            else:
+                return not state ^ 100
 
     def old_is_door_open(self, side):
         '''
