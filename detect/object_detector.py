@@ -16,16 +16,14 @@ SELECTED_MODEL = '/data/8kinds/'
 # SELECTED_MODEL = '/../Models/mobilenet_ssd_v2_coco/'
 
 
-CWD_PATH = os.getcwd()+SELECTED_MODEL
-
-
+CWD_PATH = os.getcwd()
 
 if CWD_PATH != '/':
-    MODEL_PATH = os.path.join(CWD_PATH  + 'frozen_inference_graph.pb')
-    LABEL_PATH = os.path.join(CWD_PATH  + 'pascal_label_map.pbtxt')
+    MODEL_PATH = os.path.join(CWD_PATH  + ELECTED_MODE + 'frozen_inference_graph.pb')
+    LABEL_PATH = os.path.join(CWD_PATH  + ELECTED_MODE + 'pascal_label_map.pbtxt')
 else:
-    MODEL_PATH = os.path.join('/home/votance/Projects/Farsight/' + CWD_PATH  + 'frozen_inference_graph.pb')
-    LABEL_PATH = os.path.join('/home/votance/Projects/Farsight/' + CWD_PATH  + 'pascal_label_map.pbtxt')
+    MODEL_PATH = os.path.join('/home/votance/Projects/Farsight' + SELECTED_MODEL + 'frozen_inference_graph.pb')
+    LABEL_PATH = os.path.join('/home/votance/Projects/Farsight' + SELECTED_MODEL + 'pascal_label_map.pbtxt')
 
 class ObjectDetector:
     def __init__(self,input_q,items,camera_number,detection_queue):
