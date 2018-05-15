@@ -11,8 +11,8 @@ from detect.dynamic_track import DynamicTrack
 import tensorflow as tf
 
 
-# SELECTED_MODEL = '/data/faster_rcnn/'
-SELECTED_MODEL = '/../Models/mobilenet_ssd_v1_coco/'
+SELECTED_MODEL = '/data/8kinds/'
+# SELECTED_MODEL = '/../Models/mobilenet_ssd_v1_coco/'
 # SELECTED_MODEL = '/../Models/mobilenet_ssd_v2_coco/'
 
 

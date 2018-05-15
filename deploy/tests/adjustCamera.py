@@ -15,6 +15,9 @@ rightCamerasNum = config_parser.getint("usb_cameras","rightCamerasNum")
 camera_number = leftCamerasNum+rightCamerasNum
 
 camera_height = config_parser.getint("usb_cameras","height")
+camera_width = config_parser.getint("usb_cameras","width")
+
+camera_version = config_parser.getint("hardware","camera_version")
 
 for i in range(camera_number):
     content = config_parser.get("usb_cameras","index"+str(i))
@@ -22,10 +25,16 @@ for i in range(camera_number):
     centerX = config_parser.getint("base_line","centerX"+str(i))
     detect_baseLine.append(centerX)
 
-
-# def adjust_cameras(index):
 index = 1
+
 cap = cv2.VideoCapture(usb_cameras[index])
+
+
+if camera_version == 2:
+    cap.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc(*'MJPG'))
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH,camera_width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT,camera_height)
+
 ret=True
 
 while(ret):
