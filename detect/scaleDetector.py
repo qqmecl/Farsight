@@ -23,17 +23,34 @@ class ScaleDetector:
 		self.visionDetectTime = None
 
 		#Extra weight variation inferring logic here.
+		self.extra_lastScale=0
 		self.isRealPullOut = False
 		self.isRealPushBack = False
 
-	def doubleCheck(self,motion):
+	#In case of missdetection situation.
+	def extraCheck(self,motion):
 		if motion =="PUSH":
-			pass
+
+			current = self.IO.get_stable_scale()
+
+			if self.extra_lastScale is None:
+				print("first time push")
+			else:
+				if current - self.extra_lastScale > 100:
+					print("something put back")
+
+			self.extra_lastScale = current
 		elif motion == "PULL":
-			pass
+			current = self.IO.get_stable_scale()
+			if current - self.extra_lastScale < -100:
+				print("something take out")
+
+			self.extra_lastScale = current
+
 		else:
 			pass
 
+	#Firstly make sure every put back would be countable.
 	def check(self,motion):
 		# motion,isCover = motions[0],motions[1]
 		if motion == "PUSH":
@@ -86,7 +103,7 @@ class ScaleDetector:
 					self.detectState = "NORMAL"
 					self.lastScale += self.curActionDelta
 
-		# self.doubleCheck(motion)
+		# self.extraCheck(motion)
 
 	def detect_check(self,detectResults):
 		detect = detectResults.getDetect()
