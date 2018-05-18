@@ -4,5 +4,3 @@ class DetectFrame():
 		self.time = time
 		self.motion = motion
 		self.index = index
-		
-

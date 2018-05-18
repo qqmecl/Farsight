@@ -9,8 +9,8 @@ import time
 import common.settings as settings
 from detect.dynamic_track import DynamicTrack
 import tensorflow as tf
-from frame_stitch import ImageStitch
-from detect_frame import DetectFrame
+from detect.frame_stitch import ImageStitch
+from detect.detect_frame import DetectFrame
 
 SELECTED_MODEL = '/data/8kinds/'
 # SELECTED_MODEL = '/../Models/mobilenet_ssd_v1_coco/'
@@ -20,8 +20,8 @@ SELECTED_MODEL = '/data/8kinds/'
 CWD_PATH = os.getcwd()
 
 if CWD_PATH != '/':
-    MODEL_PATH = os.path.join(CWD_PATH  + ELECTED_MODE + 'frozen_inference_graph.pb')
-    LABEL_PATH = os.path.join(CWD_PATH  + ELECTED_MODE + 'pascal_label_map.pbtxt')
+    MODEL_PATH = os.path.join(CWD_PATH  + SELECTED_MODEL + 'frozen_inference_graph.pb')
+    LABEL_PATH = os.path.join(CWD_PATH  + SELECTED_MODEL + 'pascal_label_map.pbtxt')
 else:
     MODEL_PATH = os.path.join('/home/votance/Projects/Farsight' + SELECTED_MODEL + 'frozen_inference_graph.pb')
     LABEL_PATH = os.path.join('/home/votance/Projects/Farsight' + SELECTED_MODEL + 'pascal_label_map.pbtxt')
@@ -92,8 +92,9 @@ class ObjectDetector:
 
                     if stitched_frame is not None:
                         rawResults = self.detect_objects(stitched_frame)
-                        
+
                         realResults = frameSticher.filter(rawResults)
+                        print(realResults)
 
                         for result in realResults:
                             if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像

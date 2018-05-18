@@ -30,6 +30,7 @@ class ScaleDetector:
 	#In case of missdetection situation.
 	def extraCheck(self,motion):
 		if motion =="PUSH":
+
 			current = self.IO.get_stable_scale()
 
 			if self.extra_lastScale is None:
@@ -45,6 +46,7 @@ class ScaleDetector:
 				print("something take out")
 
 			self.extra_lastScale = current
+
 		else:
 			pass
 
