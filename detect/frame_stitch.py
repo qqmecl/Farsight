@@ -173,12 +173,22 @@ class ImageStitch(object):
         return frame_merge
 
     def compose_photo_two_image(self, frame, sign, x = 1, y = 0, plan_a = True):
-        if sign == 1:
-            frame_merge = self.compose_photo(small_fill_y = frame[1].shape[y], small_fill_x = frame[0].shape[x] - frame[1].shape[x], big_fill_y = frame[0].shape[x] - frame[0].shape[y] - frame[1].shape[y],
-                        big_fill_x = frame[0].shape[x], frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [1, 0, 0] if plan_a else [0, 1, 1])
+        if plan_a:
+            if sign == 1:
+                frame_merge = self.compose_photo(small_fill_y = frame[1].shape[y], small_fill_x = frame[0].shape[x] - frame[1].shape[x], big_fill_y = frame[0].shape[x] - frame[0].shape[y] - frame[1].shape[y],
+                            big_fill_x = frame[0].shape[x], frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [1, 0, 0])
 
-        if sign == 2:
-            frame_merge = self.compose_photo(small_fill_y = frame[1].shape[y], small_fill_x = frame[0].shape[x] - frame[1].shape[x], big_fill_y = frame[0].shape[y] + frame[1].shape[y],
-                        big_fill_x = frame[0].shape[y] + frame[1].shape[y] - frame[0].shape[x], frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [1, 0, 1] if plan_a else [0, 1, 0])
+            if sign == 2:
+                frame_merge = self.compose_photo(small_fill_y = frame[1].shape[y], small_fill_x = frame[0].shape[x] - frame[1].shape[x], big_fill_y = frame[0].shape[y] + frame[1].shape[y],
+                            big_fill_x = frame[0].shape[y] + frame[1].shape[y] - frame[0].shape[x], frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [1, 0, 1])
+
+        else:
+            if sign == 1:
+                frame_merge = self.compose_photo(small_fill_x = frame[1].shape[y], small_fill_y = frame[0].shape[x] - frame[1].shape[x], big_fill_x = frame[0].shape[x] - frame[0].shape[y] - frame[1].shape[y],
+                            big_fill_y = frame[0].shape[x], frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [0, 1, 1])
+
+            if sign == 2:
+                frame_merge = self.compose_photo(small_fill_x = frame[1].shape[y], small_fill_y = frame[0].shape[x] - frame[1].shape[x], big_fill_x = frame[0].shape[y] + frame[1].shape[y],
+                            big_fill_y = frame[0].shape[y] + frame[1].shape[y] - frame[0].shape[x], frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [0, 1, 0])
 
         return frame_merge
