@@ -100,6 +100,6 @@ is_offline = config_parser.getboolean("run_mode","offline")
 
 client_mode = config_parser.get("run_mode","client_mode")
 
-stitching_number = config_parser.get("run_mode", "stitching_number")
+stitching_number = config_parser.getint("run_mode", "stitching_number")
 
 logger = Logger(client_mode)
