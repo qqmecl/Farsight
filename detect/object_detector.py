@@ -92,18 +92,19 @@ class ObjectDetector:
                     stitched_frame = frameSticher.loadIn(newDetectFrame)
 
                     if stitched_frame is not None:
-                        cv.imwrite(self.writePath + str(allCnt)+".jpg", stitched_frame)
+                        # cv.imwrite(self.writePath + str(allCnt)+".jpg", stitched_frame)
                         rawResults = self.detect_objects(stitched_frame)
 
                         realResults = frameSticher.filter(rawResults)
-                        print(realResults)
+                        # print(realResults)
 
                         for result in realResults:
                             if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
                                 print("object delte detect")
                                 waste = detection_queue.get_nowait()
+                            # print(result)
                             # detection_queue.put_nowait([index,motionType,result[i],frame_time])
-                            detection_queue.put_nowait(result[i])
+                            detection_queue.put_nowait(result)
 
                 #     # allCnt+=1
                 #     # cv.imwrite(str(allCnt)+".png",frame_truncated)

@@ -26,13 +26,15 @@ class DetectResult:
 
                 print("evoke motion: ",index,motion,frame_time)
  
-            if len(detects) == 0:
-                pass
+            # if len(detects) == 0:
+            #     pass
                 # settings.logger.info('{0} camera shot {1} by time {2}'.format(index,"None",frame_time))
-            else:
-                for val in detects:
-                    (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
-                    settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],_time))
+            # else:
+                # for val in detects:
+                    # (_id,_time)=(val[1],val[2])#(confidence,itemId,cur_time) one
+            _id = detects
+                    # print(_id)
+            settings.logger.info('{0} camera shot {1} by time {2}'.format(index,settings.items[_id]["name"],frame_time))
             
             self.window.enqueue(detects)
             
@@ -42,11 +44,11 @@ class DetectResult:
                 
             if motion == "PUSH":#Action start or Action done.
                 if self.detectState == "PULL_CHECKING":
-                    self.takeOutCheck()
+                    self.takeOutCheck(frame_time)
                     self.reset()
                 else:
                     while(not self.window.isEmpty()):
-                        self.loadData(self.window.dequeue())
+                        self.loadData(self.window.dequeue(), frame_time)
 
                     detectId,num,_time,fetch_num = self.getCurrentDetection(True)
 
@@ -73,13 +75,13 @@ class DetectResult:
                 self.lastMotion = motion
             elif motion == "OUT":
                 if self.detectState == "PULL_CHECKING":
-                    self.takeOutCheck()
+                    self.takeOutCheck(frame_time)
 
-    def takeOutCheck(self,timeCheck=False):
+    def takeOutCheck(self, frame_time, timeCheck=False):
         while(not self.window.isEmpty()):
             pop = self.window.dequeue()
             for val in pop:
-                self.loadData(pop)
+                self.loadData(pop, frame_time)
 
         detectId,num,t_ime,fetch_num = self.getCurrentDetection(False)
         if detectId is not None:
@@ -114,21 +116,21 @@ class DetectResult:
 
         return None,None,None,None
 
-    def loadData(self,detects):
-        count={}
-        for val in detects:
-            _id = val[1]
-            count[_id]=0
+    def loadData(self,detects, time):
+        # count={}
+        # for val in detects:
+        _id = detects
+        # count[_id]=0
 
-        for val in detects:
-            (_id,time)=(val[1],val[2])
-            count[_id]+=1
+        # for val in detects:
+            # _id=val
+            # count[_id]+=1
 
             # if _id == '6921168509256001':
-            new_num = self.processing[_id]["num"] + 1
-            self.processing[_id]["time"] = ((self.processing[_id]["time"]*self.processing[_id]["num"])+time)/new_num
-            self.processing[_id]["num"] = new_num
-            self.processing[_id]["fetch_num"] = max(self.processing[_id]["fetch_num"],count[_id])
+        new_num = self.processing[_id]["num"] + 1
+        self.processing[_id]["time"] = ((self.processing[_id]["time"]*self.processing[_id]["num"])+time)/new_num
+        self.processing[_id]["num"] = new_num
+        self.processing[_id]["fetch_num"] = self.processing[_id]["fetch_num"]
 
             
     def reset(self):
