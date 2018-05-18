@@ -9,44 +9,13 @@ class Image_stitching(object):
     def stitching(self, *frame):
         number = len(frame)
         if number < 3:
-            left_x = frame[0].shape[1]
-            right_x = frame[1].shape[1]
-            left_y = frame[0].shape[0]
-            right_y = frame[1].shape[0]
+            pure_frame = (frame[0][0], frame[1][0])
+            image1 = sorted(frame, key = lambda x: x[0].shape[1])
+            sum_planA, photo_sign_A = self.black_area_add(pure_frame)
+            image2 = sorted(frame, key = lambda x: x[0].shape[0])
+            sum_planB, photo_sign_B = self.black_area_add(pure_frame, reverse = True)
 
-            if left_x >= right_x:
-                if left_x >= (left_y + right_y):
-                    sum_planA = (left_x - right_x) * right_y + left_x * (left_x - left_y - right_y) #up concatenate down
-                    photo_sign_A = 1
-                else:
-                    sum_planA = (left_x - right_x) * right_y + (left_y + right_y) * (left_y + right_y - left_x) #up concatenate down
-                    photo_sign_A = 2
-            else:
-                if right_x >= (left_y + right_y):
-                    sum_planA = (right_x - left_x) * left_y + right_x * (right_x - left_y - right_y) #up concatenate down
-                    photo_sign_A = 3
-                else:
-                    sum_planA = (right_x - left_x) * left_y + (left_y + right_y) * (left_y + right_y - right_x) #up concatenate down
-                    photo_sign_A = 4
-
-            if left_y >= right_y:
-                if left_y >= (left_x + right_x):
-                    sum_planB = (left_y - right_y) * right_x + left_y * (left_y - left_x - right_x) #left concatenate right
-                    photo_sign_B = 5
-                else:
-                    sum_planB = (left_y - right_y) * right_x + (left_x + right_x) * (left_x + right_x - left_y) #left concatenate right
-                    photo_sign_B = 6
-            else:
-                if right_y >= (left_x + right_x):
-                    sum_planB = (right_y - left_y) * left_x + right_y * (right_y - left_x - right_x) #left concatenate right
-                    photo_sign_B = 7
-                else:
-                    sum_planB = (right_y - left_y) * left_x + (left_x + right_x) * (left_x + right_x - right_y) #left concatenate right
-                    photo_sign_B = 8
-
-            # print(sum_planB, 'gggggg', sum_planA)
-            # print(sum_planB // sum_planA)
-            if sum_planB - sum_planA>=0:
+            if sum_planB - sum_planA >= 0:
                 vertical = True
                 if photo_sign_A == 1:
                     frame_merge = self.compose_photo(small_fill_y = right_y, small_fill_x = left_x - right_x, big_fill_y = left_x - left_y - right_y,
@@ -56,33 +25,34 @@ class Image_stitching(object):
                     frame_merge = self.compose_photo(small_fill_y = right_y, small_fill_x = left_x - right_x, big_fill_y = left_y + right_y,
                         big_fill_x = left_y + right_y - left_x, frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [1, 0, 1])
 
-                if photo_sign_A == 3:
-                    frame_merge = self.compose_photo(small_fill_y = left_y, small_fill_x = right_x - left_x, big_fill_y = right_x - left_y - right_y,
-                        big_fill_x = right_x, frame_merge_filled = frame[0], frame_merge_temp = frame[1], axises = [1, 0, 0], exchange = True)
+                # if photo_sign_A == 3:
+                #     frame_merge = self.compose_photo(small_fill_y = left_y, small_fill_x = right_x - left_x, big_fill_y = right_x - left_y - right_y,
+                #         big_fill_x = right_x, frame_merge_filled = frame[0], frame_merge_temp = frame[1], axises = [1, 0, 0], exchange = True)
 
-                if photo_sign_A == 4:
-                    frame_merge = self.compose_photo(small_fill_y = left_y, small_fill_x = right_x - left_x, big_fill_y = left_y + right_y,
-                        big_fill_x = left_y + right_y - right_x, frame_merge_filled = frame[0], frame_merge_temp = frame[1], axises = [1, 0, 1], exchange = True)
+                # if photo_sign_A == 4:
+                #     frame_merge = self.compose_photo(small_fill_y = left_y, small_fill_x = right_x - left_x, big_fill_y = left_y + right_y,
+                #         big_fill_x = left_y + right_y - right_x, frame_merge_filled = frame[0], frame_merge_temp = frame[1], axises = [1, 0, 1], exchange = True)
 
                 divide_val = left_y
 
             else:
                 vertical = False
-                if photo_sign_B == 5:
-                    frame_merge = self.compose_photo(small_fill_y = left_y - right_y, small_fill_x = right_x, big_fill_y = left_y,
-                        big_fill_x = left_y - left_x - right_x, frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [0, 1, 1])
+                if photo_sign_B == 1:#原来是5
+                    # frame_merge = self.compose_photo(small_fill_y = left_y - right_y, small_fill_x = right_x, big_fill_y = left_y,
+                    #     big_fill_x = left_y - left_x - right_x, frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [0, 1, 1])#正统拼接
+                    frame_merge = self.compose_photo(small_fill_y = right_y, small_fill_x = left_x - right_x, big_fill_y = left_x - left_y - right_y,
+                        big_fill_x = left_x, frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [1, 0, 0])
+                if photo_sign_B == 2:#原来是6
+                    # frame_merge = self.compose_photo(small_fill_y = left_y - right_y, small_fill_x = right_x, big_fill_y = left_x + right_x - left_y,
+                    #     big_fill_x = left_x + right_x, frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [0, 1, 0])#正统拼接
 
-                if photo_sign_B == 6:
-                    frame_merge = self.compose_photo(small_fill_y = left_y - right_y, small_fill_x = right_x, big_fill_y = left_x + right_x - left_y,
-                        big_fill_x = left_x + right_x, frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [0, 1, 0])
+                # if photo_sign_B == 7:
+                #     frame_merge = self.compose_photo(small_fill_y = right_y - left_y, small_fill_x = left_x, big_fill_y = right_y,
+                #         big_fill_x = right_y - left_x - right_x, frame_merge_filled = frame[0], frame_merge_temp = frame[1], axises = [0, 1, 1], exchange = True)
 
-                if photo_sign_B == 7:
-                    frame_merge = self.compose_photo(small_fill_y = right_y - left_y, small_fill_x = left_x, big_fill_y = right_y,
-                        big_fill_x = right_y - left_x - right_x, frame_merge_filled = frame[0], frame_merge_temp = frame[1], axises = [0, 1, 1], exchange = True)
-
-                if photo_sign_B == 8:
-                    frame_merge = self.compose_photo(small_fill_y = right_y - left_y, small_fill_x = left_x, big_fill_y = left_x + right_x - right_y,
-                        big_fill_x = left_x + right_x, frame_merge_filled = frame[0], frame_merge_temp = frame[1], axises = [0, 1, 0], exchange = True)
+                # if photo_sign_B == 8:
+                #     frame_merge = self.compose_photo(small_fill_y = right_y - left_y, small_fill_x = left_x, big_fill_y = left_x + right_x - right_y,
+                #         big_fill_x = left_x + right_x, frame_merge_filled = frame[0], frame_merge_temp = frame[1], axises = [0, 1, 0], exchange = True)
 
                 divide_val = left_x
 
@@ -166,7 +136,27 @@ class Image_stitching(object):
                     sum14 = (min_y - (max_x + min_x)) + min_y + (min_y - max_y) * (max_x - middle_x) + (min_y - (max_y + middle_y)) * middle_x
 
 
+    def black_area_add(self, frame, reverse = False):
+        if reverse:
+            left_x = frame[0].shape[0]
+            right_x = frame[1].shape[0]
+            left_y = frame[0].shape[1]
+            right_y = frame[1].shape[1]
+        else:
+            left_x = frame[0].shape[1]
+            right_x = frame[1].shape[1]
+            left_y = frame[0].shape[0]
+            right_y = frame[1].shape[0]
 
+
+        if left_x >= (left_y + right_y):
+            sum_plan = (left_x - right_x) * right_y + left_x * (left_x - left_y - right_y) #up concatenate down
+            photo_sign = 1
+        else:
+            sum_plan = (left_x - right_x) * right_y + (left_y + right_y) * (left_y + right_y - left_x) #up concatenate down
+            photo_sign = 2
+
+        return sum_plan, photo_sign
 
 
     def compose_photo(self, small_fill_y, small_fill_x, big_fill_y, big_fill_x, frame_merge_filled, frame_merge_temp, axises, exchange = False):
