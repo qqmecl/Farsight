@@ -28,7 +28,9 @@ class ScaleDetector:
 
 	def doubleCheck(self,motion):
 		if motion =="PUSH":
+			pass
 		elif motion == "PULL":
+			pass
 		else:
 			pass
 
