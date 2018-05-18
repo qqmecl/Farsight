@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+from detect_frame import DetectFrame
+import common.settings as settings
 
 class Image_stitching(object):
     def __init__(self):
         pass
 
+    def loadIn(self,detect_frame):
+        pass
 
+    def filter(self,rawResults):
+        pass
+        
     def stitching(self, *frame):
         number = len(frame)
         if number < 3:

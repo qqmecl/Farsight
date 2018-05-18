@@ -9,8 +9,8 @@ import time
 import common.settings as settings
 from detect.dynamic_track import DynamicTrack
 import tensorflow as tf
-from image_stitching import Image_stitching
-
+from frame_stitch import ImageStitch
+from detect_frame import DetectFrame
 
 SELECTED_MODEL = '/data/8kinds/'
 # SELECTED_MODEL = '/../Models/mobilenet_ssd_v1_coco/'
@@ -68,14 +68,14 @@ class ObjectDetector:
         for i in range(camera_number):
             self.dynamicTracker.append(DynamicTrack())
 
-        self.image_stitching = Image_stitching()
+        frameSticher = ImageStitch()
 
         # self.writePath = os.getcwd() + '/photo/'+self.timeStamp+"/"
         # os.makedirs(self.writePath)
 
         # print(writePath)
-        sign = 0
-        self.vertical = None
+        # sign = 0
+        # self.vertical = None
 
         # allCnt = 0
         while True:
@@ -83,79 +83,88 @@ class ObjectDetector:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
                 frame_truncated = self.dynamicTracker[index].check(frame_truncated)#get dynamic tracked location
                 results = []
-                sign %= 999
+                # sign %= 999
 
                 if frame_truncated is not None:
-                    # allCnt+=1
-                    # cv.imwrite(str(allCnt)+".png",frame_truncated)
-                    sign += 1
-                    if setting.stitching_number == 2:
-                        if sign % 2:
-                            self.frame_merge_left = frame_truncated
-                            self.lastMotionType,self.lasFrame_time,self.last_index=motionType,frame_time,index
-                        else:
-                            frame_merge, divide_val, self.vertical = self.image_stitching.stitching([self.frame_merge_left, 1], [frame_truncated. 2])
-                            # cv.imwrite(self.writePath + str(sign) + '--' + str(sum_planA) + '--' + str(sum_planB) + '.jpg', frame_merge)
-                            before = time.time()
-                            results = self.detect_objects(frame_merge, frame_time, divide_val)
+                    newDetectFrame = DetectFrame(frame_truncated,frame_time,motionType,index)
 
-                            # print(results)
-                            # print("consume time: ",time.time()-before)
+                    stitched_frame = frameSticher.loadIn(newDetectFrame)
 
-                            for i in range(2):
-                                if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
-                                    print("object delte detect")
-                                    waste = detection_queue.get_nowait()
+                    if stitched_frame is not None:
+                        rawResults = self.detect_objects(stitched_frame)
+                        realResults = frameSticher.filter(rawResults)
 
-                                try:
-                                    if i:
-                                        # if len(results[i]) >1:
-                                            # print("check two item by the same time: ",results[i])
-                                        detection_queue.put_nowait([index,motionType,results[i],frame_time])#not a good structure
-                                    else:
-                                        detection_queue.put_nowait([self.last_index,self.lastMotionType,results[i],self.lasFrame_time])#not a good structure
-                                except queue.Full:
-                                    print('[FULL]')
-                                    pass
+                        for result in realResults:
+                            if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
+                                print("object delte detect")
+                                waste = detection_queue.get_nowait()
+                            detection_queue.put_nowait([index,motionType,result[i],frame_time])
 
-                    elif setting.stitching_number == 3:
-                        if sign % 3:
-                            if sign % 2:
-                                self.one_frame = frame_truncated
-                                self.one_MotionType,self.one_Frame_time,self.one_index=motionType,frame_time,index
-                            else:
-                                self.another_frame = frame_truncated
-                                self.another_MotionType, self.another_Frame_time, self.another_index = motionType, frame_time, index
-                        else:
-                            frame_merge, divide_val, self.vertical = self.image_stitching.stitching(self.one_frame, self.another_frame, frame_truncated)
-                            # pass
+                #     # allCnt+=1
+                #     # cv.imwrite(str(allCnt)+".png",frame_truncated)
+                #     # sign += 1
+                #     if setting.stitching_number == 2:
+                #         if sign % 2:
+                #             self.frame_merge_left = frame_truncated
+                #             self.lastMotionType,self.lasFrame_time,self.last_index=motionType,frame_time,index
+                #         else:
+                #             frame_merge, divide_val, self.vertical = self.image_stitching.stitching([self.frame_merge_left, 1], [frame_truncated. 2])
+                #             # cv.imwrite(self.writePath + str(sign) + '--' + str(sum_planA) + '--' + str(sum_planB) + '.jpg', frame_merge)
+                #             before = time.time()
+                #             results = self.detect_objects(frame_merge, frame_time, divide_val)
 
-                else:
-                    if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
-                        # print("object delte detect")
-                        waste = detection_queue.get_nowait()
-                    try:
-                        detection_queue.put_nowait([index,motionType,[],frame_time])#not a good structure
-                    except queue.Full:
-                        print('[FULL]')
-                        pass
+                #             # print(results)
+                #             # print("consume time: ",time.time()-before)
+
+                #             for i in range(2):
+                #                 if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
+                #                     print("object delte detect")
+                #                     waste = detection_queue.get_nowait()
+
+                #                 try:
+                #                     if i:
+                #                         # if len(results[i]) >1:
+                #                             # print("check two item by the same time: ",results[i])
+                #                         detection_queue.put_nowait([index,motionType,results[i],frame_time])#not a good structure
+                #                     else:
+                #                         detection_queue.put_nowait([self.last_index,self.lastMotionType,results[i],self.lasFrame_time])#not a good structure
+                #                 except queue.Full:
+                #                     print('[FULL]')
+                #                     pass
+
+                #     elif setting.stitching_number == 3:
+                #         if sign % 3:
+                #             if sign % 2:
+                #                 self.one_frame = frame_truncated
+                #                 self.one_MotionType,self.one_Frame_time,self.one_index=motionType,frame_time,index
+                #             else:
+                #                 self.another_frame = frame_truncated
+                #                 self.another_MotionType, self.another_Frame_time, self.another_index = motionType, frame_time, index
+                #         else:
+                #             frame_merge, divide_val, self.vertical = self.image_stitching.stitching(self.one_frame, self.another_frame, frame_truncated)
+                #             # pass
+
+                # else:
+                #     if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
+                #         # print("object delte detect")
+                #         waste = detection_queue.get_nowait()
+                #     try:
+                #         detection_queue.put_nowait([index,motionType,[],frame_time])#not a good structure
+                #     except queue.Full:
+                #         print('[FULL]')
+                #         pass
 
             except queue.Empty:#不进行识别判断的时候帧会变空
                 # print('[EMPTY] input_q is: ')
                 pass
 
 
-    ##当前只考虑单帧的判断
-    # def detect_objects(self,frame,frame_time, enlarge_num, divide_val, sign):
-    # def detect_objects(self,frame,frame_time, divide_val, sign):
-    def detect_objects(self,frame,frame_time, divide_val):
+    def detect_objects(self,frame):
         self.frameCount += 1
 
-        # divide_val = int(divide_val / enlarge_num)
         results=[]
-
-        results0=[]
-        results1=[]
+        # results0=[]
+        # results1=[]
 
         original = frame.copy()
 
@@ -177,9 +186,9 @@ class ObjectDetector:
                 bbox = out['detection_boxes'][i]
                 itemId = self.classNames[out['detection_classes'][i]]
 
-                cv.rectangle(original,
-                    (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
-                        (0,0,255), 2)
+                # cv.rectangle(original,
+                    # (int(bbox[1]*cols),int(bbox[0]*rows)),(int(bbox[3]*cols),int(bbox[2]*rows)),
+                        # (0,0,255), 2)
 
                 # if self.vertical:
                 #     # cv.imwrite(self.writePath + str(sign) + '.jpg', frame)
@@ -195,30 +204,31 @@ class ObjectDetector:
                 left_x = int(bbox[1] * cols)
                 right_x = int(bbox[3] * cols)
 
+                results.append((itemId,{"up_y":up_y,"down_y":down_y,"left_x":left_x,"right_x":right_x}))
 
-                if self.vertical:          # append True is first_frame.....append False is second_box
-                    if up_y <= divide_val and down_y <= divide_val:
-                        results0.append((confidence,itemId,frame_time))
+                # if self.vertical:          # append True is first_frame.....append False is second_box
+                #     if up_y <= divide_val and down_y <= divide_val:
+                #         results0.append((confidence,itemId,frame_time))
 
-                    if up_y >= divide_val and down_y >= divide_val:
-                        results1.append((confidence,itemId,frame_time))
+                #     if up_y >= divide_val and down_y >= divide_val:
+                #         results1.append((confidence,itemId,frame_time))
 
-                    # if up_y <= divide_val and down_y >= divide_val:
+                #     # if up_y <= divide_val and down_y >= divide_val:
 
-                else:
-                    if left_x <= divide_val and right_x <= divide_val:
-                        results0.append((confidence,itemId,frame_time))
+                # else:
+                #     if left_x <= divide_val and right_x <= divide_val:
+                #         results0.append((confidence,itemId,frame_time))
 
-                    if left_x >= divide_val and right_x >= divide_val:
-                        results1.append((confidence,itemId,frame_time))
+                #     if left_x >= divide_val and right_x >= divide_val:
+                #         results1.append((confidence,itemId,frame_time))
 
                     # if left_x <= divide_val and right_x >= divide_val:
                     #     cv.imwrite(self.writePath + 'multi' + str(self.frameCount) + '.jpg', original)
 
         # cv.imwrite(self.writePath + 'multi' + str(self.frameCount) + '.jpg', original)
 
-        results.append(results0)
-        results.append(results1)
+        # results.append(results0)
+        # results.append(results1)
 
         # if len(results0) > 0:
             # print(self.frameCount," : ",results0)
