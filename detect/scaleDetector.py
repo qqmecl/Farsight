@@ -18,8 +18,19 @@ class ScaleDetector:
 		self.curActionDelta = 0
 		self.lastDetectTime = 0
 		self.detectState = "NORMAL"
+
 		self.detectCache = None
 		self.visionDetectTime = None
+
+		#Extra weight variation inferring logic here.
+		self.isRealPullOut = False
+		self.isRealPushBack = False
+
+	def doubleCheck(self,motion):
+		if motion =="PUSH":
+		elif motion == "PULL":
+		else:
+			pass
 
 	def check(self,motion):
 		# motion,isCover = motions[0],motions[1]
@@ -72,6 +83,8 @@ class ScaleDetector:
 
 					self.detectState = "NORMAL"
 					self.lastScale += self.curActionDelta
+
+		# self.doubleCheck(motion)
 
 	def detect_check(self,detectResults):
 		detect = detectResults.getDetect()
