@@ -102,7 +102,8 @@ class ObjectDetector:
                             if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
                                 print("object delte detect")
                                 waste = detection_queue.get_nowait()
-                            detection_queue.put_nowait([index,motionType,result[i],frame_time])
+                            # detection_queue.put_nowait([index,motionType,result[i],frame_time])
+                            detection_queue.put_nowait(result[i])
 
                 #     # allCnt+=1
                 #     # cv.imwrite(str(allCnt)+".png",frame_truncated)

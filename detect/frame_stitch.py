@@ -23,16 +23,21 @@ class ImageStitch(object):
         realResults = []
         for raw in rawResults:
             if self.vertical:
-                if raw[1]['up_y'] <= self.divide_val and raw[1]['down_y'] >= self.divide_val:
-                    pass
-                else:
-                    realResults.append(raw[0])
+                if raw[1]['up_y'] <= self.divide_val and raw[1]['down_y'] <= self.divide_val:
+                    realResults.append([self.image_a[1].index, self.image_a[1].motion, raw[0], self.image_a[1].time])
+                if raw[1]['up_y'] >= self.divide_val and raw[1]['down_y'] >= self.divide_val:
+                    realResults.append([self.image_a[0].index, self.image_a[0].motion, raw[0], self.image_a[0].time])
+                # else:
+                #     realResults.append(raw[0])
             else:
-                if raw[1]['left_x'] <= self.divide_val and raw[1]['right_x'] >= self.divide_val:
-                    pass
-                else:
-                    realResults.append(raw[0])
+                if raw[1]['left_x'] <= self.divide_val and raw[1]['right_x'] <= self.divide_val:
+                    realResults.append([self.image_b[1].index, self.image_b[1].motion, raw[0], self.image_b[1].time])
+                if raw[1]['left_x'] >= self.divide_val and raw[1]['right_x'] >= self.divide_val:
+                    realResults.append([self.image_b[0].index, self.image_b[0].motion, raw[0], self.image_b[0].time])
+                # else:
+                #     realResults.append(raw[0])
 
+        # self.cacheList = []
         return realResults
 
     def stitching(self):
@@ -40,12 +45,12 @@ class ImageStitch(object):
 
         if settings.stitching_number < 3:
             # pure_frame = (frame[0].frameData, frame[1].frameData)
-            image_a = sorted(frame, key = lambda x: x.frameData.shape[1])
-            pure_frame_a = (image_a[1].frameData, image_a[0].frameData)
+            self.image_a = sorted(frame, key = lambda x: x.frameData.shape[1])
+            pure_frame_a = (self.image_a[1].frameData, self.image_a[0].frameData)
             sum_planA, photo_sign_A = self.black_area_add(pure_frame_a, reverse = False)
 
-            image_b = sorted(frame, key = lambda x: x.frameData.shape[0])
-            pure_frame_b = (image_b[1].frameData, image_b[0].frameData)
+            self.image_b = sorted(frame, key = lambda x: x.frameData.shape[0])
+            pure_frame_b = (self.image_b[1].frameData, self.image_b[0].frameData)
             sum_planB, photo_sign_B = self.black_area_add(pure_frame_b, reverse = True)
             # print(pure_frame_b[0].shape[0], 'hhhhhhhhhh', pure_frame_b[1].shape[0])
 
@@ -177,7 +182,7 @@ class ImageStitch(object):
 
     def compose_photo_two_image(self, frame, sign, x, y, plan_a = True):
         if plan_a:
-            if sign == 1: 
+            if sign == 1:
                 frame_merge = self.compose_photo(small_fill_y = frame[1].shape[y], small_fill_x = frame[0].shape[x] - frame[1].shape[x], big_fill_y = frame[0].shape[x] - frame[0].shape[y] - frame[1].shape[y],
                             big_fill_x = frame[0].shape[x], frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [1, 0, 0])
 
@@ -186,7 +191,7 @@ class ImageStitch(object):
                             big_fill_x = frame[0].shape[y] + frame[1].shape[y] - frame[0].shape[x], frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [1, 0, 1])
 
         else:
-            if sign == 1: 
+            if sign == 1:
                 frame_merge = self.compose_photo(small_fill_x = frame[1].shape[y], small_fill_y = frame[0].shape[x] - frame[1].shape[x], big_fill_x = frame[0].shape[x] - frame[0].shape[y] - frame[1].shape[y],
                             big_fill_y = frame[0].shape[x], frame_merge_filled = frame[1], frame_merge_temp = frame[0], axises = [0, 1, 1])
 
