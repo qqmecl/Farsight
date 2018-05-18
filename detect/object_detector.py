@@ -70,20 +70,21 @@ class ObjectDetector:
 
         frameSticher = ImageStitch()
 
-        # self.writePath = os.getcwd() + '/photo/'+self.timeStamp+"/"
-        # os.makedirs(self.writePath)
+        self.writePath = os.getcwd() + '/photo/'+self.timeStamp+"/"
+        os.makedirs(self.writePath)
 
         # print(writePath)
         # sign = 0
         # self.vertical = None
 
-        # allCnt = 0
+        allCnt = 0
         while True:
             try:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
                 frame_truncated = self.dynamicTracker[index].check(frame_truncated)#get dynamic tracked location
                 results = []
                 # sign %= 999
+                allCnt += 1
 
                 if frame_truncated is not None:
                     newDetectFrame = DetectFrame(frame_truncated,frame_time,motionType,index)
@@ -91,6 +92,7 @@ class ObjectDetector:
                     stitched_frame = frameSticher.loadIn(newDetectFrame)
 
                     if stitched_frame is not None:
+                        cv.imwrite(self.writePath + str(allCnt)+".jpg", stitched_frame)
                         rawResults = self.detect_objects(stitched_frame)
 
                         realResults = frameSticher.filter(rawResults)

@@ -23,7 +23,7 @@ class ScaleDetector:
 		self.visionDetectTime = None
 
 		#Extra weight variation inferring logic here.
-		self.extra_lastScale=0
+		# self.extra_lastScale=0
 		self.isRealPullOut = False
 		self.isRealPushBack = False
 
@@ -31,21 +31,23 @@ class ScaleDetector:
 	def extraCheck(self,motion):
 		if motion =="PUSH":
 
-			current = self.IO.get_stable_scale()
+			# current = self.IO.get_stable_scale()
 
-			if self.extra_lastScale is None:
-				print("first time push")
-			else:
-				if current - self.extra_lastScale > 100:
-					print("something put back")
+			# if self.extra_lastScale is None:
+			# 	print("first time push")
+			# else:
+			# 	if current - self.extra_lastScale > 100:
+			# 		print("something put back")
 
-			self.extra_lastScale = current
+			# self.extra_lastScale = current
+			pass
 		elif motion == "PULL":
-			current = self.IO.get_stable_scale()
-			if current - self.extra_lastScale < -100:
-				print("something take out")
+			# current = self.IO.get_stable_scale()
+			# if current - self.extra_lastScale < -100:
+			# 	print("something take out")
 
-			self.extra_lastScale = current
+			# self.extra_lastScale = current
+			pass
 
 		else:
 			pass
