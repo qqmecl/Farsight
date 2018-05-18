@@ -94,7 +94,7 @@ class ObjectDetector:
                             self.frame_merge_left = frame_truncated
                             self.lastMotionType,self.lasFrame_time,self.last_index=motionType,frame_time,index
                         else:
-                            frame_merge, divide_val, self.vertical = self.image_stitching.stitching(self.frame_merge_left, frame_truncated)
+                            frame_merge, divide_val, self.vertical = self.image_stitching.stitching([self.frame_merge_left, 1], [frame_truncated. 2])
                             # cv.imwrite(self.writePath + str(sign) + '--' + str(sum_planA) + '--' + str(sum_planB) + '.jpg', frame_merge)
                             before = time.time()
                             results = self.detect_objects(frame_merge, frame_time, divide_val)
