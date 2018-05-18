@@ -14,7 +14,7 @@ class VideoStream:
         self.src = src
         self.stream = cv2.VideoCapture(settings.usb_cameras[src])
 
-        if settings.camera_version == "2":
+        if settings.camera_version == 2:
             self.stream.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc(*'MJPG'))
 
         self.stream.set(cv2.CAP_PROP_FRAME_WIDTH,settings.camera_width)
@@ -37,9 +37,10 @@ class VideoStream:
                 # self.cnt+=1
                 # if self.cnt == 99:
                 #     self.cnt = 0
+
                 centerX = int(settings.detect_baseLine[self.src])
                 image = cv2.cvtColor(frame[:, centerX - 10: centerX + 10], cv2.COLOR_BGR2GRAY)
-                self.shelter.shadow(image)
+                # self.shelter.shadow(image)
                 motionType = self.motionChecker.checkInput(frame[:,centerX-10:centerX+10],time.time())
                 # if motionType[0] != 'None':
                 #     print(motionType)

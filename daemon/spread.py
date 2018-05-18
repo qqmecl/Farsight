@@ -13,6 +13,9 @@ class MyTestDaemon(Daemon):
     def run(self):
         signal.signal(signal.SIGUSR1, self.__postHandle)
         signal.signal(signal.SIGUSR2, self.__pullHandle)
+        # subprocess.call('source /home/votance/farsight_venv/venv/bin/activate', shell=True)
+        # subprocess.call('supervisord -c /etc/supervisord.conf', shell=True)
+        # subprocess.call('deactivate', shell=True)
         subprocess.call('/home/votance/miniconda3/bin/python /home/votance/Projects/Farsight/main.py', shell=True)
         sys.stdout.write(sys.path[0])
         while True:

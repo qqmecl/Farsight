@@ -95,8 +95,9 @@ class Closet:
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
         settings.items = result
-        settings.items["0000000000000001"] = dict(name='empty_hand', price=0, weight=184.0)
-        # print(settings.items)
+        settings.items["0000000000001001"] = dict(name='empty_hand', price=0, weight=184.0)
+        # settings.items["6921168509256001"] = dict(name = "nongfushanquan", price = 2, weight = 575.0)
+        print(settings.items)
 
     def start(self):
         self.lastDetectTime = time.time()
@@ -185,6 +186,7 @@ class Closet:
 
         self.debugTime = time.time()
 
+
         self.timeCnt=[]
         for i in range(settings.camera_number):
             now_time = time.time()
@@ -271,6 +273,7 @@ class Closet:
         
         if self.state == "left-door-open" or self.state ==  "right-door-open":#已开门则检测是否开启算法检测
                 while(not self._detection_queue.empty()):
+
                     try:
                         result = self._detection_queue.get_nowait()
 

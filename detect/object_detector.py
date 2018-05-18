@@ -9,23 +9,22 @@ import time
 import common.settings as settings
 from detect.dynamic_track import DynamicTrack
 import tensorflow as tf
+from image_stitching import Image_stitching
 
 
-# SELECTED_MODEL = '/data/faster_rcnn/'
-SELECTED_MODEL = '/../Models/mobilenet_ssd_v1_coco/'
+SELECTED_MODEL = '/data/8kinds/'
+# SELECTED_MODEL = '/../Models/mobilenet_ssd_v1_coco/'
 # SELECTED_MODEL = '/../Models/mobilenet_ssd_v2_coco/'
 
 
-CWD_PATH = os.getcwd()+SELECTED_MODEL
-
-
+CWD_PATH = os.getcwd()
 
 if CWD_PATH != '/':
-    MODEL_PATH = os.path.join(CWD_PATH  + 'frozen_inference_graph.pb')
-    LABEL_PATH = os.path.join(CWD_PATH  + 'pascal_label_map.pbtxt')
+    MODEL_PATH = os.path.join(CWD_PATH  + ELECTED_MODE + 'frozen_inference_graph.pb')
+    LABEL_PATH = os.path.join(CWD_PATH  + ELECTED_MODE + 'pascal_label_map.pbtxt')
 else:
-    MODEL_PATH = os.path.join('/home/votance/Projects/Farsight/' + CWD_PATH  + 'frozen_inference_graph.pb')
-    LABEL_PATH = os.path.join('/home/votance/Projects/Farsight/' + CWD_PATH  + 'pascal_label_map.pbtxt')
+    MODEL_PATH = os.path.join('/home/votance/Projects/Farsight' + SELECTED_MODEL + 'frozen_inference_graph.pb')
+    LABEL_PATH = os.path.join('/home/votance/Projects/Farsight' + SELECTED_MODEL + 'pascal_label_map.pbtxt')
 
 class ObjectDetector:
     def __init__(self,input_q,items,camera_number,detection_queue):
@@ -45,10 +44,10 @@ class ObjectDetector:
           self.tf_sess = tf_sess
           self.tf_sess.graph.as_default()
           tf.import_graph_def(self.detection_graph, name='')
-       
+
         self.image_tensor = tf.get_default_graph().get_tensor_by_name('image_tensor:0')
         ops = tf.get_default_graph().get_operations()
-  
+
         all_tensor_names = {output.name for op in ops for output in op.outputs}
         self.tensor_dict = {}
         keyLists = ['num_detections', 'detection_boxes', 'detection_scores',
@@ -69,6 +68,8 @@ class ObjectDetector:
         for i in range(camera_number):
             self.dynamicTracker.append(DynamicTrack())
 
+        self.image_stitching = Image_stitching()
+
         # self.writePath = os.getcwd() + '/photo/'+self.timeStamp+"/"
         # os.makedirs(self.writePath)
 
@@ -76,7 +77,7 @@ class ObjectDetector:
         sign = 0
         self.vertical = None
 
-        allCnt = 0
+        # allCnt = 0
         while True:
             try:
                 frame_truncated,index,frame_time,motionType = input_q.get(timeout=1)
@@ -87,109 +88,48 @@ class ObjectDetector:
                 if frame_truncated is not None:
                     # allCnt+=1
                     # cv.imwrite(str(allCnt)+".png",frame_truncated)
-
                     sign += 1
-                    if sign % 2:
-                        self.frame_merge_left = frame_truncated
-                        self.lastMotionType,self.lasFrame_time,self.last_index=motionType,frame_time,index
-                    else:
-                        left_x = self.frame_merge_left.shape[1]
-                        right_x = frame_truncated.shape[1]
-                        left_y = self.frame_merge_left.shape[0]
-                        right_y = frame_truncated.shape[0]
-                        if left_x >= right_x:
-                            if left_x >= (left_y + right_y):
-                                sum_planA = (left_x - right_x) * right_y + left_x * (left_x - left_y - right_y) #up concatenate down
-                                photo_sign_A = 1
-                            else:
-                                sum_planA = (left_x - right_x) * right_y + (left_y + right_y) * (left_y + right_y - left_x) #up concatenate down
-                                photo_sign_A = 2
+                    if setting.stitching_number == 2:
+                        if sign % 2:
+                            self.frame_merge_left = frame_truncated
+                            self.lastMotionType,self.lasFrame_time,self.last_index=motionType,frame_time,index
                         else:
-                            if right_x >= (left_y + right_y):
-                                sum_planA = (right_x - left_x) * left_y + right_x * (right_x - left_y - right_y) #up concatenate down
-                                photo_sign_A = 3
+                            frame_merge, divide_val, self.vertical = self.image_stitching.stitching(self.frame_merge_left, frame_truncated)
+                            # cv.imwrite(self.writePath + str(sign) + '--' + str(sum_planA) + '--' + str(sum_planB) + '.jpg', frame_merge)
+                            before = time.time()
+                            results = self.detect_objects(frame_merge, frame_time, divide_val)
+
+                            # print(results)
+                            # print("consume time: ",time.time()-before)
+
+                            for i in range(2):
+                                if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
+                                    print("object delte detect")
+                                    waste = detection_queue.get_nowait()
+
+                                try:
+                                    if i:
+                                        # if len(results[i]) >1:
+                                            # print("check two item by the same time: ",results[i])
+                                        detection_queue.put_nowait([index,motionType,results[i],frame_time])#not a good structure
+                                    else:
+                                        detection_queue.put_nowait([self.last_index,self.lastMotionType,results[i],self.lasFrame_time])#not a good structure
+                                except queue.Full:
+                                    print('[FULL]')
+                                    pass
+
+                    elif setting.stitching_number == 3:
+                        if sign % 3:
+                            if sign % 2:
+                                self.one_frame = frame_truncated
+                                self.one_MotionType,self.one_Frame_time,self.one_index=motionType,frame_time,index
                             else:
-                                sum_planA = (right_x - left_x) * left_y + (left_y + right_y) * (left_y + right_y - right_x) #up concatenate down
-                                photo_sign_A = 4
-                        
-                        if left_y >= right_y:
-                            if left_y >= (left_x + right_x):
-                                sum_planB = (left_y - right_y) * right_x + left_y * (left_y - left_x - right_x) #left concatenate right
-                                photo_sign_B = 5
-                            else:
-                                sum_planB = (left_y - right_y) * right_x + (left_x + right_x) * (left_x + right_x - left_y) #left concatenate right
-                                photo_sign_B = 6
+                                self.another_frame = frame_truncated
+                                self.another_MotionType, self.another_Frame_time, self.another_index = motionType, frame_time, index
                         else:
-                            if right_y >= (left_x + right_x):
-                                sum_planB = (right_y - left_y) * left_x + right_y * (right_y - left_x - right_x) #left concatenate right
-                                photo_sign_B = 7
-                            else:
-                                sum_planB = (right_y - left_y) * left_x + (left_x + right_x) * (left_x + right_x - right_y) #left concatenate right
-                                photo_sign_B = 8
+                            frame_merge, divide_val, self.vertical = self.image_stitching.stitching(self.one_frame, self.another_frame, frame_truncated)
+                            # pass
 
-                        # print(sum_planB, 'gggggg', sum_planA)
-                        # print(sum_planB // sum_planA)
-                        if sum_planB - sum_planA>=0:
-                            self.vertical = True  
-                            if photo_sign_A == 1:
-                                frame_merge = self.compose_photo(small_fill_y = right_y, small_fill_x = left_x - right_x, big_fill_y = left_x - left_y - right_y,
-                                    big_fill_x = left_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axises = [1, 0, 0])
-                            
-                            if photo_sign_A == 2:
-                                frame_merge = self.compose_photo(small_fill_y = right_y, small_fill_x = left_x - right_x, big_fill_y = left_y + right_y,
-                                    big_fill_x = left_y + right_y - left_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axises = [1, 0, 1])
-                            
-                            if photo_sign_A == 3:
-                                frame_merge = self.compose_photo(small_fill_y = left_y, small_fill_x = right_x - left_x, big_fill_y = right_x - left_y - right_y,
-                                    big_fill_x = right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axises = [1, 0, 0], exchange = True)
-
-                            if photo_sign_A == 4:
-                                frame_merge = self.compose_photo(small_fill_y = left_y, small_fill_x = right_x - left_x, big_fill_y = left_y + right_y,
-                                    big_fill_x = left_y + right_y - right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axises = [1, 0, 1], exchange = True)
-
-                            divide_val = left_y
-                        
-                        else:
-                            self.vertical = False
-                            if photo_sign_B == 5:
-                                frame_merge = self.compose_photo(small_fill_y = left_y - right_y, small_fill_x = right_x, big_fill_y = left_y,
-                                    big_fill_x = left_y - left_x - right_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axises = [0, 1, 1])
-
-                            if photo_sign_B == 6:
-                                frame_merge = self.compose_photo(small_fill_y = left_y - right_y, small_fill_x = right_x, big_fill_y = left_x + right_x - left_y,
-                                    big_fill_x = left_x + right_x, frame_merge_filled = frame_truncated, frame_merge_temp = self.frame_merge_left, axises = [0, 1, 0])
-
-                            if photo_sign_B == 7:
-                                frame_merge = self.compose_photo(small_fill_y = right_y - left_y, small_fill_x = left_x, big_fill_y = right_y,
-                                    big_fill_x = right_y - left_x - right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axises = [0, 1, 1], exchange = True)
-
-                            if photo_sign_B == 8:
-                                frame_merge = self.compose_photo(small_fill_y = right_y - left_y, small_fill_x = left_x, big_fill_y = left_x + right_x - right_y,
-                                    big_fill_x = left_x + right_x, frame_merge_filled = self.frame_merge_left, frame_merge_temp = frame_truncated, axises = [0, 1, 0], exchange = True)
-
-                            divide_val = left_x
-
-
-                        # cv.imwrite(self.writePath + str(sign) + '--' + str(sum_planA) + '--' + str(sum_planB) + '.jpg', frame_merge)
-                        before = time.time()
-                        results = self.detect_objects(frame_merge, frame_time, divide_val)
-                        # print("consume time: ",time.time()-before)
-
-                        for i in range(2):
-                            if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
-                                print("object delte detect")
-                                waste = detection_queue.get_nowait()
-
-                            try:
-                                if i:
-                                    # if len(results[i]) >1:
-                                        # print("check two item by the same time: ",results[i])
-                                    detection_queue.put_nowait([index,motionType,results[i],frame_time])#not a good structure
-                                else:
-                                    detection_queue.put_nowait([self.last_index,self.lastMotionType,results[i],self.lasFrame_time])#not a good structure
-                            except queue.Full:
-                                print('[FULL]')
-                                pass
                 else:
                     if detection_queue.full():#此种情况一般不应该发生，主进程要做到能够处理每一帧图像
                         # print("object delte detect")
@@ -204,17 +144,7 @@ class ObjectDetector:
                 # print('[EMPTY] input_q is: ')
                 pass
 
-    def compose_photo(self, small_fill_y, small_fill_x, big_fill_y, big_fill_x, frame_merge_filled, frame_merge_temp, axises, exchange = False):
-        fill1 = np.zeros((small_fill_y,small_fill_x, 3), np.uint8)
-        frame_temp_temp = np.concatenate((frame_merge_filled, fill1), axis = axises[0])
-        fill2 = np.zeros((big_fill_y, big_fill_x, 3), np.uint8)
-        if exchange:
-            frame_temp = np.concatenate((frame_temp_temp, frame_merge_temp), axis = axises[1])
-        else:
-            frame_temp = np.concatenate((frame_merge_temp, frame_temp_temp), axis = axises[1])
-        frame_merge = np.concatenate((frame_temp, fill2), axis = axises[2])
-        return frame_merge
-    
+
     ##当前只考虑单帧的判断
     # def detect_objects(self,frame,frame_time, enlarge_num, divide_val, sign):
     # def detect_objects(self,frame,frame_time, divide_val, sign):
@@ -274,7 +204,7 @@ class ObjectDetector:
                         results1.append((confidence,itemId,frame_time))
 
                     # if up_y <= divide_val and down_y >= divide_val:
-                    
+
                 else:
                     if left_x <= divide_val and right_x <= divide_val:
                         results0.append((confidence,itemId,frame_time))
@@ -304,7 +234,7 @@ class ObjectDetector:
     def readPbCfg(self,path):
         _id = None
         with open(path,'r') as f:
-            for line in f.readlines():   
+            for line in f.readlines():
                 line = line.strip()
                 splits = line.split(":")
                 if len(splits) == 2:
