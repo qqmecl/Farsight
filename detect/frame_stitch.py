@@ -3,16 +3,25 @@ import numpy as np
 from detect_frame import DetectFrame
 import common.settings as settings
 
-class Image_stitching(object):
+class ImageStitch(object):
     def __init__(self):
+        self.cacheList=[]
         pass
 
     def loadIn(self,detect_frame):
-        pass
+        if len(self.cacheList) < settings.stitching_number:
+            self.cacheList.append(detect_frame)
+        else:
+            
+
+            return final_frame
+
+        return None
 
     def filter(self,rawResults):
-        pass
         
+        pass
+
     def stitching(self, *frame):
         number = len(frame)
         if number < 3:

@@ -92,6 +92,7 @@ class ObjectDetector:
 
                     if stitched_frame is not None:
                         rawResults = self.detect_objects(stitched_frame)
+                        
                         realResults = frameSticher.filter(rawResults)
 
                         for result in realResults:
