@@ -69,23 +69,23 @@ class Closet:
         dict(trigger='restock_authorize_success', source='standby', dest='authorized-restock'),
         dict(trigger='restock_close_door_success', source='authorized-restock', dest='standby')
         #dict(trigger='restock_success', source='restocking', dest='standby')
-    ]
+    ]#根据判断柜体正在开门中或关门中等状态来运行相应模块
 
     def __init__(self, **config):
-        self.encrypter = Encrypter()
+        self.encrypter = Encrypter()#encrypter 对与后台传输的数据进行aes加密解密的类
         self.input_queues = Queue(maxsize=20)
         self._detection_queue = Queue(maxsize=20*4)
         self.num_workers = config['num_workers']
 
 
-        if not settings.is_offline:
+        if not settings.is_offline:#PC中对已有视频进行识别
             self.IO = IO_Controller()
             self.cart = Cart(self.IO)
             # self.initItemData()
        
-    def initItemData(self):
+    def initItemData(self):#接收来自后台的数据，并因此对本地将会被识别的物品进行数据初始化操作
         from common.util import get_mac_address
-        id = {'uuid': get_mac_address()}
+        id = {'uuid': get_mac_address()}#获取mac地址操作，根据每个柜体不同mac地址，后台数据库发送相应数据至柜体
         response = requests.get(settings.INIT_URL,params=id)
         data = response.json()
         result = {}
@@ -94,10 +94,10 @@ class Closet:
             b = float(res['weight'])
             c = dict(name = res['goods_name'], price = round(a, 1), weight = round(b, 1))
             result[res['goods_code']] = c
-        settings.items = result
-        settings.items["0000000000001001"] = dict(name='empty_hand', price=0, weight=184.0)
+        settings.items = result#setting.items中保存我们初始化数据，现本地未使用数据库
+        settings.items["0000000000001001"] = dict(name='empty_hand', price=0, weight=184.0)#识别人空手的数据
         # settings.items["6921168509256001"] = dict(name = "nongfushanquan", price = 2, weight = 575.0)
-        print(settings.items)
+        # print(settings.items)
 
     def start(self):
         self.lastDetectTime = time.time()
@@ -107,13 +107,13 @@ class Closet:
         pool = Pool(self.num_workers, ObjectDetector, (self.input_queues,settings.items,settings.camera_number,self._detection_queue))
         self.camera_control = CameraController(input_queue = self.input_queues)
 
-        if settings.has_scale:
+        if settings.has_scale:#柜体模式分为有称和没有称
             self.scaleDetector = self.camera_control.getScaleDetector()
             self.scaleDetector.setIo(self.IO)
             self.scaleDetector.setCart(self.cart)
         self.detectResult = DetectResult()
 
-        if settings.is_offline:
+        if settings.is_offline:#offline 是PC线上模式，用来对运营视频进行分析。
             stateMachine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='left-door-open')
             self.debugTime = time.time()
             self.updateScheduler = tornado.ioloop.PeriodicCallback(self.update,10)#50 fps
@@ -125,7 +125,7 @@ class Closet:
             stateMachine = Machine(model=self, states=Closet.states, transitions=Closet.transitions, initial='pre-init')
             self.init_success()
             settings.logger.warning('camera standby')
-            print("Start success")
+            # print("Start success")
 
 
         handler = SignalHandler(object_detection_pools, tornado.ioloop.IOLoop.current())
